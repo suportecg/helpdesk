@@ -141,6 +141,8 @@ export default function TicketsManagementClient({
 
   const [confirmDelete, setConfirmDelete] = useState<TicketRow | null>(null);
   const [confirmArchive, setConfirmArchive] = useState<TicketRow | null>(null);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
 
@@ -352,6 +354,21 @@ export default function TicketsManagementClient({
       fetchTickets();
     } catch (err: any) {
       toast.error(err.message || "Erro ao excluir chamado");
+    }
+  }
+
+  async function handleDeleteAllConfirm() {
+    setIsDeleting(true);
+    try {
+      const res = await fetch("/api/tickets/all", { method: "DELETE" });
+      if (!res.ok) throw new Error("Erro ao excluir todos os chamados");
+      toast.success("Todos os chamados foram excluídos com sucesso!");
+      setConfirmDeleteAll(false);
+      fetchTickets();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao excluir todos os chamados");
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -607,6 +624,12 @@ export default function TicketsManagementClient({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {user?.role === "ADMIN" && (
+            <Button variant="outline" size="sm" onClick={() => setConfirmDeleteAll(true)} className="text-xs text-danger border-danger/30 hover:bg-danger/10 hover:text-danger">
+              <Trash className="w-3.5 h-3.5 mr-1.5" />
+              Excluir Todos
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => setImportModalOpen(true)} className="text-xs">
             <ArrowsDownUp className="w-3.5 h-3.5 mr-1.5" />
             Importar Excel
@@ -910,6 +933,18 @@ export default function TicketsManagementClient({
         cancelLabel="Cancelar"
         variant="destructive"
         onConfirm={handleDeleteConfirm}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteAll}
+        onOpenChange={(open) => !open && setConfirmDeleteAll(false)}
+        title="Excluir TODOS os Chamados"
+        description="ATENÇÃO: Você está prestes a apagar TODOS os chamados da base de dados. Esta ação é irreversível. Deseja continuar?"
+        confirmLabel="Excluir Tudo"
+        cancelLabel="Cancelar"
+        variant="destructive"
+        onConfirm={handleDeleteAllConfirm}
+        isConfirming={isDeleting}
       />
 
       <CsvImportWizard

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 export function LoginForm() {
   const isDev = process.env.NODE_ENV === "development";
@@ -155,9 +156,9 @@ export function LoginForm() {
                 <label htmlFor="password" className="block text-sm text-slate-700 font-semibold">
                   Senha
                 </label>
-                <a href="#" className="text-xs font-medium text-primary hover:underline">
+                <Link href="/forgot-password" className="text-xs font-medium text-primary hover:underline">
                   Esqueci minha senha
-                </a>
+                </Link>
               </div>
               <Input
                 id="password"

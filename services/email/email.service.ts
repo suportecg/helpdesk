@@ -94,7 +94,7 @@ function getEmailLayout(settings: any, title: string, content: string): string {
 /**
  * Sends a raw HTML email using SendGrid.
  */
-async function sendHtmlEmail(to: string, subject: string, html: string, inReplyToMessageId?: string, cc?: string[]) {
+export async function sendHtmlEmail(to: string, subject: string, html: string, inReplyToMessageId?: string, cc?: string[]) {
   const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'suporte@empresa.com.br';
   const fromName = process.env.SENDGRID_FROM_NAME || 'HelpDesk';
 

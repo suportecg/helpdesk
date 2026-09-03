@@ -114,7 +114,8 @@ export async function createUser(
   const defaultPass = data.password || "cg2026ti";
   const hashedPassword = await bcrypt.hash(defaultPass, 10);
 
-  let user = await prisma.user.findUnique({ where: { email: data.email } });
+  const emailNormalized = data.email.trim().toLowerCase();
+  let user = await prisma.user.findUnique({ where: { email: emailNormalized } });
   
   const userData = {
     name: data.name,
@@ -140,7 +141,7 @@ export async function createUser(
     }
   } else {
     user = await prisma.user.create({
-      data: { ...userData, email: data.email },
+      data: { ...userData, email: emailNormalized },
       include: { sector: true },
     });
   }
@@ -176,7 +177,7 @@ export async function updateUser(
     where: { id },
     data: {
       name: data.name,
-      email: data.email,
+      email: data.email ? data.email.trim().toLowerCase() : undefined,
       role: data.role,
       department: data.department,
       sectorId: data.sectorId,
