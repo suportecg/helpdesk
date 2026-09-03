@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Identidade SaaS Premium (Movidesk Style) */
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --ink: #0F172A;
+    --primary-brand: #2563EB;
+    --primary-dark: #1D4ED8;
+    --steel: #64748B;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+
+    /* Mapeamento Shadcn */
+    --background: var(--bg);
+    --foreground: var(--ink);
+    --card: var(--surface);
+    --card-foreground: var(--ink);
+    --popover: var(--surface);
+    --popover-foreground: var(--ink);
+    --primary: var(--primary-brand);
+    --primary-foreground: #ffffff;
+    --secondary: #F1F5F9;
+    --secondary-foreground: var(--ink);
+    --muted: #F1F5F9;
+    --muted-foreground: var(--steel);
+    --accent: #F1F5F9;
+    --accent-foreground: var(--ink);
+    --destructive: var(--danger);
+    --destructive-foreground: #ffffff;
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: var(--primary-brand);
+    --radius: 0.5rem; /* Rounded corners for premium feel */
+
+    /* Sidebar Premium (Dark Slate) */
+    --sidebar-background: #0F172A;
+    --sidebar-foreground: #F8FAFC;
+    --sidebar-accent: #1E293B;
+    --sidebar-accent-foreground: #FFFFFF;
+    --sidebar-border: #1E293B;
+  }
+
+  .dark {
+    /* Identidade SaaS Premium (Dark Mode) */
+    --bg: #020617;
+    --surface: #0F172A;
+    --ink: #F8FAFC;
+    --primary-brand: #3B82F6;
+    --primary-dark: #60A5FA;
+    --steel: #94A3B8;
+    --success: #34D399;
+    --warning: #FBBF24;
+    --danger: #F87171;
+
+    --background: var(--bg);
+    --foreground: var(--ink);
+    --card: var(--surface);
+    --card-foreground: var(--ink);
+    --popover: var(--surface);
+    --popover-foreground: var(--ink);
+    --primary: var(--primary-brand);
+    --primary-foreground: #0F172A;
+    --secondary: #1E293B;
+    --secondary-foreground: var(--ink);
+    --muted: #1E293B;
+    --muted-foreground: #94A3B8;
+    --accent: #1E293B;
+    --accent-foreground: var(--primary-brand);
+    --destructive: var(--danger);
+    --destructive-foreground: #ffffff;
+    --border: #1E293B;
+    --input: #1E293B;
+    --ring: var(--primary-brand);
+
+    /* Sidebar Darker for Dark Mode */
+    --sidebar-background: #020617;
+    --sidebar-foreground: #F8FAFC;
+    --sidebar-accent: #0F172A;
+    --sidebar-accent-foreground: var(--primary-brand);
+    --sidebar-border: #0F172A;
+  }
+}
+
+@theme inline {
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui;
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-primary-brand: var(--primary-brand);
+  --color-primary-dark: var(--primary-dark);
+  --color-steel: var(--steel);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar-background: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Glassmorphic utilities e Micro-animations */
+@layer utilities {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+  }
+  .dark .glass-card {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(30, 41, 59, 0.6);
+  }
+
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  }
+}

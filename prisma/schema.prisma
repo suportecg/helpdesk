@@ -1,0 +1,511 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Enums Obrigatórios - Etapa 2
+enum RoleType {
+  ADMIN
+  TI
+  SOLICITANTE
+}
+
+enum StatusType {
+  // Antigos
+  EM_ATENDIMENTO
+  CONCLUIDO
+  AGUARDANDO
+  AGENDADO
+  
+  // Novos
+  ABERTO
+  EM_ANDAMENTO
+  AGUARDANDO_USUARIO
+  AGUARDANDO_PECA
+  RESOLVIDO
+  CANCELADO
+}
+
+enum OrigemType {
+  MANUAL
+  WHATSAPP
+  EMAIL
+}
+
+enum PrioridadeType {
+  BAIXA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+// 1. User
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  role       RoleType @default(SOLICITANTE)
+  roleId     String?
+  roleRef    Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  avatar     String?
+  department String?
+  sectorId   String?
+  sector     Sector?  @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  userPermissions UserPermission[]
+  auditLogs       AuditLog[]
+  notifications   Notification[]
+  assignedTickets Ticket[]        @relation("TicketTechnician")
+  ticketComments  TicketComment[]
+  ticketHistory   TicketHistory[]
+  ticketPauses    TicketPause[]
+
+  @@index([email])
+  @@index([role])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+// 2. Role
+model Role {
+  id          String   @id @default(uuid())
+  name        RoleType @unique
+  label       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+// 3. Permission
+model Permission {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  label       String
+  category    String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rolePermissions RolePermission[]
+  userPermissions UserPermission[]
+
+  @@index([category])
+  @@map("permissions")
+}
+
+// 4. RolePermission (tabela de junção para papéis padrão)
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// 5. UserPermission (tabela para sobreposições individuais por usuário)
+model UserPermission {
+  id           String     @id @default(uuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  granted      Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([userId, permissionId])
+  @@map("user_permissions")
+}
+
+// 6. Company
+model Company {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  logo      String?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  settings  Settings?
+
+  @@map("companies")
+}
+
+// 7. Settings
+model Settings {
+  id             String   @id @default(uuid())
+  companyId      String   @unique
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  systemName     String   @default("CG Construções HelpDesk")
+  theme          String   @default("system")
+  primaryColor   String   @default("#2563eb")
+  secondaryColor String   @default("#f1f5f9")
+  department     String   @default("Departamento de TI")
+  phone          String   @default("(11) 3456-7890")
+  email          String   @default("ti@cgconstrucoes.com.br")
+  website        String   @default("www.cgconstrucoes.com.br")
+  address        String   @default("Av. Principal, 1000 - Centro")
+  favicon        String   @default("/cg-logo.png")
+  borderRadius   String   @default("0.5rem")
+  compactMode    Boolean  @default(false)
+  allowRegistration Boolean @default(false)
+  minPasswordLen Int      @default(8)
+  sessionTimeoutMin Int   @default(120)
+  requireFirstAccess Boolean @default(true)
+  maxLoginAttempts Int    @default(5)
+  defaultStatus  String   @default("ABERTO")
+  defaultOrigin  String   @default("MANUAL")
+  defaultPriority String  @default("MEDIA")
+  defaultSlaHours Int     @default(24)
+  autoArchive    Boolean  @default(true)
+  archiveDays    Int      @default(30)
+  monthlyNumbering Boolean @default(true)
+  reportShowLogo Boolean  @default(true)
+  reportShowFooter Boolean @default(true)
+  reportDefaultTheme String @default("LIGHT")
+  auditRetentionDays Int  @default(90)
+  auditLogEnabled Boolean @default(true)
+  googleRefreshToken String?
+  emailIntegrationStatus String @default("DISCONNECTED")
+  lastEmailCheck DateTime?
+  lastEmailProcessed DateTime?
+  emailCheckError String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("settings")
+}
+
+// 8. ProcessedEmail
+model ProcessedEmail {
+  id         String   @id @default(uuid())
+  messageId  String   @unique
+  subject    String?
+  from       String?
+  receivedAt DateTime?
+  processedAt DateTime @default(now())
+  ticketId   String?
+  ticket     Ticket?  @relation(fields: [ticketId], references: [id])
+  status     String   @default("PROCESSED") // PROCESSED, ERROR
+  bodyReceived String? // O corpo extraído do email IMAP
+  bodySent     String? // O HTML exato do template que foi enviado em resposta
+  cc           String? // E-mails em cópia no momento do recebimento (separados por vírgula)
+  manualReplies Json?  // Histórico de respostas enviadas pelo admin
+  
+  @@map("processed_emails")
+}
+
+// 9. Requester
+model Requester {
+  id         String    @id @default(uuid())
+  name       String
+  email      String    @unique
+  phone      String?
+  company    String?
+  department String?
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  tickets    Ticket[]
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("requesters")
+}
+
+// 9. Sector
+model Sector {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  users       User[]
+  tickets     Ticket[]
+
+  @@index([name])
+  @@index([deletedAt])
+  @@map("sectors")
+}
+
+// 10. Service
+model Service {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  category    String?
+  description String?
+  slaHours    Int?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  tickets     Ticket[]
+
+  @@index([name])
+  @@index([deletedAt])
+  @@map("services")
+}
+
+// 11. AuditLog
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// 12. Notification
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@map("notifications")
+}
+
+// 13. TicketOrigin
+model TicketOrigin {
+  id        String     @id @default(uuid())
+  code      OrigemType @unique
+  label     String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("ticket_origins")
+}
+
+// 14. TicketStatus
+model TicketStatus {
+  id        String     @id @default(uuid())
+  code      StatusType @unique
+  label     String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("ticket_statuses")
+}
+
+// 15. TicketPriority
+model TicketPriority {
+  id        String         @id @default(uuid())
+  code      PrioridadeType @unique
+  label     String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("ticket_priorities")
+}
+
+// ==========================================
+// ETAPA 3 — ENTIDADES DE CHAMADOS (TICKETS)
+// ==========================================
+
+// 16. Ticket
+model Ticket {
+  id               String         @id @default(uuid())
+  ticketNumber     Int            @default(1) // Número sequencial com reinício mensal
+  ticketMonthYear  String         @default("07-2026") // Mês/Ano para controle mensal (ex: "07-2026")
+  problem          String         // Problema (texto livre obrigatório)
+  description      String?        // Descrição (opcional)
+  requesterId      String         // FK Solicitante
+  requester        Requester      @relation(fields: [requesterId], references: [id])
+  sectorId         String         // FK Setor
+  sector           Sector         @relation(fields: [sectorId], references: [id])
+  technicianId     String?        // FK Técnico Responsável
+  technician       User?          @relation("TicketTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
+  serviceId        String         // FK Serviço (catálogo)
+  service          Service        @relation(fields: [serviceId], references: [id])
+  status           StatusType     @default(ABERTO)
+  origin           OrigemType     @default(MANUAL)
+  priority         PrioridadeType @default(MEDIA)
+  ticketDate       DateTime       @default(now()) // Data do chamado
+  dueDate          DateTime?      // Data prevista de conclusão (SLA)
+  startTime        DateTime?      // Hora início
+  endTime          DateTime?      // Hora encerramento
+  totalTimeMinutes Int?           // Tempo total em minutos calculado automaticamente (horaFinal - horaInicial)
+  observations     String?        // Observações
+  aiSummary        String?        // [AI Ready] Resumo gerado do chamado
+  aiMetadata       Json?          // [AI Ready] Metadados extras da IA (tags, sentiment, etc.)
+  cc               String?        // E-mails em cópia
+  hasUnreadReply   Boolean        @default(false)
+  isArchived       Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?      // Soft delete
+
+  comments         TicketComment[]
+  history          TicketHistory[]
+  attachments      TicketAttachment[]
+  pauses           TicketPause[]
+  processedEmails  ProcessedEmail[]
+
+  @@unique([ticketNumber, ticketMonthYear])
+  @@index([ticketNumber])
+  @@index([ticketMonthYear])
+  @@index([requesterId])
+  @@index([sectorId])
+  @@index([technicianId])
+  @@index([serviceId])
+  @@index([status])
+  @@index([isArchived])
+  @@index([deletedAt])
+  @@map("tickets")
+}
+
+// 17. TicketComment
+model TicketComment {
+  id         String   @id @default(uuid())
+  ticketId   String
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  content    String
+  isInternal Boolean  @default(true) // Comentários internos
+  createdAt  DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([authorId])
+  @@map("ticket_comments")
+}
+
+// 18. TicketHistory
+model TicketHistory {
+  id          String   @id @default(uuid())
+  ticketId    String
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  actorId     String?
+  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorName   String?
+  eventType   String   // CREATED, TECHNICIAN_ASSIGNED, STATUS_CHANGED, SERVICE_CHANGED, COMPLETED, ARCHIVED, etc.
+  description String   // Ex: "Chamado criado.", "Lucas assumiu.", "09:20 Serviço alterado."
+  oldValue    String?
+  newValue    String?
+  createdAt   DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([actorId])
+  @@map("ticket_history")
+}
+
+// 19. TicketAttachment (estrutura preparada para etapas futuras)
+model TicketAttachment {
+  id           String   @id @default(uuid())
+  ticketId     String
+  ticket       Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  fileName     String
+  fileUrl      String
+  fileSize     Int?
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  @@index([ticketId])
+  @@map("ticket_attachments")
+}
+
+// 20. ReportLayout — Templates de relatórios persistidos no banco
+model ReportLayout {
+  id          String   @id @default(uuid())
+  name        String
+  config      Json     // widgets[], chartTypes, etc.
+  isDefault   Boolean  @default(false)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("report_layouts")
+}
+
+// 21. ImportLog — Registro de importações CSV
+model ImportLog {
+  id              String   @id @default(uuid())
+  fileName        String
+  totalRows       Int
+  importedRows    Int
+  skippedRows     Int
+  newRequesters   Int      @default(0)
+  newSectors      Int      @default(0)
+  newServices     Int      @default(0)
+  newTechnicians  Int      @default(0)
+  durationMs      Int      @default(0)
+  importedBy      String?
+  monthYear       String?
+  createdAt       DateTime @default(now())
+
+  @@map("import_logs")
+}
+
+// 22. TicketPause — Registro de pausas em atendimentos
+model TicketPause {
+  id        String    @id @default(uuid())
+  ticketId  String
+  ticket    Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  reason    String?   // Motivo da pausa opcional
+  startTime DateTime  @default(now())
+  endTime   DateTime?
+  duration  Int?      // Duração da pausa em minutos, quando a pausa for concluída
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([ticketId])
+  @@index([userId])
+  @@map("ticket_pauses")
+}
+
+// 23. EmailTemplate
+model EmailTemplate {
+  id           String   @id @default(uuid())
+  code         String   @unique // e.g. TICKET_CREATED
+  name         String
+  subject      String
+  bodyHtml     String
+  showPriority Boolean  @default(true)
+  showStatus   Boolean  @default(true)
+  primaryColor String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("email_templates")
+}
+

@@ -1,0 +1,501 @@
+Solicitante,Setor/Obra,Técnico,Data,Hora Inicio,Problema,Descrição,Serviço,Status,Hora Encerramento,Média de Tempo
+Victor Veras,Ramal,Lucas,03/08/2026,09:00,Redefinição de senha do Informakon,,Informakon Redefinição de Senha,Concluído,9:04:00,
+Júlio César,Financeiro,Hudson,03/08/2026,09:14:00,Instalação de impressora ,,Impressora Configuração,Concluído,9:20:00,0:06:00
+Regiane Assunção,Pessoal,Lucas,03/08/2026,10:22:00,Notebook com lentidão,,Software Configuração,Concluído,10:30:00,0:08:00
+Abel Quinto,Compras,Hudson,03/08/2026,10:35:00,Notebook estava travando,,Sistema Operacional Configuração,Concluído,10:40:00,0:05:00
+Jacqueline De Alencar,Pessoal,Lucas,03/08/2026,11:23:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,11:30:00,0:07:00
+Daniel Ramos,Brasília ,Hudson,03/08/2026,11:47:00,Ativação office ,,Office Ativação,Concluído,11:50:00,0:03:00
+Leandro Correia,Sala Tecnica ENG,Lucas,04/08/2026,11:20:00,Email não chega,,Dúvidas & Informações,Concluído,11:27:00,0:07:00
+Beatriz Pereira,Financeiro,Lucas,04/08/2026,13:36:00,Ativar notificação do Whatsapp,,Software Configuração,Concluído,13:40:00,0:04:00
+Barbara Luiza,Financeiro,Lucas,04/08/2026,13:40:00,Instalar certificado,,Certificado Instalação,Concluído,13:45:00,0:05:00
+Marcelo,Financeiro,Lucas,04/08/2026,13:52:00,Não consegue linkar lançamento,,Dúvidas & Informações,Concluído,13:56:00,0:04:00
+João Paulo Alves Rocha,Lavras ,Hudson,04/08/2026,15:55:00,Atualização do Informakon,,Informakon Software Atualização,Concluído,16:05:00,0:10:00
+Natália Ribeiro,Pessoal,Lucas,04/08/2026,16:01:00,Envio de PDFs para fiscalização,,Dúvidas & Informações,Concluído,16:03,0:02:00
+Natália Ribeiro,Pessoal,Hudson,04/08/2026,16:09:00,Não estava conseguindo extrair o arquivo ,,Dúvidas & Informações,Concluído,16:13,0:04:00
+Jacqueline De Alencar,Pessoal,Hudson,04/08/2026,16:32:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,16:35:00,0:03:00
+Marcos Antônio Ferreira Lima,Mahay,Hudson,04/08/2026,16:23:00,Informakon estava travado ,,Dúvidas & Informações,Concluído,16:29:00,0:06:00
+Regiane Assunção,Pessoal,Hudson,05/08/2026,10:34:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,10:38,0:04:00
+Tiago Souza,Lavras ,Hudson,05/08/2026,13:32:00,Esqueceu a senha,,Email Acesso,Concluído,13:34,0:02:00
+Gisele Magalhães,Ousy,Hudson,05/08/2026,14:41:00,informakon estava travado (Acesso remoto),,RDP Configuração,Concluído,14:46,0:05:00
+Natália Ribeiro,Pessoal,Hudson,05/08/2026,16:16:00,Reinicar o Agentes fortes,,Reiniciar Agente,Concluído,16:19,0:03:00
+Elviles Ferreira,Almoxarifado,Lucas,05/08/2026,16:18,Informakon não abre ,,RDP Configuração,Concluído,16:23:00,0:05:00
+Marcos Antônio Ferreira Lima,Mahay,Hudson,06/08/2026,08:09,Não estava conseguindo acessar o acesso remoto ,,RDP Acesso,Concluído,8:12:00,0:03:00
+Leandro Correia,Sala Tecnica ENG,Lucas,06/08/2026,8:50:00,Suporte para o monitor,,Equipamento Manutençâo,Concluído,9:05:00,0:15:00
+Jacqueline De Alencar,Pessoal,Hudson,06/08/2026,10:04:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,10:07:00,0:03:00
+Regiane Assunção,Pessoal,Lucas,06/08/2026,10:37:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,10:42:00,0:05:00
+Andrea Santos,Financeiro,Lucas,06/08/2026,15:11:00,Dúvidas sobre a VPN,,Dúvidas & Informações,Concluído,15:14:00,0:03:00
+Júlio César,Financeiro,Lucas,06/08/2026,15:13:00,Instalar certificado,,Certificado Instalação,Concluído,15:17:00,0:04:00
+Barbara Luiza,Financeiro,Lucas,06/08/2026,15:38:00,Fatura da Starlink CTR,,Dúvidas & Informações,Concluído,15:40:00,0:02:00
+Regiane Assunção,Pessoal,Lucas,06/08/2026,15:45:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,15:51:00,0:06:00
+Regiane Assunção,Pessoal,Lucas,06/08/2026,16:04:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,16:07:00,0:03:00
+Regiane Assunção,Pessoal,Lucas,07/08/2026,8:22:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,8:27:00,0:05:00
+Yasmin,Brasília ,Lucas,07/08/2026,9:12:00,Senha do usuário,,Dúvidas & Informações,Concluído,9:18:00,0:06:00
+Kamila Ferreira,RH,Lucas,07/08/2026,10:02:00,Configurar grupos de e-mails,,Software Configuração,Concluído,10:06:00,0:04:00
+Barbara Luiza,Financeiro,Lucas,07/08/2026,10:38:00,Impressora não funciona,,Impressora Configuração,Concluído,10:45:00,0:07:00
+João Paulo Pereira Rocha Gomes,Ousy,Lucas,07/08/2026,11:15:00,Liberação de função no Informakon,,Dúvidas & Informações,Concluído,11:18:00,0:03:00
+Natália Ribeiro,Pessoal,Lucas,07/08/2026,13:22:00,Criar backup do DbFortes,,Software Configuração,Concluído,13:25:00,0:03:00
+Franklin Silva,Ramal,Lucas,10/08/2026,7:30:00,VPN não conecta ,,VPN Configuração,Concluído,7:39:00,0:09:00
+Mariana Silva,Brasília ,Hudson,10/08/2026,8:57:00,Câmera não estava funcionando ,,Software Configuração,Concluído,9:18:00,0:21:00
+Regiane Assunção,Pessoal,Hudson,10/08/2026,10:56:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,11:00:00,0:04:00
+Onivaldo Rodrigues,Mahay,Lucas,10/08/2026,11:05:00,Dúvidas sobre o EasyInventory,,Dúvidas & Informações,Concluído,11:09:00,0:04:00
+Sirlei Ferreira,Lavras ,Hudson,10/08/2026,12:45:00,Dúvida sobre o informakon ,,Dúvidas & Informações,Concluído,12:51:00,0:06:00
+Gutierre De Sousa Gomes Lima,Almoxarifado,Lucas,10/08/2026,14:25:00,Instalar Informakon patrimônio,,Software Instalação,Concluído,14:43:00,0:18:00
+João Paulo Pereira Rocha Gomes,Ousy,Hudson,10/08/2026,15:00:00,Usuário relata que a pasta na qual ele salva os arquivos tinha sumido ,,Dúvidas & Informações,Concluído,15:11:00,0:11:00
+Heitor Santos,Campina MGA,Lucas,10/08/2026,15:51:00,Instalar EasyInventory,,Software Instalação,Concluído,16:00:00,0:09:00
+Beatriz Pereira,Financeiro,Lucas,10/08/2026,16:00:00,Converter PDF para PDF/A,,Software Configuração,Concluído,16:10:00,0:10:00
+Franklin Silva,Ramal,Hudson,10/08/2026,16:08:00,Instalação do scanner da impressora ,,Impressora Configuração,Concluído,16:12:00,0:04:00
+Regiane Assunção,Pessoal,Hudson,11/08/2026,10:54:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,11:00:00,0:06:00
+Regiane Assunção,Pessoal,Hudson,11/08/2026,14:47:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,14:52:00,0:05:00
+Andrea Santos,Financeiro,Lucas,11/08/2026,15:37:00,Instalar banco Sicredi e Itaú,,Software Instalação,Concluído,15:50:00,0:13:00
+Elvis Mesquita,Sala Tecnica ENG,Hudson,11/08/2026,17:52:00,Colocar arquivo do onedrive para pasta do servidor ,,Software Configuração,Concluído,17:58:00,0:06:00
+Dianna Viana,Conceito,Lucas,12/08/2026,9:34:00,Conectar impressora,,Impressora Configuração,Concluído,9:43:00,0:09:00
+Francisco Ribeiro,Lavras ,Hudson,12/08/2026,9:51:00,Usuário relata que o notebook estava com vírus ,,Software Configuração,Concluído,10:03:00,0:12:00
+Gustavo Carmo,Mahay,Lucas,12/08/2026,13:40:00,Dúvidas entre palavra-passe e senha,,Dúvidas & Informações,Concluído,13:43:00,0:03:00
+Marcos Antônio Ferreira Lima,Mahay,Lucas,13/08/2026,7:48:00,Disponibilidade de NoBreak,,Dúvidas & Informações,Concluído,7:50:00,0:02:00
+Michely,Konstroi,Hudson,13/08/2026,9:50:00,Análise do ticket que foi aberto ,,Acionar Suporte Kronstroi,Concluído,10:00:00,0:10:00
+Giovanni Azzi,Lavras ,Hudson,13/08/2026,15:11:00,Renovação do AutoCd ,,Software Configuração,Concluído,15:19:00,0:08:00
+Valdenio De Souza,Ramal,Lucas,13/08/2026,13:32,Liberar pasta do Drive,,Google Drive Acesso Nuvem,Concluído,13:35:00,0:03:00
+Regiane Assunção,Pessoal,Lucas,14/08/2026,7:28:00,Instalar certificado,,Certificado Instalação,Concluído,7:33:00,0:05:00
+Alex David,Brasília ,Lucas,14/08/2026,7:52:00,Instalar Informakon,,Software Instalação,Concluído,8:25:00,0:33:00
+Andre Lucas,Brasília ,Hudson,14/08/2026,7:57:00,Dúvida sobre linceça ,,Dúvidas & Informações,Concluído,7:58:00,0:01:00
+Rodrigo ,Konstroi,Hudson,14/08/2026,8:35:00,Acesso do servidor para liberar o modulo apuração de impostos,,Informakon Software Atualização,Concluído,8:44:00,0:09:00
+Barbara Luiza,Financeiro,Lucas,14/08/2026,11:23:00,Dúvidas sobre licença do AutoCad,,Dúvidas & Informações,Concluído,11:41:00,0:18:00
+Alexandre Saraiva,CTR,Hudson,14/08/2026,13:27:00,Não estava conseguindo acessar o informakon ,,Dúvidas & Informações,Concluído,13:33:00,0:06:00
+Eduarda Viana,Conceito,Lucas,14/08/2026,14:35:00,Liberar função no Informakon,,Informakon Perfil de Acesso,Concluído,14:41:00,0:06:00
+Eduarda Viana,Conceito,Lucas,17/08/2026,8:10:00,Liberar função no Informakon,,Informakon Perfil de Acesso,Concluído,8:17:00,0:07:00
+Eduarda Viana,Conceito,Lucas,17/08/2026,14:00:00,Liberar função no Informakon,,Informakon Perfil de Acesso,Concluído,14:03:00,0:03:00
+Jamile Catonho,Financeiro,Hudson,17/08/2026,14:23:00,Não estava conseguindo acessar o informakon ,,Informakon Perfil de Acesso,Concluído,14:25:00,0:02:00
+Gutierre De Sousa Gomes Lima,Almoxarifado,Lucas,17/08/2026,14:31:00,Colocar o usuário no grupo,,Email Acesso,Concluído,14:34:00,0:03:00
+Beatriz Pereira,Financeiro,Hudson,18/08/2026,8:17:00,Não estava conseguindo colocar a assinatura ,,Software Configuração,Concluído,8:20:00,0:03:00
+Abel Quinto,Compras,Lucas,18/08/2026,08:40:00,Instalar certificado CG SP,,Certificado Instalação,Concluído,8:50:00,0:10:00
+Leandro Correia,Sala Tecnica ENG,Hudson,18/08/2026,09:24:00,Entrega do notebook para o gerente de projeto ,,Entrega de Equipamento,Concluído,9:28:00,0:04:00
+Douglas Ribeiro,Conceito,Lucas,18/08/2026,13:58:00,Outlook não abre ,,Software Configuração,Concluído,14:00:00,0:02:00
+Andrea Santos,Financeiro,Lucas,18/08/2026,14:44:00,Informakon não abre PDFs,"Foi instruído à reiniciar a máquina, assim resolvendo o problema",Equipamento Configuração,Concluído,14:50:00,0:06:00
+Gisele Magalhães,Ousy,Lucas,18/08/2026,14:53:00,Liberação de função no Informakon,,Informakon Perfil de Acesso,Concluído,14:58:00,0:05:00
+Andrea Santos,Financeiro,Hudson,18/08/2026,15:11:00,Não estava conseguindo entrar no CEF,,Software Configuração,Concluído,15:15:00,0:04:00
+Rodrigo Vieira,Controladoria,Lucas,18/08/2026,15:54:00,Acesso do Victor Veras Informakon CV,,Informakon Perfil de Acesso,Concluído,15:58:00,0:04:00
+Victor Veras,Ramal,Lucas,18/08/2026,16:25:00,Instalar o Informakon CV,,RDP Configuração,Concluído,16:31:00,0:06:00
+Jovem Aprendiz Compras,Compras,Hudson,18/08/2026,16:25:00,Realizado a instalação do Office,,Office Ativação,Concluído,16:31:00,0:06:00
+Kamila Ferreira,RH,Hudson,18/08/2026,17:00,Dúvida sobre a impressão,,Impressora Manutenção,Concluído,17:10:00,0:10:00
+Andrea Santos,Financeiro,Hudson,18/08/2026,08:44,O acesso do RustDesk tinha saido o acesso ,,Software Configuração,Concluído,9:05:00,0:21:00
+Leandro Correia,Sala Tecnica ENG,Hudson,18/08/2026,9:22:00,Ao acessar google earth pro estava aparecendo mensagem de erro ,,Software Configuração,Concluído,9:24:00,0:02:00
+Jovem Aprendiz Compras,Compras,Hudson,18/08/2026,13:27:00,Colocar a conta Office ,,Office Ativação,Concluído,13:28:00,0:01:00
+João Paulo Pereira Rocha Gomes,Ousy,Hudson,18/08/2026,15:09:00,Ativar as permissões do windows ,,Sistema Operacional Configuração,Concluído,15:12:00,0:03:00
+Natália Ribeiro,Pessoal,Hudson,19/08/2026,8:13:00,Colocar as credências no notebook da jovem aprendiz,,Credencial instalção,Concluído,8:19:00,0:06:00
+Gutierre De Sousa Gomes Lima,Almoxarifado,Lucas,19/08/2026,13:42:00,Configurar Informakon Patrimônio,,Software Configuração,Concluído,13:45:00,0:03:00
+Gisele Magalhães,Ousy,Lucas,19/08/2026,16:45:00,Desconectar sessão,,RDP Configuração,Concluído,16:47:00,0:02:00
+Natália Ribeiro,Pessoal,Lucas,20/08/2026,8:06:00,Senha do email da recepção,,Dúvidas & Informações,Concluído,8:09:00,0:03:00
+Cristina Escossio,RH,Hudson,20/08/2026,9:19:00,Mensagem de notificação da impressora ,,Dúvidas & Informações,Concluído,9:20:00,0:01:00
+Edimar Silva,Controladoria,Lucas,20/08/2026,9:33:00,Liberação de vaga Informakon,,Software Configuração,Concluído,9:39:00,0:06:00
+Leandro Correia,Sala Tecnica ENG,Lucas,20/08/2026,10:32:00,Instalar o OBS Studio,,Software Instalação,Concluído,10:38:00,0:06:00
+Dianna Viana,Conceito,Lucas,20/08/2026,13:21:00,Confirmação via SMS,,Dúvidas & Informações,Concluído,13:23:00,0:02:00
+Bruno Kauan,Compras,Lucas,21/08/2026,7:34:00,Senha do RDP,,Dúvidas & Informações,Concluído,7:36:00,0:02:00
+Marcos Antônio Ferreira Lima,Mahay,Hudson,21/08/2026,8:25:00,Não estava conseguindo imprimir pelo acesso remoto ,,Dúvidas & Informações,Concluído,8:27:00,0:02:00
+Andrea Santos,Financeiro,Lucas,21/08/2026,13:22:00,Liberação de função no Informakon,,Informakon Perfil de Acesso,Concluído,13:26,0:04:00
+Barbara Luiza,Financeiro,Lucas,21/08/2026,14:48:00,Informakon com lentidão,,Software Configuração,Concluído,14:56,0:08:00
+Franklin Silva,Julio Gaspar ,Hudson,24/08/2026,9:00:00,Instalação do ponto na obra/ Realizar a crimpagem do cabo ,,Equipamento Ativação,Concluído,10:00,1:00:00
+Franklin Silva,Julio Gaspar ,Hudson,24/08/2026,10:00:00,Realizado a configuração da Starlink novamente ,,Equipamento Ativação,Concluído,10:20,0:20:00
+Kamila Ferreira,RH,Lucas,24/08/2026,10:27:00,Impressora com oscilação,,Dúvidas & Informações,Concluído,10:29,0:02:00
+Marcos Antônio Ferreira Lima,Mahay,Lucas,24/08/2026,11:09:00,Liberação de função no Informakon,,Dúvidas & Informações,Concluído,11:14,0:05:00
+Matheus Uchoa,Financeiro,Lucas,24/08/2026,11:33:00,Liberação de função no Informakon,,Informakon Perfil de Acesso,Concluído,11:38:00,0:05:00
+Aline,Ousy,Lucas,24/08/2026,11:34:00,VPN desligada,,VPN Configuração,Concluído,11:43:00,0:09:00
+Franklin Silva,Julio Gaspar ,Hudson,24/08/2026,16:58:00,Realizado a instalação da impressora ,,Impressora Configuração,Concluído,17:00:00,0:02:00
+Valdenio De Souza,Conceito,Hudson,25/08/2026,9:56:00,AutoCad,,Dúvidas & Informações,Concluído,10:12:00,0:16:00
+Victor Salandini,Conceito,Lucas,25/08/2026,10:57:00,Logar Drive na máquina,,Google Drive Acesso Local,Concluído,10:59:00,0:02:00
+Eduardo Costa,Sala Tecnica ENG,Lucas,25/08/2026,11:08:00,Instalação Primasi 10.0,,Software Instalação,Concluído,11:15:00,0:07:00
+Cristina Escossio,RH,Hudson,25/08/2026,14:25:00,Notebook estava sem internet,,Acesso Wifi,Concluído,14:27:00,0:02:00
+Suporte Konstroi ,Konstroi,Hudson,25/08/2026,15:19:00,Precisava acessar o servidor do banco de dados da MGA para analisar o chamado,,Acionar Suporte Kronstroi,Concluído,15:36:00,0:17:00
+Natália Ribeiro,Pessoal,Lucas,26/08/2026,7:07:00,Atualização do Fortes,,Fortes AC Pessoal BD Atualização,Concluído,7:18:00,0:11:00
+Eduarda Viana,Conceito,Lucas,26/08/2026,9:21:00,Liberação de função no Informakon,,Informakon Perfil de Acesso,Concluído,9:27:00,0:06:00
+Aline Barbosa,Lavras ,Hudson,26/08/2026,9:50:00,Notebook na tela de recuperação,,Dúvidas & Informações,Concluído,9:52:00,0:02:00
+Gisele Mesquita,Lavras ,Hudson,26/08/2026,10:05:00,Usuário relata que seu notebook estava lento ,,Software Configuração,Concluído,10:23:00,0:18:00
+Regiane Assunção,Pessoal,Hudson,26/08/2026,16:08:00,Reiniciar o Agente do Fortes,,Reiniciar Agente,Concluído,16:11:00,0:03:00
+Alipio Oliveira,Conceito,Hudson,26/08/2026,17:24:00,Não estava conseguindo acessar o AutoCad,,Dúvidas & Informações,Concluído,17:28:00,0:04:00
+Barbara Luiza,Financeiro,Lucas,27/08/2026,9:30:00,Instalar certificado,,Certificado Instalação,Concluído,9:40:00,0:10:00
+Marcos Antônio Ferreira Lima,Mahay,Hudson,27/08/2026,8:47:00,Liberação de permissões Informakon ,,Permissão Informakon,Concluído,8:49:00,0:02:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
+,,,,,,,,,,0:00:00
