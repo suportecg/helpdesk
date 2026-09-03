@@ -36,8 +36,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // Se o usuário não está autenticado e tenta acessar qualquer página que não seja o login, redireciona para login
-  if (!isValidSession && pathname !== "/login") {
+  // Se o usuário não está autenticado e tenta acessar qualquer página que não seja login ou recuperação de senha, redireciona
+  const isPublicRoute = pathname === "/login" || pathname === "/forgot-password" || pathname === "/reset-password";
+  if (!isValidSession && !isPublicRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
