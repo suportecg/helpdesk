@@ -192,6 +192,16 @@ export async function POST(request: NextRequest) {
         
         const status = row["Status"] || "PROCESSED";
 
+        const rawTicketId = row["Ticket Relacionado"];
+        let validTicketId = null;
+        if (rawTicketId) {
+           const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+           if (uuidRegex.test(rawTicketId)) {
+             const ticketExists = await prisma.ticket.findUnique({ where: { id: rawTicketId } });
+             if (ticketExists) validTicketId = rawTicketId;
+           }
+        }
+
         await prisma.processedEmail.upsert({
           where: { messageId: row["ID"] },
           update: {
@@ -206,7 +216,7 @@ export async function POST(request: NextRequest) {
              from: row["Remetente"] || null,
              receivedAt: receivedAtDate,
              status: status,
-             ticketId: row["Ticket Relacionado"] || null,
+             ticketId: validTicketId,
           }
         });
         importedRows++;

@@ -211,7 +211,7 @@ function mapStatus(csvStatus: string): StatusType {
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
 
-  if (normalized.includes("concluido") || normalized.includes("concluído"))
+  if (normalized.includes("concluido") || normalized.includes("concluído") || normalized.includes("resolvido"))
     return "RESOLVIDO";
   if (normalized.includes("atendimento")) return "ABERTO";
   if (normalized.includes("agendado")) return "AGUARDANDO_PECA";
@@ -666,7 +666,17 @@ export async function executeCsvImport(
             });
 
             if (existingTicket) {
-              // Ignorar se o chamado já existir (já importado ou criado manualmente idêntico)
+              // Atualizar chamado existente se houver diferença de status ou outros campos
+              await tx.ticket.update({
+                where: { id: existingTicket.id },
+                data: {
+                  status: item.status,
+                  endTime: item.endTime,
+                  totalTimeMinutes: item.totalTimeMinutes,
+                  description: item.row.descricao || null,
+                  technicianId: item.technicianId,
+                }
+              });
               continue;
             }
 
