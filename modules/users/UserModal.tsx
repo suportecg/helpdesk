@@ -38,6 +38,7 @@ export function UserModal({
   const [role, setRole] = useState("SOLICITANTE");
   const [department, setDepartment] = useState("");
   const [sectorId, setSectorId] = useState("");
+  const [requirePasswordChange, setRequirePasswordChange] = useState(false);
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +54,7 @@ export function UserModal({
         setRole(userToEdit.role || "SOLICITANTE");
         setDepartment(userToEdit.department || "");
         setSectorId(userToEdit.sectorId || "");
+        setRequirePasswordChange(userToEdit.requirePasswordChange || false);
         setPassword("");
       } else {
         setName("");
@@ -61,6 +63,7 @@ export function UserModal({
         setRole("SOLICITANTE");
         setDepartment("");
         setSectorId("");
+        setRequirePasswordChange(false);
       }
       setError(null);
     }
@@ -93,6 +96,7 @@ export function UserModal({
         role,
         department: department || undefined,
         sectorId: sectorId || undefined,
+        requirePasswordChange,
       };
 
       if (!isEditing && password) {
@@ -224,6 +228,22 @@ export function UserModal({
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
             />
+          </div>
+
+          <div className="flex items-center space-x-2 pt-2 border-t border-border/50">
+            <input
+              type="checkbox"
+              id="requirePasswordChange"
+              checked={requirePasswordChange}
+              onChange={(e) => setRequirePasswordChange(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+            />
+            <label
+              htmlFor="requirePasswordChange"
+              className="text-sm font-medium leading-none cursor-pointer"
+            >
+              Exigir troca de senha no primeiro acesso
+            </label>
           </div>
 
           <DialogFooter className="pt-3">

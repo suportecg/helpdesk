@@ -58,7 +58,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newUser = await createUser(body, session.id, ipAddress);
+    const newUser = await createUser({
+      name: body.name,
+      email: body.email,
+      role: body.role,
+      department: body.department,
+      sectorId: body.sectorId,
+      isActive: body.isActive,
+      requirePasswordChange: body.requirePasswordChange,
+    }, session.id, ipAddress);
 
     return NextResponse.json(newUser, { status: 201 });
   } catch (error: any) {

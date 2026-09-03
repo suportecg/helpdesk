@@ -277,6 +277,7 @@ export function CsvImportWizard({ open, onClose, onImported }: CsvImportWizardPr
                 >
                   <option value="tickets">Chamados</option>
                   <option value="requesters">Funcionários (Solicitantes)</option>
+                  <option value="requesters_google">Solicitantes (Google Workspace)</option>
                   <option value="users">Usuários (Técnicos)</option>
                   <option value="services">Serviços</option>
                   <option value="emails">E-mails Recebidos</option>
@@ -633,31 +634,35 @@ export function CsvImportWizard({ open, onClose, onImported }: CsvImportWizardPr
                 </div>
                 <div className="p-4 rounded-lg bg-muted/30 border border-border/60 text-center">
                   <p className="text-3xl font-bold text-foreground font-mono">
-                    {(result.durationMs / 1000).toFixed(1)}s
+                    {result.durationMs ? (result.durationMs / 1000).toFixed(1) : "0.0"}s
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">Tempo total</p>
                 </div>
-                <div className="p-4 rounded-lg bg-muted/30 border border-border/60 text-center">
-                  <p className="text-3xl font-bold text-emerald-500">{result.newRequesters}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Solicitantes criados</p>
-                </div>
-                <div className="p-4 rounded-lg bg-muted/30 border border-border/60 text-center">
-                  <p className="text-3xl font-bold text-blue-500">{result.newServices}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Serviços criados</p>
-                </div>
-                <div className="p-4 rounded-lg bg-muted/30 border border-border/60 text-center">
-                  <p className="text-3xl font-bold text-purple-500">{result.existingTechnicians}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Técnicos encontrados</p>
-                </div>
+                {importType === "tickets" && (
+                  <>
+                    <div className="p-4 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <p className="text-3xl font-bold text-emerald-500">{result.newRequesters || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Solicitantes criados</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <p className="text-3xl font-bold text-blue-500">{result.newServices || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Serviços criados</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-muted/30 border border-border/60 text-center">
+                      <p className="text-3xl font-bold text-purple-500">{result.existingTechnicians || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Técnicos encontrados</p>
+                    </div>
+                  </>
+                )}
               </div>
 
-              {result.errors.length > 0 && (
+              {result.errors && result.errors.length > 0 && (
                 <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
                   <p className="text-xs font-bold text-destructive mb-1">
                     Erros encontrados ({result.errors.length})
                   </p>
                   <ul className="text-xs text-destructive/80 space-y-0.5 max-h-24 overflow-y-auto">
-                    {result.errors.map((e, i) => (
+                    {result.errors.map((e: string, i: number) => (
                       <li key={i}>• {e}</li>
                     ))}
                   </ul>

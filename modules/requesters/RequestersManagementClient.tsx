@@ -68,6 +68,7 @@ export function RequestersManagementClient() {
   const [historyRequesterName, setHistoryRequesterName] = useState<string | null>(null);
 
   const [confirmDeleteRequester, setConfirmDeleteRequester] = useState<RequesterRow | null>(null);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchRequesters = useCallback(async () => {
@@ -127,6 +128,22 @@ export function RequestersManagementClient() {
       fetchRequesters();
     } catch (err: any) {
       alert(err.message || "Erro ao excluir solicitante");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteAllConfirm = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/requesters/all`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Erro ao excluir todos os solicitantes");
+      setConfirmDeleteAll(false);
+      fetchRequesters();
+    } catch (err: any) {
+      alert(err.message || "Erro ao excluir solicitantes");
     } finally {
       setIsDeleting(false);
     }
@@ -251,15 +268,25 @@ export function RequestersManagementClient() {
           breadcrumb={["Início", "Solicitantes"]}
           description="Gestão de contatos autorizados a solicitar suporte técnico."
         >
-          <Button
-            onClick={() => {
-              setRequesterToEdit(null);
-              setIsRequesterModalOpen(true);
-            }}
-          >
-            <UserPlus className="h-4 w-4 mr-2" />
-            Novo Solicitante
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="destructive"
+              onClick={() => setConfirmDeleteAll(true)}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Excluir Todos
+            </Button>
+            <Button
+              onClick={() => {
+                setRequesterToEdit(null);
+                setIsRequesterModalOpen(true);
+              }}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Novo Solicitante
+            </Button>
+          </div>
         </PageHeader>
       </motion.div>
 
@@ -340,15 +367,29 @@ export function RequestersManagementClient() {
       />
 
       <ConfirmDialog
-        open={!!confirmDeleteRequester}
+        open={Boolean(confirmDeleteRequester)}
         onOpenChange={(open) => {
           if (!open) setConfirmDeleteRequester(null);
         }}
         title="Excluir Solicitante"
-        description={`Tem certeza que deseja excluir o solicitante ${confirmDeleteRequester?.name}? Esta ação o impedirá de abrir novos chamados no sistema.`}
-        confirmLabel="Sim, Excluir"
+        description={`Tem certeza que deseja excluir o solicitante ${confirmDeleteRequester?.name}? Esta ação não pode ser desfeita e pode afetar chamados vinculados.`}
+        confirmLabel="Excluir"
         cancelLabel="Cancelar"
         onConfirm={handleDeleteConfirm}
+        isConfirming={isDeleting}
+        variant="destructive"
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteAll}
+        onOpenChange={(open) => {
+          if (!open) setConfirmDeleteAll(false);
+        }}
+        title="Excluir TODOS os Solicitantes"
+        description="ATENÇÃO: Você está prestes a apagar TODOS os solicitantes da base de dados. Esta ação é irreversível e afetará todos os chamados abertos e fechados vinculados a eles. Deseja continuar?"
+        confirmLabel="Excluir Tudo"
+        cancelLabel="Cancelar"
+        onConfirm={handleDeleteAllConfirm}
         isConfirming={isDeleting}
         variant="destructive"
       />

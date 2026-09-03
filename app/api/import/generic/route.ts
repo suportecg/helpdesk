@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
-    if (!type || !["requesters", "users", "services", "emails"].includes(type)) {
+    if (!type || !["requesters", "requesters_google", "users", "services", "emails"].includes(type)) {
       return NextResponse.json({ error: "Tipo de importação inválido." }, { status: 400 });
     }
 
@@ -55,6 +55,56 @@ export async function POST(request: NextRequest) {
             phone: row["Telefone"] || null,
             company: row["Empresa"] || null,
             department: row["Departamento"] || null,
+          }
+        });
+        importedRows++;
+      }
+    } else if (type === "requesters_google") {
+      for (const row of rows) {
+        const firstName = row["Primeiro Nome"] || "";
+        const lastName = row["Sobrenome"] || "";
+        const email = row["Email"];
+        let sectorRaw = row["Setor"] || "";
+        const phone = row["Recovery Phone [MUST BE IN THE E.164 FORMAT]"] || row["Recovery Phone"] || null;
+
+        if (!email) {
+          skippedRows++;
+          continue;
+        }
+
+        const fullName = `${firstName} ${lastName}`.trim();
+        
+        let sectorId = null;
+        let sectorClean = null;
+        if (sectorRaw) {
+          if (sectorRaw.startsWith("/")) {
+            sectorRaw = sectorRaw.substring(1);
+          }
+          sectorClean = sectorRaw.replace(/\//g, " - ");
+          
+          const sector = await prisma.sector.findFirst({ where: { name: sectorClean } });
+          if (sector) {
+            sectorId = sector.id;
+          } else {
+            const newSector = await prisma.sector.create({ data: { name: sectorClean } });
+            sectorId = newSector.id;
+          }
+        }
+
+        await prisma.requester.upsert({
+          where: { email },
+          update: {
+            name: fullName || email.split("@")[0],
+            phone,
+            department: sectorClean,
+            sectorId,
+          },
+          create: {
+            name: fullName || email.split("@")[0],
+            email,
+            phone,
+            department: sectorClean,
+            sectorId,
           }
         });
         importedRows++;

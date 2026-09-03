@@ -14,6 +14,9 @@ export function LoginForm() {
   const isDev = process.env.NODE_ENV === "development";
   const [email, setEmail] = useState(isDev ? (process.env.NEXT_PUBLIC_DEV_EMAIL || "") : "");
   const [password, setPassword] = useState(isDev ? (process.env.NEXT_PUBLIC_DEV_PASSWORD || "") : "");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [requireChangePassword, setRequireChangePassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,6 +40,48 @@ export function LoginForm() {
 
       if (!res.ok) {
         setError(data.message || "Credenciais inválidas.");
+        setLoading(false);
+        return;
+      }
+
+      if (data.requirePasswordChange) {
+        setRequireChangePassword(true);
+        setLoading(false);
+        return;
+      }
+
+      await refresh();
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      setError("Erro de comunicação.");
+      setLoading(false);
+    }
+  };
+
+  const handleChangePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (newPassword !== confirmPassword) {
+      setError("As senhas não coincidem.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/force-change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, oldPassword: password, newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Erro ao alterar a senha.");
         setLoading(false);
         return;
       }
@@ -72,22 +117,23 @@ export function LoginForm() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                {config.systemName}
+                {requireChangePassword ? "Redefinir Senha" : config.systemName}
               </h1>
               <p className="text-sm text-slate-500 mt-1 font-medium">
-                Acesso ao Painel de Controle
+                {requireChangePassword ? "Segurança no Primeiro Acesso" : "Acesso ao Painel de Controle"}
               </p>
             </div>
           </div>
 
           {/* Formulário */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
+          {!requireChangePassword ? (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
 
             <div className="space-y-1.5">
               <label htmlFor="email" className="block text-sm text-slate-700 font-semibold">
@@ -124,18 +170,72 @@ export function LoginForm() {
               />
             </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-11 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow-md transition-all active:scale-[0.98] mt-4"
-            >
-              {loading ? (
-                "Entrando..."
-              ) : (
-                "Entrar"
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-11 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow-md transition-all active:scale-[0.98] mt-4"
+              >
+                {loading ? "Entrando..." : "Entrar"}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleChangePasswordSubmit} className="space-y-5">
+              <div className="flex items-center gap-2 rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-700 mb-4">
+                <AlertCircle className="h-5 w-5 shrink-0" />
+                <span>Para sua segurança, você precisa cadastrar uma nova senha antes de acessar o sistema.</span>
+              </div>
+              
+              {error && (
+                <div className="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
               )}
-            </Button>
-          </form>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm text-slate-700 font-semibold">Nova Senha</label>
+                <Input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                  className="h-11 text-sm bg-white border-slate-200 focus-visible:ring-2 focus-visible:ring-primary/20 shadow-sm rounded-lg"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm text-slate-700 font-semibold">Confirmar Nova Senha</label>
+                <Input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repita a nova senha"
+                  required
+                  className="h-11 text-sm bg-white border-slate-200 focus-visible:ring-2 focus-visible:ring-primary/20 shadow-sm rounded-lg"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setRequireChangePassword(false)}
+                  disabled={loading}
+                  className="flex-1 h-11 rounded-lg font-bold text-sm"
+                >
+                  Voltar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading || newPassword.length < 6}
+                  className="flex-1 h-11 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow-md transition-all active:scale-[0.98]"
+                >
+                  {loading ? "Salvando..." : "Salvar Senha"}
+                </Button>
+              </div>
+            </form>
+          )}
 
           {/* Rodapé */}
           <div className="mt-8 flex flex-col items-center justify-center space-y-4 border-t border-slate-100 pt-6">

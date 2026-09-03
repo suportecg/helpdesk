@@ -106,6 +106,7 @@ export async function createUser(
     department?: string;
     sectorId?: string;
     isActive?: boolean;
+    requirePasswordChange?: boolean;
   },
   actorId?: string | null,
   ipAddress?: string | null
@@ -122,6 +123,7 @@ export async function createUser(
       department: data.department || null,
       sectorId: data.sectorId || null,
       isActive: data.isActive !== undefined ? data.isActive : true,
+      requirePasswordChange: data.requirePasswordChange !== undefined ? data.requirePasswordChange : false,
     },
     include: {
       sector: true,
@@ -150,6 +152,7 @@ export async function updateUser(
     department?: string;
     sectorId?: string | null;
     isActive?: boolean;
+    requirePasswordChange?: boolean;
   },
   actorId?: string | null,
   ipAddress?: string | null
@@ -163,6 +166,7 @@ export async function updateUser(
       department: data.department,
       sectorId: data.sectorId,
       isActive: data.isActive,
+      requirePasswordChange: data.requirePasswordChange,
     },
     include: {
       sector: true,

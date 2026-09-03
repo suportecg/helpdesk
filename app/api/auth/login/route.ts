@@ -37,6 +37,14 @@ export async function POST(request: Request) {
       );
     }
 
+    if (user.requirePasswordChange) {
+      return NextResponse.json({
+        requirePasswordChange: true,
+        message: "É necessário redefinir sua senha no primeiro acesso.",
+        email: user.email,
+      });
+    }
+
     const session: UserSession = {
       id: user.id,
       name: user.name,
