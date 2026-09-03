@@ -114,21 +114,36 @@ export async function createUser(
   const defaultPass = data.password || "cg2026ti";
   const hashedPassword = await bcrypt.hash(defaultPass, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      name: data.name,
-      email: data.email,
-      password: hashedPassword,
-      role: data.role,
-      department: data.department || null,
-      sectorId: data.sectorId || null,
-      isActive: data.isActive !== undefined ? data.isActive : true,
-      requirePasswordChange: data.requirePasswordChange !== undefined ? data.requirePasswordChange : false,
-    },
-    include: {
-      sector: true,
-    },
-  });
+  let user = await prisma.user.findUnique({ where: { email: data.email } });
+  
+  const userData = {
+    name: data.name,
+    password: hashedPassword,
+    role: data.role,
+    department: data.department || null,
+    sectorId: data.sectorId || null,
+    isActive: data.isActive !== undefined ? data.isActive : true,
+    requirePasswordChange: data.requirePasswordChange !== undefined ? data.requirePasswordChange : false,
+  };
+
+  if (user) {
+    if (user.deletedAt) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { ...userData, deletedAt: null },
+        include: { sector: true },
+      });
+    } else {
+      const error = new Error("User already exists");
+      (error as any).code = "P2002";
+      throw error;
+    }
+  } else {
+    user = await prisma.user.create({
+      data: { ...userData, email: data.email },
+      include: { sector: true },
+    });
+  }
 
   await logAuditEvent({
     userId: actorId || null,

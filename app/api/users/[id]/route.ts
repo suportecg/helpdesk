@@ -51,6 +51,13 @@ export async function PUT(
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error: any) {
+    if (error?.code === "P2002") {
+      return NextResponse.json(
+        { error: "Já existe um usuário cadastrado com este e-mail." },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Erro ao atualizar usuário", details: error.message },
       { status: 500 }

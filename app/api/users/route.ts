@@ -71,6 +71,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newUser, { status: 201 });
   } catch (error: any) {
     console.error("[POST /api/users] Erro:", error);
+    
+    if (error?.code === "P2002") {
+      return NextResponse.json(
+        { error: "Já existe um usuário cadastrado com este e-mail." },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Erro ao criar usuário", details: error.message },
       { status: 500 }
