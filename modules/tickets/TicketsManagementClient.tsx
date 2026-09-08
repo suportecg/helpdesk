@@ -410,7 +410,7 @@ export default function TicketsManagementClient({
             #{item.ticketNumber}
           </span>
           <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
-            {new Date(item.createdAt).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })}
+            {new Date(item.startTime || item.createdAt).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })}
           </span>
         </div>
       ),
