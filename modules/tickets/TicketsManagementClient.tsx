@@ -53,6 +53,7 @@ export interface TicketRow {
   origin: string;
   priority: string;
   ticketDate: string;
+  createdAt: string;
   dueDate: string | null;
   startTime: string | null;
   endTime: string | null;
@@ -409,7 +410,7 @@ export default function TicketsManagementClient({
             #{item.ticketNumber}
           </span>
           <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
-            {new Date(item.ticketDate).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })}
+            {new Date(item.createdAt).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })}
           </span>
         </div>
       ),
