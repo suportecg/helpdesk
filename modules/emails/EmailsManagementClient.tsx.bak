@@ -2,9 +2,8 @@
 
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { EnvelopeSimple, CheckCircle, WarningCircle, CaretDown, CaretUp, Code, PenNib, PaperPlaneRight, X, Trash, Broom, PencilSimple } from "@phosphor-icons/react";
+import { EnvelopeSimple, CheckCircle, WarningCircle, CaretDown, CaretUp, Code, PenNib, PaperPlaneRight, X, Trash, Broom } from "@phosphor-icons/react";
 import EmailTemplatesManager from "./EmailTemplatesManager";
-import SignatureSettingsModal from "./SignatureSettingsModal";
 
 interface ProcessedEmail {
   id: string;
@@ -32,14 +31,11 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
   // Reply State
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replySubject, setReplySubject] = useState("");
-  const [replyCc, setReplyCc] = useState("");
   const [replyContent, setReplyContent] = useState("");
-  const [signatureHtml, setSignatureHtml] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [replySuccess, setReplySuccess] = useState<string | null>(null);
   const [replyError, setReplyError] = useState<string | null>(null);
   const [checkLoading, setCheckLoading] = useState(false);
-  const [showSignatureSettings, setShowSignatureSettings] = useState(false);
 
   const toggleExpand = (id: string) => {
     if (expandedEmailId === id) {
@@ -47,29 +43,7 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
       setReplyingTo(null);
     } else {
       setExpandedEmailId(id);
-      
-      const email = emails.find(e => e.id === id);
-      if (email) {
-        setReplyingTo(email.id);
-        setReplySubject(email.subject ? `Re: ${email.subject}` : "Re:");
-        setReplyCc("");
-        
-        try {
-          const savedSig = localStorage.getItem("@helpdesk:signature");
-          if (savedSig) {
-            const sig = JSON.parse(savedSig);
-            setSignatureHtml(sig.html || "");
-          } else {
-            setSignatureHtml("");
-          }
-        } catch (e) {
-          setSignatureHtml("");
-        }
-        setReplyContent("");
-        
-        setReplySuccess(null);
-        setReplyError(null);
-      }
+      setReplyingTo(null);
     }
   };
 
@@ -93,9 +67,8 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           to: email.from,
-          cc: replyCc,
           subject: replySubject,
-          content: replyContent.replace(/\n/g, '<br/>') + (signatureHtml ? `<br/><br/>${signatureHtml}` : ""),
+          content: replyContent,
           inReplyTo: email.messageId, // Threading
         }),
       });
@@ -364,25 +337,9 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
                     
                     {/* 12. ÁREA DE EXPANSÃO (SANFONA) */}
                     {isExpanded && (
-                      <div className="bg-slate-50 border-t border-slate-100 animate-in slide-in-from-top-2 fade-in duration-200">
-                        {/* CABEÇALHO INTERNO */}
-                        <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row md:justify-between md:items-start gap-4 bg-white">
-                          <div>
-                            <h2 className="text-[17px] font-bold text-slate-800 mb-1">{email.subject || "Sem assunto"}</h2>
-                            <p className="text-[13px] text-slate-500">
-                              Ticket aberto via e-mail pelo cliente <span className="font-semibold text-slate-700">{email.from}</span> em {new Date(email.processedAt).toLocaleString('pt-BR')}
-                            </p>
-                          </div>
-                          <button 
-                            onClick={() => toggleExpand(email.id)}
-                            className="px-4 py-1.5 border border-slate-200 rounded text-[11px] font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50 bg-white shadow-sm transition-colors shrink-0"
-                          >
-                            FECHAR
-                          </button>
-                        </div>
-
+                      <div className="bg-slate-50 border-t border-slate-100 p-6 animate-in slide-in-from-top-2 fade-in duration-200">
                         {replySuccess && (
-                          <div className="m-6 p-4 bg-emerald-50 text-emerald-700 rounded-lg flex items-center justify-between border border-emerald-100 text-sm shadow-sm">
+                          <div className="mb-5 p-4 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-between border border-emerald-100 text-sm shadow-sm">
                             <div className="flex items-center gap-2 font-medium">
                               <CheckCircle className="w-5 h-5 shrink-0" weight="fill" />
                               <p>{replySuccess}</p>
@@ -392,159 +349,158 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
                         )}
                         
                         {replyError && (
-                          <div className="m-6 p-4 bg-red-50 text-red-600 rounded-lg flex items-center gap-2 border border-red-100 text-sm shadow-sm font-medium">
+                          <div className="mb-5 p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 border border-red-100 text-sm shadow-sm font-medium">
                             <WarningCircle className="w-5 h-5 shrink-0" weight="fill" />
                             <p>{replyError}</p>
                           </div>
                         )}
 
-                        {/* EDITOR DE RESPOSTA (MENSAGEM) */}
-                        <div className="p-6 bg-slate-50 border-b border-slate-200">
-                           <h3 className="text-sm font-semibold text-slate-600 mb-3 flex items-center gap-2">
-                             Mensagem
-                           </h3>
-                           <form onSubmit={(e) => handleSubmitReply(email, e)} className="bg-white border border-slate-300 rounded shadow-sm overflow-hidden flex flex-col relative">
-                              <div className="flex flex-col md:flex-row border-b border-slate-200 bg-slate-50/50 divide-y md:divide-y-0 md:divide-x divide-slate-200">
-                                <div className="flex-1 flex items-center px-4 py-2">
-                                  <span className="text-[12px] font-bold text-slate-500 w-16">Para:</span>
-                                  <input type="text" readOnly value={email.from || ""} className="flex-1 bg-transparent text-[13px] text-slate-700 outline-none truncate" />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                          {/* Corpo Recebido */}
+                          <div className="space-y-3">
+                            <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                              <EnvelopeSimple className="w-4 h-4" />
+                              Mensagem Original Recebida
+                            </h3>
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 h-[350px] overflow-y-auto text-sm relative custom-scrollbar">
+                              {email.bodyReceived ? (
+                                <div 
+                                  className="prose prose-sm max-w-none break-words text-slate-700"
+                                  dangerouslySetInnerHTML={{ __html: email.bodyReceived }} 
+                                />
+                              ) : (
+                                <div className="h-full flex items-center justify-center text-slate-400 italic text-sm">
+                                  Conteúdo não salvo
                                 </div>
-                                <div className="flex-1 flex items-center px-4 py-2">
-                                  <span className="text-[12px] font-bold text-slate-500 w-24">Cópia (CC):</span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Corpo Enviado */}
+                          <div className="space-y-3">
+                            <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Code className="w-4 h-4" />
+                                Resposta Automática do Sistema
+                              </div>
+                              {email.from && replyingTo !== email.id && (
+                                <button
+                                  onClick={() => handleStartReply(email)}
+                                  className="text-[#4f78f5] hover:bg-[#4f78f5] hover:text-white transition-colors flex items-center gap-1.5 bg-[#4f78f5]/10 px-3 py-1.5 rounded-lg text-xs font-bold"
+                                >
+                                  <PaperPlaneRight weight="bold" /> Responder
+                                </button>
+                              )}
+                            </h3>
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-1 h-[350px] overflow-hidden text-sm relative">
+                              {email.bodySent ? (
+                                <iframe
+                                  srcDoc={email.bodySent}
+                                  title="Corpo Enviado"
+                                  className="w-full h-full border-none bg-white rounded-lg"
+                                />
+                              ) : (
+                                <div className="h-full flex items-center justify-center text-slate-400 italic text-sm">
+                                  Nenhuma resposta automática foi enviada.
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Histórico de Respostas Manuais */}
+                        {email.manualReplies && (
+                          <div className="mt-8 mb-6 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
+                              <PaperPlaneRight className="w-4 h-4 text-[#4f78f5]" weight="fill" />
+                              Histórico de Interações Manuais
+                            </h3>
+                            <div className="space-y-4">
+                              {(Array.isArray(email.manualReplies) ? email.manualReplies : [email.manualReplies]).map((reply: any, idx: number) => (
+                                <div key={idx} className="bg-slate-50 border border-slate-100 rounded-xl p-5 text-sm relative">
+                                  <div className="flex justify-between items-center mb-3 text-xs">
+                                    <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 uppercase">
+                                        {reply.adminName?.substring(0, 1) || "?"}
+                                      </div>
+                                      {reply.adminName || "Suporte"}
+                                    </span>
+                                    <span className="font-mono text-slate-400 bg-white px-2 py-1 rounded border border-slate-100">
+                                      {new Date(reply.date).toLocaleString('pt-BR')}
+                                    </span>
+                                  </div>
+                                  <div className="font-semibold text-slate-800 mb-2">{reply.subject}</div>
+                                  <div className="bg-white rounded-lg p-4 border border-slate-100 whitespace-pre-wrap font-sans text-slate-600 text-[14px] leading-relaxed shadow-sm">
+                                    {reply.content}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Formulário de Resposta Manual */}
+                        {replyingTo === email.id && (
+                          <div className="mt-6 bg-white border border-[#4f78f5]/30 rounded-xl shadow-md relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                              <h3 className="text-sm font-bold flex items-center gap-2 text-[#4f78f5]">
+                                <PenNib weight="fill" className="w-4 h-4" /> Nova Resposta
+                              </h3>
+                              <button
+                                onClick={() => setReplyingTo(null)}
+                                className="p-1.5 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors"
+                              >
+                                <X className="w-4 h-4" weight="bold" />
+                              </button>
+                            </div>
+                            
+                            <form onSubmit={(e) => handleSubmitReply(email, e)} className="p-6 space-y-5">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="space-y-1.5">
+                                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Para:</label>
                                   <input 
                                     type="text" 
-                                    value={replyCc} 
-                                    onChange={e => setReplyCc(e.target.value)} 
-                                    placeholder="email1@exemplo.com, email2@exemplo.com"
-                                    className="flex-1 bg-transparent text-[13px] text-slate-700 outline-none truncate placeholder:text-slate-400" 
+                                    readOnly 
+                                    value={email.from || ""} 
+                                    className="w-full text-sm bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-4 py-2.5 outline-none font-medium"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Assunto:</label>
+                                  <input 
+                                    type="text" 
+                                    required
+                                    value={replySubject}
+                                    onChange={(e) => setReplySubject(e.target.value)}
+                                    className="w-full text-sm bg-white border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-[#4f78f5] focus:ring-1 focus:ring-[#4f78f5] transition-shadow font-medium text-slate-800"
                                   />
                                 </div>
                               </div>
                               
-                              <div className="flex flex-col bg-white">
+                              <div className="space-y-1.5">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Mensagem:</label>
                                 <textarea 
                                   required
                                   rows={6}
                                   value={replyContent}
                                   onChange={(e) => setReplyContent(e.target.value)}
-                                  placeholder="Escreva sua mensagem aqui..."
-                                  className="w-full text-sm bg-transparent px-4 pt-4 pb-2 outline-none focus:ring-0 resize-y custom-scrollbar text-slate-700 leading-relaxed min-h-[120px]"
+                                  placeholder="Escreva sua resposta aqui..."
+                                  className="w-full text-sm bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-[#4f78f5] focus:ring-1 focus:ring-[#4f78f5] transition-shadow custom-scrollbar text-slate-700 leading-relaxed"
                                 />
-                                {signatureHtml && (
-                                  <div className="px-4 pb-4">
-                                    <div dangerouslySetInnerHTML={{ __html: signatureHtml }} />
-                                  </div>
-                                )}
                               </div>
                               
-                              <div className="bg-slate-50 border-t border-slate-200 p-3 flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowSignatureSettings(true)}
-                                    className="text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-[#4f78f5] flex items-center gap-1.5 transition-colors bg-white px-2.5 py-1.5 border border-slate-200 rounded"
-                                  >
-                                    <PencilSimple className="w-3.5 h-3.5" /> Assinatura
-                                  </button>
-                                  <div className="text-[10px] text-slate-400">
-                                    HTML suportado.
-                                  </div>
-                                </div>
+                              <div className="flex justify-end pt-2">
                                 <button
                                   type="submit"
                                   disabled={isSending}
-                                  className="bg-[#1a56db] text-white px-5 py-2 rounded text-[12px] font-bold tracking-wide hover:bg-[#1e4bb3] transition-colors disabled:opacity-50 shadow-sm"
+                                  className="bg-[#4f78f5] text-white px-6 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#3b62d6] transition-colors disabled:opacity-50 shadow-sm"
                                 >
-                                  {isSending ? "ENVIANDO..." : "ENVIAR MENSAGEM"}
+                                  {isSending ? "Enviando..." : <><PaperPlaneRight weight="bold" /> Enviar Resposta</>}
                                 </button>
                               </div>
-                           </form>
-                        </div>
-
-                        {/* LINHA DO TEMPO (HISTÓRICO) */}
-                        <div className="p-6 bg-slate-50 space-y-6">
-                           {/* 1. Mensagem Original (Sempre no topo) */}
-                           <div className="bg-white border border-slate-200 rounded shadow-sm">
-                             <div className="bg-slate-100/80 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                               <div className="flex items-center gap-3">
-                                 <div className="w-8 h-8 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center font-bold text-sm uppercase shrink-0">
-                                   {email.from ? email.from.substring(0, 1) : "?"}
-                                 </div>
-                                 <div>
-                                   <div className="text-[13px] font-semibold text-slate-800 flex items-center gap-2">
-                                      {email.from} <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Email</span>
-                                   </div>
-                                 </div>
-                               </div>
-                               <div className="text-[12px] text-slate-500 font-medium sm:text-right">
-                                 {new Date(email.processedAt).toLocaleString('pt-BR')}
-                               </div>
-                             </div>
-                             <div className="p-5 text-[14px] text-slate-700 leading-relaxed custom-scrollbar overflow-x-auto">
-                               {email.bodyReceived ? (
-                                 <div dangerouslySetInnerHTML={{ __html: email.bodyReceived }} className="prose prose-sm max-w-none break-words" />
-                               ) : (
-                                 <span className="italic text-slate-400">Conteúdo não salvo</span>
-                               )}
-                             </div>
-                           </div>
-
-                           {/* 2. Resposta Automática (Se houver e for relevante mostrar na timeline) */}
-                           {email.bodySent && (
-                             <div className="bg-white border border-slate-200 rounded shadow-sm">
-                               <div className="bg-slate-100/80 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                                 <div className="flex items-center gap-3">
-                                   <div className="w-8 h-8 rounded-full bg-[#1a56db]/20 text-[#1a56db] flex items-center justify-center font-bold text-sm uppercase shrink-0">
-                                     S
-                                   </div>
-                                   <div>
-                                     <div className="text-[13px] font-semibold text-slate-800 flex items-center gap-2">
-                                        Sistema <span className="bg-[#1a56db]/10 text-[#1a56db] px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Auto-Resposta</span>
-                                     </div>
-                                   </div>
-                                 </div>
-                                 <div className="text-[12px] text-slate-500 font-medium sm:text-right">
-                                   {new Date(email.processedAt).toLocaleString('pt-BR')}
-                                 </div>
-                               </div>
-                               <div className="p-1 h-[250px] relative">
-                                 <iframe
-                                    srcDoc={email.bodySent}
-                                    title="Corpo Enviado"
-                                    className="w-full h-full border-none bg-white rounded"
-                                  />
-                               </div>
-                             </div>
-                           )}
-
-                           {/* 3. Respostas Manuais (Em ordem) */}
-                           {email.manualReplies && (Array.isArray(email.manualReplies) ? email.manualReplies : [email.manualReplies]).map((reply: any, idx: number) => (
-                             <div key={idx} className="bg-white border border-slate-200 rounded shadow-sm">
-                               <div className="bg-slate-100/80 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                                 <div className="flex items-center gap-3">
-                                   <div className="w-8 h-8 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center font-bold text-sm uppercase shrink-0">
-                                     {reply.adminName ? reply.adminName.substring(0, 1) : "?"}
-                                   </div>
-                                   <div>
-                                     <div className="text-[13px] font-semibold text-slate-800 flex items-center gap-2">
-                                        {reply.adminName || "Suporte"}
-                                     </div>
-                                   </div>
-                                 </div>
-                                 <div className="text-[12px] text-slate-500 font-medium sm:text-right">
-                                   {new Date(reply.date).toLocaleString('pt-BR')}
-                                 </div>
-                               </div>
-                               <div className="p-5 text-[14px] text-slate-700 leading-relaxed whitespace-pre-wrap font-sans overflow-x-auto">
-                                 {reply.content?.includes('<') ? (
-                                    <div dangerouslySetInnerHTML={{ __html: reply.content.replace(/\n/g, '<br/>') }} className="prose prose-sm max-w-none break-words" />
-                                 ) : (
-                                    reply.content
-                                 )}
-                               </div>
-                             </div>
-                           ))}
-                        </div>
+                            </form>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -556,16 +512,6 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
       )}
 
       {activeTab === "templates" && <EmailTemplatesManager />}
-      
-      {showSignatureSettings && (
-        <SignatureSettingsModal 
-          onClose={() => setShowSignatureSettings(false)}
-          onSave={(html) => {
-            setSignatureHtml(html);
-            toast.success("Assinatura atualizada com sucesso!");
-          }}
-        />
-      )}
     </div>
   );
 }

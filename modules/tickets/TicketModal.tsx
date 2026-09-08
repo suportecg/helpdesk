@@ -32,6 +32,8 @@ import {
   AlertTriangle,
   Search,
 } from "lucide-react";
+import { getTicketMonthYear, formatTicketNumber } from "@/services/ticket/ticket-utils";
+import { calculateBusinessMinutes } from "@/lib/business-hours";
 import { RequesterHistoryCard } from "./RequesterHistoryCard";
 import { Combobox } from "@/components/common/Combobox";
 
@@ -226,12 +228,12 @@ export function TicketModal({
 
   // Format dynamic calculated time
   function getFormattedDuration(): string {
-    let sTime = startTime ? new Date(startTime).getTime() : Date.now();
-    let eTime = endTime ? new Date(endTime).getTime() : Date.now();
+    let sTime = startTime ? new Date(startTime) : new Date();
+    let eTime = endTime ? new Date(endTime) : new Date();
     if (status === "RESOLVIDO" && !endTime) {
-      eTime = Date.now();
+      eTime = new Date();
     }
-    const mins = Math.max(0, Math.round((eTime - sTime) / 60000));
+    const mins = calculateBusinessMinutes(sTime, eTime);
     if (mins === 0) return "< 1 min";
     if (mins < 60) return `${mins} min`;
     const h = Math.floor(mins / 60);

@@ -190,6 +190,10 @@ model Settings {
   lastEmailCheck DateTime?
   lastEmailProcessed DateTime?
   emailCheckError String?
+  
+  recessActive Boolean @default(false)
+  recessReturnDate DateTime?
+  
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

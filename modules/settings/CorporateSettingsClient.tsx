@@ -104,6 +104,8 @@ export function CorporateSettingsClient() {
     reportDefaultTheme: "LIGHT",
     auditRetentionDays: 90,
     auditLogEnabled: true,
+    recessActive: false,
+    recessReturnDate: "",
   });
 
   // Carrega do back-end /api/settings
@@ -205,6 +207,8 @@ export function CorporateSettingsClient() {
       reportDefaultTheme: "LIGHT",
       auditRetentionDays: 90,
       auditLogEnabled: true,
+      recessActive: false,
+      recessReturnDate: "",
     });
     updateConfig({
       systemName: "CG Construções HelpDesk Pro",
@@ -873,6 +877,48 @@ export function CorporateSettingsClient() {
                   max={365}
                   className="h-12 rounded-xl bg-background/50 border-border/80 focus-visible:ring-1 focus-visible:ring-primary/30"
                 />
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <h4 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider">Recesso e Férias Coletivas</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 p-5 rounded-2xl border border-border/60 bg-card hover:bg-muted/20 transition-colors">
+                <div className="space-y-1">
+                  <p className="text-sm font-display font-bold text-foreground">
+                    Ativar Recesso (SLA e Auto-Respostas)
+                  </p>
+                  <p className="text-xs text-muted-foreground pr-4">
+                    Quando ativo, os e-mails recebidos automaticamente receberão uma resposta de ausência e o prazo ficará pausado.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-end">
+                  {form.recessActive && (
+                    <div className="flex-1 w-full max-w-[200px]">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">
+                        Data de Retorno
+                      </label>
+                      <Input
+                        type="date"
+                        value={form.recessReturnDate ? new Date(form.recessReturnDate).toISOString().split('T')[0] : ""}
+                        onChange={(e) => handleChange("recessReturnDate", new Date(e.target.value).toISOString())}
+                        className="h-10 text-xs rounded-xl bg-background/50 border-border/80"
+                      />
+                    </div>
+                  )}
+                  <div className="relative flex items-center pt-1 sm:pt-4">
+                    <input
+                      type="checkbox"
+                      checked={form.recessActive}
+                      onChange={(e) => handleChange("recessActive", e.target.checked)}
+                      className="peer sr-only"
+                      id="recessActive"
+                    />
+                    <label
+                      htmlFor="recessActive"
+                      className="w-11 h-6 bg-muted-foreground/30 rounded-full peer peer-checked:bg-primary cursor-pointer transition-colors duration-300 relative after:content-[''] after:absolute after:top-1 after:left-1 after:bg-background after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"
+                    ></label>
+                  </div>
+                </div>
               </div>
             </div>
           </SectionCard>

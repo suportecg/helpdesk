@@ -42,6 +42,7 @@ import { toast } from "sonner";
 import { MonthYearSelector, getCurrentMonthYear } from "@/components/common/MonthYearSelector";
 import { ManagerialDashboard } from "@/components/reports/ManagerialDashboard";
 import { CsvImportWizard } from "../import/CsvImportWizard";
+import { calculateBusinessMinutes } from "@/lib/business-hours";
 
 export interface TicketRow {
   id: string;
@@ -250,6 +251,18 @@ export default function TicketsManagementClient({
     const m = minutes % 60;
     if (m === 0) return `${h} h`;
     return `${h} h ${m} min`;
+  }
+
+  function getDynamicTimeBadge(item: any): string {
+    // If ticket is resolved/canceled and has a fixed totalTimeMinutes, use it
+    if ((item.status === "RESOLVIDO" || item.status === "CANCELADO") && typeof item.totalTimeMinutes === 'number') {
+      return formatTimeBadge(item.totalTimeMinutes);
+    }
+    // For OPEN or IN PROGRESS tickets, dynamically calculate based on business hours
+    const sTime = item.startTime ? new Date(item.startTime) : new Date(item.ticketDate);
+    const eTime = item.endTime ? new Date(item.endTime) : new Date();
+    const mins = calculateBusinessMinutes(sTime, eTime);
+    return formatTimeBadge(mins);
   }
 
   function renderStatusBadge(status: string) {
@@ -505,7 +518,7 @@ export default function TicketsManagementClient({
           <div className="flex flex-col items-center justify-center">
             <span className="inline-flex items-center gap-1 text-[11px] font-mono px-1.5 py-0.5 text-muted-foreground">
               <Clock className="w-3 h-3 opacity-50" />
-              {formatTimeBadge(item.totalTimeMinutes)}
+              {getDynamicTimeBadge(item)}
             </span>
             {item.dueDate && item.status !== "RESOLVIDO" && item.status !== "CANCELADO" && (
               <span className={`text-[9px] ${slaColor}`}>

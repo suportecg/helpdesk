@@ -3,7 +3,7 @@ import { connectToImap } from './imap.service';
 import { prisma } from '@/lib/prisma';
 import { createTicket } from '../ticket/create-ticket.service';
 import { getCorporateSettings, updateCorporateSettings } from '../settings/settings.service';
-import { sendTicketCreatedEmail } from './email.service';
+import { sendTicketCreatedEmail, sendRecessEmail } from './email.service';
 
 /**
  * Checks the inbox for new unseen emails, processes them, creates tickets, and records them to prevent duplicates.
@@ -157,7 +157,13 @@ export async function checkAndProcessEmails() {
   
               // Disparar email de notificação manualmente para pegar o corpo
               if (fromAddress && fromAddress !== 'desconhecido@email.com') {
-                const emailResult = await sendTicketCreatedEmail(ticket, fromAddress, fromName);
+                let emailResult;
+                if (settings.recessActive) {
+                  emailResult = await sendRecessEmail(ticket, fromAddress, settings.recessReturnDate?.toString());
+                } else {
+                  emailResult = await sendTicketCreatedEmail(ticket, fromAddress, fromName);
+                }
+                
                 if (emailResult.success && 'bodyHtml' in emailResult && emailResult.bodyHtml) {
                   bodySentHtml = emailResult.bodyHtml as string;
                 }

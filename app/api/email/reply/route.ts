@@ -11,12 +11,23 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { to, subject, content, inReplyTo, menuPath, isPublic, attachments } = data;
+    const { to, subject, content, inReplyTo, menuPath, isPublic, attachments, cc } = data;
 
     if (!to || !subject || !content) {
       return NextResponse.json({ error: "Campos 'to', 'subject' e 'content' são obrigatórios" }, { status: 400 });
     }
-    const result = await sendCustomEmail(to, subject, content, inReplyTo);
+    
+    // Convert cc string to array if it exists and is a string, or use directly if it's an array
+    let ccArray: string[] | undefined = undefined;
+    if (cc) {
+        if (typeof cc === 'string') {
+            ccArray = cc.split(',').map(email => email.trim()).filter(Boolean);
+        } else if (Array.isArray(cc)) {
+            ccArray = cc;
+        }
+    }
+
+    const result = await sendCustomEmail(to, subject, content, inReplyTo, ccArray);
 
     if (!result.success) {
       return NextResponse.json({ error: "Falha ao enviar e-mail", details: result.error }, { status: 500 });

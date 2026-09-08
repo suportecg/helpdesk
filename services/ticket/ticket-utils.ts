@@ -1,4 +1,5 @@
 import { OrigemType, StatusType } from "@prisma/client";
+import { calculateBusinessMinutes } from "../../lib/business-hours";
 
 /**
  * Utilitário profissional para formatar o tempo total calculado (ex: 12 min, 1 h 20 min, 3 h)
@@ -22,14 +23,13 @@ export function formatTotalTimeMinutes(minutes: number | null | undefined): stri
 }
 
 /**
- * Calcula a diferença em minutos entre inicio e fim
+ * Calcula a diferença em minutos úteis entre inicio e fim
  */
 export function calculateTotalTimeMinutes(startTime?: Date | null, endTime?: Date | null): number | null {
   if (!startTime || !endTime) return null;
-  const start = new Date(startTime).getTime();
-  const end = new Date(endTime).getTime();
-  if (end < start) return 0;
-  return Math.round((end - start) / 60000);
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+  return calculateBusinessMinutes(start, end);
 }
 
 /**

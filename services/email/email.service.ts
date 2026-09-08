@@ -392,3 +392,52 @@ export async function sendTicketResolvedEmail(ticketData: any, requesterEmail: s
 
   return sendHtmlEmail(requesterEmail, subject, html, inReplyTo, ccList);
 }
+/**
+ * Sends a recess auto-reply when the system is in recess mode.
+ */
+export async function sendRecessEmail(ticket: any, toEmail: string, returnDate?: string): Promise<{ success: boolean; bodyHtml?: string; error?: any }> {
+  try {
+    const settings = await getCorporateSettings();
+    if (!settings.emailIntegrationStatus || settings.emailIntegrationStatus !== 'CONNECTED') {
+      return { success: false, error: 'E-mail integration not connected.' };
+    }
+
+    const returnDateStr = returnDate 
+      ? new Date(returnDate).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) 
+      : "em breve";
+
+    const content = `
+      <div style="margin-bottom: 24px; padding: 20px; background-color: #f8fafc; border-left: 4px solid #f59e0b; border-radius: 4px;">
+        <h3 style="color: #d97706; margin-top: 0; margin-bottom: 12px; font-size: 16px;">Estamos em Recesso / Férias Coletivas</h3>
+        <p style="margin-bottom: 0; color: #475569; font-size: 14px; line-height: 1.6;">
+          Gostaríamos de informar que nossa equipe encontra-se atualmente em recesso.<br/><br/>
+          Seu chamado <strong>#HD-${String(ticket.ticketNumber).padStart(6, '0')}</strong> foi recebido e registrado com sucesso em nosso sistema, porém o prazo de atendimento está pausado e só iniciaremos a tratativa no nosso retorno.<br/><br/>
+          <strong>Data prevista de retorno: ${returnDateStr}</strong>.
+        </p>
+      </div>
+      <p style="color: #64748b; font-size: 13px;">Agradecemos a sua compreensão.</p>
+    `;
+
+    const html = getEmailLayout(settings, `[Recesso] Retornaremos dia ${returnDateStr}`, content);
+
+    const msg = {
+      to: toEmail,
+      from: {
+        name: settings.systemName || "HelpDesk",
+        email: process.env.SENDGRID_FROM_EMAIL || "suporte@cgconstrucoes.com.br"
+      },
+      subject: `Re: ${ticket.problem}`,
+      html: html,
+      headers: {
+        'References': ticket.id,
+        'In-Reply-To': ticket.id
+      }
+    };
+
+    await sgMail.send(msg);
+    return { success: true, bodyHtml: html };
+  } catch (error) {
+    console.error("[EMAIL SERVICE] Falha ao enviar email de recesso:", error);
+    return { success: false, error };
+  }
+}

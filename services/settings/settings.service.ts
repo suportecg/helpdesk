@@ -37,6 +37,8 @@ export interface CorporateSettingsDTO {
   lastEmailCheck?: Date | null;
   lastEmailProcessed?: Date | null;
   emailCheckError?: string | null;
+  recessActive?: boolean;
+  recessReturnDate?: string | null;
 }
 
 const DEFAULT_COMPANY_ID = "cg-construcoes-001";
