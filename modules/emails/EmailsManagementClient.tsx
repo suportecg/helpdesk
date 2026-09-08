@@ -157,77 +157,86 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-[1400px] mx-auto space-y-6">
+      
+      {/* 1. CABEÇALHO */}
       <div className="flex items-center gap-4 mb-6">
-        <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+        <div className="p-3 bg-[#4f78f5]/10 text-[#4f78f5] rounded-2xl">
           <EnvelopeSimple weight="duotone" className="w-8 h-8" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Gestão de E-mails</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Gestão de E-mails</h1>
+          <p className="text-sm text-slate-500 mt-1">
             Controle do histórico IMAP e templates dinâmicos de resposta.
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 border-b border-border/50 pb-px mb-6">
+      {/* 2. ABAS */}
+      <div className="flex items-center gap-6 border-b border-slate-200 pb-px mb-6">
         <button
           onClick={() => setActiveTab("history")}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+          className={`pb-3 text-sm font-semibold transition-colors relative ${
             activeTab === "history" 
-              ? "border-primary text-foreground" 
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "text-[#4f78f5]" 
+              : "text-slate-500 hover:text-slate-900"
           }`}
         >
           Histórico IMAP
+          {activeTab === "history" && (
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#4f78f5] rounded-t-full" />
+          )}
         </button>
         <button
           onClick={() => setActiveTab("templates")}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+          className={`pb-3 text-sm font-semibold transition-colors relative ${
             activeTab === "templates" 
-              ? "border-primary text-foreground" 
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "text-[#4f78f5]" 
+              : "text-slate-500 hover:text-slate-900"
           }`}
         >
           Templates de Resposta
+          {activeTab === "templates" && (
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#4f78f5] rounded-t-full" />
+          )}
         </button>
       </div>
 
       {activeTab === "history" && (
-        <div className="bg-card border border-border/50 rounded-[2rem] overflow-hidden shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
           
-          {/* Action Bar */}
+          {/* 4. BARRA DE CONTROLE */}
           {emails.length > 0 && (
-            <div className="bg-muted/10 p-4 border-b border-border/50 flex justify-end items-center gap-2">
-              <span className="text-xs text-muted-foreground mr-auto font-medium">
-                {emails.length} registros listados.
+            <div className="bg-slate-50/50 p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <span className="text-sm text-slate-500 font-medium">
+                {emails.length} {emails.length === 1 ? 'registro listado' : 'registros listados'}.
               </span>
               
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mr-2">
                   <Broom className="w-4 h-4" /> Limpar Histórico:
                 </span>
                 <button 
                   onClick={() => handleCleanup(30)}
-                  className="px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-background border border-border hover:bg-muted rounded-md transition-colors"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   +30 dias
                 </button>
                 <button 
                   onClick={() => handleCleanup(14)}
-                  className="px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-background border border-border hover:bg-muted rounded-md transition-colors"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   +14 dias
                 </button>
                 <button 
                   onClick={() => handleCleanup(7)}
-                  className="px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-background border border-border hover:bg-muted rounded-md transition-colors"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   +7 dias
                 </button>
                 <button 
                   onClick={() => handleCleanup(null)}
-                  className="px-2 py-1 text-[10px] font-bold uppercase tracking-wide bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 rounded-md transition-colors ml-2"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 rounded-lg transition-colors ml-1"
                 >
                   Tudo
                 </button>
@@ -235,115 +244,132 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
             </div>
           )}
           
+          {/* 5. LISTA DE E-MAILS */}
           {emails.length === 0 ? (
-            <div className="p-12 text-center text-muted-foreground">
-              <EnvelopeSimple className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p>Nenhum e-mail processado ainda.</p>
+            <div className="p-16 text-center text-slate-400">
+              <EnvelopeSimple className="w-16 h-16 mx-auto mb-4 opacity-30 text-slate-300" weight="thin" />
+              <p className="text-lg font-medium text-slate-500">Caixa de entrada vazia</p>
+              <p className="text-sm mt-1">Nenhum e-mail processado recentemente.</p>
             </div>
           ) : (
-            <div className="divide-y divide-border/50">
+            <div className="divide-y divide-slate-100">
               {emails.map((email) => {
                 const isExpanded = expandedEmailId === email.id;
                 
                 return (
-                  <div key={email.id} className="p-5 hover:bg-muted/10 transition-colors">
+                  <div key={email.id} className="group hover:bg-slate-50/80 transition-colors">
+                    {/* Linha Principal (Header do Card) */}
                     <div 
-                      className="flex items-start gap-4 cursor-pointer"
+                      className="p-5 flex items-start gap-4 cursor-pointer"
                       onClick={() => toggleExpand(email.id)}
                     >
-                      <div className="mt-1">
+                      <div className="mt-1 shrink-0">
                         {email.status === "PROCESSED" ? (
-                          <CheckCircle weight="fill" className="w-5 h-5 text-success" />
+                          <CheckCircle weight="fill" className="w-5 h-5 text-emerald-500" />
                         ) : (
-                          <WarningCircle weight="fill" className="w-5 h-5 text-danger" />
+                          <WarningCircle weight="fill" className="w-5 h-5 text-amber-500" />
                         )}
                       </div>
+                      
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-4 mb-1">
-                          <p className="text-sm font-semibold truncate" title={email.subject || "Sem assunto"}>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4 mb-2">
+                          {/* 6. ASSUNTO */}
+                          <p className="text-[15px] font-semibold text-slate-800 truncate" title={email.subject || "Sem assunto"}>
                             {email.subject || "(Sem assunto)"}
                           </p>
-                          <div className="flex items-center gap-3">
-                            <time className="text-[11px] text-muted-foreground shrink-0 font-medium">
+                          
+                          {/* 8. DATA E HORA */}
+                          <div className="flex items-center gap-3 shrink-0">
+                            <time className="text-[12px] text-slate-500 font-mono tracking-tight">
                               {new Date(email.processedAt).toLocaleString('pt-BR')}
                             </time>
                             {isExpanded ? (
-                              <CaretUp className="w-4 h-4 text-muted-foreground" />
+                              <CaretUp className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                             ) : (
-                              <CaretDown className="w-4 h-4 text-muted-foreground" />
+                              <CaretDown className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                          <span className="truncate">De: {email.from}</span>
-                          <span>•</span>
-                          <span className="truncate max-w-[200px]">ID: {email.messageId}</span>
+                        
+                        {/* 7. REMETENTE & 9. ID */}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-[13px] text-slate-500 mb-3">
+                          <span className="truncate" title={email.from || ""}>
+                            De: <span className="font-medium text-slate-600">{email.from}</span>
+                          </span>
+                          <span className="hidden sm:inline text-slate-300">•</span>
+                          <span className="truncate font-mono text-[11px] text-slate-400" title={email.messageId}>
+                            ID: {email.messageId}
+                          </span>
                         </div>
                         
-                        <div className="flex flex-wrap gap-2">
+                        {/* 10. BADGES */}
+                        <div className="flex flex-wrap items-center gap-2">
                           {email.ticketId && (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#4f78f5]/10 text-[#4f78f5] text-[10px] font-bold uppercase tracking-wider">
                               Ticket #{email.ticket?.ticketNumber || email.ticketId} Gerado
                             </div>
                           )}
+                          
                           {email.status === 'ERROR' && (
-                            <div className="px-2.5 py-1 rounded-md bg-danger/10 text-danger text-[10px] font-bold uppercase tracking-wider">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 text-[10px] font-bold uppercase tracking-wider">
                               Falha no processamento
                             </div>
                           )}
+                          
+                          {/* 11. RESPOSTAS MANUAIS */}
                           {email.manualReplies && (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-foreground/10 text-foreground text-[10px] font-bold uppercase tracking-wider">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider shadow-sm">
                               <PaperPlaneRight weight="fill" /> {Array.isArray(email.manualReplies) ? email.manualReplies.length : 1} Respostas Manuais
                             </div>
                           )}
                         </div>
                       </div>
                       
-                      {/* Lixeira Individual */}
+                      {/* 13. EXCLUSÃO */}
                       <button 
                         onClick={(e) => handleDeleteIndividual(e, email.id)}
-                        className="p-2 text-muted-foreground hover:bg-danger/10 hover:text-danger rounded-lg transition-colors ml-4 self-center"
-                        title="Excluir do Histórico"
+                        className="p-2.5 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors ml-4 shrink-0 opacity-50 group-hover:opacity-100"
+                        title="Excluir e-mail"
                       >
-                        <Trash className="w-5 h-5" />
+                        <Trash className="w-4 h-4" />
                       </button>
                     </div>
                     
-                    {/* Expanded Content View */}
+                    {/* 12. ÁREA DE EXPANSÃO (SANFONA) */}
                     {isExpanded && (
-                      <div className="mt-6 ml-9 animate-in slide-in-from-top-2 fade-in duration-200">
+                      <div className="bg-slate-50 border-t border-slate-100 p-6 animate-in slide-in-from-top-2 fade-in duration-200">
                         {replySuccess && (
-                          <div className="mb-4 p-3 bg-success/10 text-success rounded-xl flex items-center justify-between border border-success/20 text-sm">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="w-4 h-4 shrink-0" weight="fill" />
+                          <div className="mb-5 p-4 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-between border border-emerald-100 text-sm shadow-sm">
+                            <div className="flex items-center gap-2 font-medium">
+                              <CheckCircle className="w-5 h-5 shrink-0" weight="fill" />
                               <p>{replySuccess}</p>
                             </div>
-                            <button onClick={() => setReplySuccess(null)} className="font-bold opacity-70 hover:opacity-100">✕</button>
+                            <button onClick={() => setReplySuccess(null)} className="font-bold opacity-70 hover:opacity-100 transition-opacity">✕</button>
                           </div>
                         )}
                         
                         {replyError && (
-                          <div className="mb-4 p-3 bg-danger/10 text-danger rounded-xl flex items-center gap-2 border border-danger/20 text-sm">
-                            <WarningCircle className="w-4 h-4 shrink-0" />
+                          <div className="mb-5 p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 border border-red-100 text-sm shadow-sm font-medium">
+                            <WarningCircle className="w-5 h-5 shrink-0" weight="fill" />
                             <p>{replyError}</p>
                           </div>
                         )}
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                           {/* Corpo Recebido */}
                           <div className="space-y-3">
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                            <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                               <EnvelopeSimple className="w-4 h-4" />
-                              Recebido do Cliente
+                              Mensagem Original Recebida
                             </h3>
-                            <div className="bg-background rounded-xl border border-border/50 p-4 h-[300px] overflow-y-auto overflow-x-hidden text-sm relative custom-scrollbar">
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 h-[350px] overflow-y-auto text-sm relative custom-scrollbar">
                               {email.bodyReceived ? (
                                 <div 
-                                  className="prose prose-sm dark:prose-invert max-w-none break-words"
+                                  className="prose prose-sm max-w-none break-words text-slate-700"
                                   dangerouslySetInnerHTML={{ __html: email.bodyReceived }} 
                                 />
                               ) : (
-                                <div className="h-full flex items-center justify-center text-muted-foreground italic text-xs">
+                                <div className="h-full flex items-center justify-center text-slate-400 italic text-sm">
                                   Conteúdo não salvo
                                 </div>
                               )}
@@ -352,29 +378,29 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
                           
                           {/* Corpo Enviado */}
                           <div className="space-y-3">
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                            <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <Code className="w-4 h-4" />
-                                Resposta Automática
+                                Resposta Automática do Sistema
                               </div>
                               {email.from && replyingTo !== email.id && (
                                 <button
                                   onClick={() => handleStartReply(email)}
-                                  className="text-primary hover:text-primary/80 transition-colors flex items-center gap-1 bg-primary/10 px-2 py-1 rounded"
+                                  className="text-[#4f78f5] hover:bg-[#4f78f5] hover:text-white transition-colors flex items-center gap-1.5 bg-[#4f78f5]/10 px-3 py-1.5 rounded-lg text-xs font-bold"
                                 >
                                   <PaperPlaneRight weight="bold" /> Responder
                                 </button>
                               )}
                             </h3>
-                            <div className="bg-background rounded-xl border border-border/50 p-4 h-[300px] overflow-y-auto overflow-x-hidden text-sm relative custom-scrollbar">
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-1 h-[350px] overflow-hidden text-sm relative">
                               {email.bodySent ? (
                                 <iframe
                                   srcDoc={email.bodySent}
                                   title="Corpo Enviado"
-                                  className="w-full h-full border-none bg-white rounded-md"
+                                  className="w-full h-full border-none bg-white rounded-lg"
                                 />
                               ) : (
-                                <div className="h-full flex items-center justify-center text-muted-foreground italic text-xs">
+                                <div className="h-full flex items-center justify-center text-slate-400 italic text-sm">
                                   Nenhuma resposta automática foi enviada.
                                 </div>
                               )}
@@ -384,20 +410,27 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
 
                         {/* Histórico de Respostas Manuais */}
                         {email.manualReplies && (
-                          <div className="mt-6 mb-4">
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
-                              <PaperPlaneRight className="w-4 h-4" />
-                              Histórico de Respostas Manuais
+                          <div className="mt-8 mb-6 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
+                              <PaperPlaneRight className="w-4 h-4 text-[#4f78f5]" weight="fill" />
+                              Histórico de Interações Manuais
                             </h3>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                               {(Array.isArray(email.manualReplies) ? email.manualReplies : [email.manualReplies]).map((reply: any, idx: number) => (
-                                <div key={idx} className="bg-muted/30 border border-border/50 rounded-xl p-4 text-sm relative">
-                                  <div className="flex justify-between items-center mb-2 text-xs text-muted-foreground">
-                                    <span className="font-bold text-foreground">De: {reply.adminName}</span>
-                                    <span>{new Date(reply.date).toLocaleString('pt-BR')}</span>
+                                <div key={idx} className="bg-slate-50 border border-slate-100 rounded-xl p-5 text-sm relative">
+                                  <div className="flex justify-between items-center mb-3 text-xs">
+                                    <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                                      <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 uppercase">
+                                        {reply.adminName?.substring(0, 1) || "?"}
+                                      </div>
+                                      {reply.adminName || "Suporte"}
+                                    </span>
+                                    <span className="font-mono text-slate-400 bg-white px-2 py-1 rounded border border-slate-100">
+                                      {new Date(reply.date).toLocaleString('pt-BR')}
+                                    </span>
                                   </div>
-                                  <div className="font-semibold mb-2">Assunto: {reply.subject}</div>
-                                  <div className="bg-background rounded-lg p-3 border border-border/30 whitespace-pre-wrap font-mono text-[13px]">
+                                  <div className="font-semibold text-slate-800 mb-2">{reply.subject}</div>
+                                  <div className="bg-white rounded-lg p-4 border border-slate-100 whitespace-pre-wrap font-sans text-slate-600 text-[14px] leading-relaxed shadow-sm">
                                     {reply.content}
                                   </div>
                                 </div>
@@ -408,50 +441,51 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
 
                         {/* Formulário de Resposta Manual */}
                         {replyingTo === email.id && (
-                          <div className="mt-4 p-5 bg-card border border-primary/20 rounded-xl shadow-sm relative animate-in fade-in zoom-in-95 duration-200">
-                            <button
-                              onClick={() => setReplyingTo(null)}
-                              className="absolute top-4 right-4 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
+                          <div className="mt-6 bg-white border border-[#4f78f5]/30 rounded-xl shadow-md relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                              <h3 className="text-sm font-bold flex items-center gap-2 text-[#4f78f5]">
+                                <PenNib weight="fill" className="w-4 h-4" /> Nova Resposta
+                              </h3>
+                              <button
+                                onClick={() => setReplyingTo(null)}
+                                className="p-1.5 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors"
+                              >
+                                <X className="w-4 h-4" weight="bold" />
+                              </button>
+                            </div>
                             
-                            <h3 className="text-sm font-bold flex items-center gap-2 mb-4 text-primary">
-                              <PaperPlaneRight weight="fill" /> Enviar Resposta Manual
-                            </h3>
-                            
-                            <form onSubmit={(e) => handleSubmitReply(email, e)} className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                  <label className="text-xs font-semibold text-muted-foreground">Para:</label>
+                            <form onSubmit={(e) => handleSubmitReply(email, e)} className="p-6 space-y-5">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="space-y-1.5">
+                                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Para:</label>
                                   <input 
                                     type="text" 
                                     readOnly 
                                     value={email.from || ""} 
-                                    className="w-full text-sm bg-muted/50 border border-input rounded-lg px-3 py-2 outline-none"
+                                    className="w-full text-sm bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-4 py-2.5 outline-none font-medium"
                                   />
                                 </div>
-                                <div className="space-y-1">
-                                  <label className="text-xs font-semibold text-muted-foreground">Assunto:</label>
+                                <div className="space-y-1.5">
+                                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Assunto:</label>
                                   <input 
                                     type="text" 
                                     required
                                     value={replySubject}
                                     onChange={(e) => setReplySubject(e.target.value)}
-                                    className="w-full text-sm bg-background border border-input rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary/20"
+                                    className="w-full text-sm bg-white border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-[#4f78f5] focus:ring-1 focus:ring-[#4f78f5] transition-shadow font-medium text-slate-800"
                                   />
                                 </div>
                               </div>
                               
-                              <div className="space-y-1">
-                                <label className="text-xs font-semibold text-muted-foreground">Sua Mensagem:</label>
+                              <div className="space-y-1.5">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Mensagem:</label>
                                 <textarea 
                                   required
-                                  rows={5}
+                                  rows={6}
                                   value={replyContent}
                                   onChange={(e) => setReplyContent(e.target.value)}
-                                  placeholder="Digite sua resposta aqui..."
-                                  className="w-full text-sm bg-background border border-input rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary/20 custom-scrollbar"
+                                  placeholder="Escreva sua resposta aqui..."
+                                  className="w-full text-sm bg-white border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-[#4f78f5] focus:ring-1 focus:ring-[#4f78f5] transition-shadow custom-scrollbar text-slate-700 leading-relaxed"
                                 />
                               </div>
                               
@@ -459,9 +493,9 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
                                 <button
                                   type="submit"
                                   disabled={isSending}
-                                  className="bg-primary text-primary-foreground px-5 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50"
+                                  className="bg-[#4f78f5] text-white px-6 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#3b62d6] transition-colors disabled:opacity-50 shadow-sm"
                                 >
-                                  {isSending ? "Enviando..." : <><PaperPlaneRight weight="bold" /> Enviar Mensagem</>}
+                                  {isSending ? "Enviando..." : <><PaperPlaneRight weight="bold" /> Enviar Resposta</>}
                                 </button>
                               </div>
                             </form>

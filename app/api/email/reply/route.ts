@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { to, subject, content, inReplyTo } = data;
+    const { to, subject, content, inReplyTo, menuPath, isPublic, attachments } = data;
 
     if (!to || !subject || !content) {
       return NextResponse.json({ error: "Campos 'to', 'subject' e 'content' são obrigatórios" }, { status: 400 });
@@ -33,7 +33,10 @@ export async function POST(request: NextRequest) {
           date: new Date().toISOString(),
           adminName: session.name || "Admin",
           subject,
-          content
+          content,
+          menuPath: menuPath || null,
+          isPublic: isPublic !== undefined ? isPublic : true,
+          attachments: attachments || []
         };
         
         let replies: any[] = [];

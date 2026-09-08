@@ -12,78 +12,139 @@ if (process.env.SENDGRID_API_KEY) {
  */
 function getEmailLayout(settings: any, title: string, content: string): string {
   const primaryColor = settings.primaryColor || '#2563eb';
-  const logo = settings.favicon || 'https://via.placeholder.com/150x50?text=Logo'; // Fallback logic
-  const systemName = settings.systemName || 'HelpDesk Pro';
   
-  // Basic responsive email template
   return `
     <!DOCTYPE html>
     <html lang="pt-BR">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="color-scheme" content="light dark">
+      <meta name="supported-color-schemes" content="light dark">
       <style>
+        :root {
+          color-scheme: light dark;
+        }
         body {
-          font-family: Arial, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
           background-color: #f4f4f5;
           margin: 0;
           padding: 0;
+          -webkit-font-smoothing: antialiased;
+        }
+        .wrapper {
+          padding: 40px 20px;
         }
         .container {
           max-width: 600px;
-          margin: 40px auto;
+          margin: 0 auto;
           background-color: #ffffff;
           border-radius: 8px;
           overflow: hidden;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+          border: 1px solid #e5e7eb;
         }
         .header {
-          background-color: ${primaryColor};
-          padding: 24px;
-          text-align: center;
-          color: #ffffff;
+          padding: 32px 32px 0 32px;
+          text-align: left;
         }
-        .header h1 {
-          margin: 0;
+        .logo-text {
+          font-weight: 800;
           font-size: 20px;
-          font-weight: 600;
+          color: ${primaryColor};
+          letter-spacing: -0.5px;
+          margin: 0;
+          text-transform: uppercase;
+        }
+        .subtitle-text {
+          font-size: 13px;
+          color: #64748b;
+          margin-top: 4px;
+          font-weight: 500;
+        }
+        .divider {
+          height: 1px;
+          background-color: #e2e8f0;
+          margin: 24px 32px;
         }
         .content {
-          padding: 32px 24px;
-          color: #3f3f46;
+          padding: 0 32px 32px 32px;
+          color: #334155;
           line-height: 1.6;
+          font-size: 15px;
+        }
+        .content h1 {
+          margin: 0 0 24px 0;
+          font-size: 22px;
+          font-weight: 700;
+          color: #0f172a;
+          letter-spacing: -0.5px;
         }
         .footer {
-          background-color: #fafafa;
-          padding: 24px;
-          text-align: center;
+          background-color: #f8fafc;
+          padding: 24px 32px;
+          text-align: left;
           font-size: 12px;
-          color: #a1a1aa;
-          border-top: 1px solid #f4f4f5;
+          color: #64748b;
+          line-height: 1.6;
+          border-top: 1px solid #e2e8f0;
         }
         .button {
           display: inline-block;
           background-color: ${primaryColor};
           color: #ffffff;
-          padding: 10px 20px;
+          padding: 12px 24px;
           text-decoration: none;
           border-radius: 6px;
-          font-weight: bold;
+          font-weight: 600;
           margin-top: 16px;
+          font-size: 14px;
+        }
+
+        /* DARK MODE STYLES */
+        @media (prefers-color-scheme: dark) {
+          body { background-color: #121212 !important; }
+          .container { background-color: #1e1e1e !important; border-color: #333 !important; }
+          .content { color: #e2e8f0 !important; }
+          .content h1 { color: #f8fafc !important; }
+          .subtitle-text { color: #94a3b8 !important; }
+          .divider { background-color: #334155 !important; }
+          .footer { background-color: #121212 !important; color: #94a3b8 !important; border-top-color: #334155 !important; }
+          .footer strong { color: #f1f5f9 !important; }
+          
+          /* Classes internas (Cartões, Assinaturas) */
+          .ticket-card { border-color: #334155 !important; }
+          .ticket-header { background-color: #121212 !important; border-bottom-color: #334155 !important; color: #94a3b8 !important; }
+          .ticket-label { color: #94a3b8 !important; }
+          .ticket-value { color: #f8fafc !important; }
+          
+          .sig-text { color: #e2e8f0 !important; }
+          .sig-muted { color: #94a3b8 !important; }
+          .sig-border { border-right-color: #334155 !important; }
         }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <h1>${title}</h1>
-        </div>
-        <div class="content">
-          ${content}
-        </div>
-        <div class="footer">
-          <p>${systemName}</p>
-          <p>Este é um e-mail automático, não responda.</p>
+      <div class="wrapper">
+        <div class="container">
+          <div class="header">
+            <div class="logo-text">CG CONSTRUÇÕES</div>
+            <div class="subtitle-text">Central de Suporte de TI</div>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="content">
+            ${title ? `<h1>${title}</h1>` : ''}
+            ${content}
+          </div>
+          
+          <div class="footer">
+            <strong style="color: #475569;">CG Construções</strong><br>
+            Central de Suporte de TI<br><br>
+            Esta é uma mensagem automática enviada pelo sistema de chamados.<br>
+            Por favor, não responda diretamente a este e-mail.
+          </div>
         </div>
       </div>
     </body>
@@ -158,10 +219,9 @@ async function getTicketEmailMetadata(ticketId: string) {
 export async function sendCustomEmail(to: string, subject: string, content: string, inReplyToMessageId?: string, cc?: string[]) {
   const settings = await getCorporateSettings();
   
-  // Limpar quebras de linha para formatar direitinho no HTML
-  const formattedContent = content.replace(/\n/g, '<br />');
-  
-  const html = getEmailLayout(settings, subject, formattedContent);
+  // Como o content já vem como HTML (do editor frontend ou templates),
+  // não substituímos os \n por <br /> para não quebrar tabelas e layouts como a assinatura.
+  const html = getEmailLayout(settings, "", content);
   return sendHtmlEmail(to, subject, html, inReplyToMessageId, cc);
 }
 
@@ -231,27 +291,41 @@ export async function sendTicketCreatedEmail(ticketData: any, requesterEmail: st
   } else {
     // Template hardcoded fallback (caso ainda não exista no banco)
     content = `
-      <p>Olá, <strong>${requesterName}</strong>!</p>
-      <p>Seu chamado foi registrado com sucesso em nosso sistema.</p>
+      <p style="margin-top: 0;">Olá, <strong>${requesterName}</strong>.</p>
+      <p>Recebemos sua solicitação e ela foi registrada com sucesso em nossa Central de Suporte de TI.</p>
       
-      <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
-        <p style="margin: 0 0 8px 0;"><strong>Chamado:</strong> #${ticketData.ticketNumber}</p>
-        <p style="margin: 0 0 8px 0;"><strong>Problema:</strong> ${ticketData.problem}</p>
-        <p style="margin: 0 0 8px 0;"><strong>Status:</strong> ${ticketData.status}</p>
-        <p style="margin: 0 0 8px 0;"><strong>Prioridade:</strong> ${ticketData.priority}</p>
-        <p style="margin: 0;"><strong>Data de abertura:</strong> ${dateStr}</p>
+      <div style="border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; margin: 32px 0;" class="ticket-card">
+        <div style="background-color: #f8fafc; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 0.5px; text-transform: uppercase;" class="ticket-header">
+          Detalhes do Atendimento
+        </div>
+        <div style="padding: 16px;">
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 12px; color: #64748b; margin-bottom: 2px;" class="ticket-label">Chamado</div>
+            <div style="font-size: 16px; font-weight: 700; color: #0f172a;" class="ticket-value">#${ticketData.ticketNumber}</div>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 12px; color: #64748b; margin-bottom: 2px;" class="ticket-label">Solicitação</div>
+            <div style="font-size: 15px; color: #334155;" class="ticket-value">${ticketData.problem}</div>
+          </div>
+          <div>
+            <div style="font-size: 12px; color: #64748b; margin-bottom: 2px;" class="ticket-label">Data de abertura</div>
+            <div style="font-size: 14px; color: #334155;" class="ticket-value">${dateStr}</div>
+          </div>
+        </div>
       </div>
       
-      <p>Nossa equipe técnica já recebeu sua solicitação e dará continuidade ao atendimento o mais breve possível.</p>
-      <p>Você receberá novas atualizações sobre este chamado por e-mail.</p>
+      <div style="display: flex; align-items: center; margin-bottom: 24px; color: #16a34a; font-weight: 600; font-size: 14px;">
+        <span style="display: inline-block; margin-right: 8px;">✓</span> Solicitação recebida
+      </div>
       
-      <p>Atenciosamente,<br>Equipe <strong>${settings.systemName}</strong></p>
+      <p>Nossa equipe técnica já recebeu sua solicitação e realizará a análise necessária para dar continuidade ao atendimento.</p>
+      <p>Você receberá novas notificações sempre que houver uma atualização relevante em sua solicitação.</p>
     `;
   }
   
   const html = getEmailLayout(
     template?.primaryColor ? { ...settings, primaryColor: template.primaryColor } : settings, 
-    template?.name || `Chamado #${ticketData.ticketNumber} Aberto`, 
+    template?.name || "Seu chamado foi registrado", 
     content
   );
   
