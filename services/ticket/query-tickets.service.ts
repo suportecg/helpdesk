@@ -13,7 +13,7 @@ export interface TicketFilterOptions {
   startDate?: string;
   endDate?: string;
   monthYear?: string;
-  sortBy?: "ticketDate" | "totalTimeMinutes" | "requester" | "service";
+  sortBy?: "ticketDate" | "totalTimeMinutes" | "requester" | "service" | "ticketNumber";
   sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
@@ -140,6 +140,8 @@ export async function getTicketsPaginated(options: TicketFilterOptions) {
     orderBy = { requester: { name: direction } };
   } else if (options.sortBy === "service") {
     orderBy = { service: { name: direction } };
+  } else if (options.sortBy === "ticketNumber") {
+    orderBy = { ticketNumber: direction };
   }
 
   const statusWhere = { ...where };

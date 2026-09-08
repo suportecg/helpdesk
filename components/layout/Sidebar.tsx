@@ -110,9 +110,6 @@ export function Sidebar() {
                 <span className="text-[15px] font-display font-bold tracking-tight text-sidebar-foreground truncate">
                   {config.systemName}
                 </span>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-primary mt-0.5">
-                  White Label Ready
-                </span>
               </div>
             )}
           </Link>
@@ -170,9 +167,6 @@ export function Sidebar() {
             <div className="flex flex-col truncate">
               <span className="text-[15px] font-display font-bold tracking-tight text-sidebar-foreground truncate">
                 {config.systemName}
-              </span>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-primary mt-0.5">
-                White Label Ready
               </span>
             </div>
           </Link>

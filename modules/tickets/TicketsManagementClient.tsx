@@ -120,7 +120,7 @@ export default function TicketsManagementClient({
   const [originFilter, setOriginFilter] = useState<string>("ALL");
   const [isArchived, setIsArchived] = useState(defaultIsArchived);
   const [monthYear, setMonthYear] = useState<string>(getCurrentMonthYear());
-  const [sortBy, setSortBy] = useState<"ticketDate" | "totalTimeMinutes" | "requester" | "service">("ticketDate");
+  const [sortBy, setSortBy] = useState<"ticketDate" | "totalTimeMinutes" | "requester" | "service" | "ticketNumber">("ticketDate");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const [page, setPage] = useState(initialPage || 1);
@@ -408,6 +408,9 @@ export default function TicketsManagementClient({
           <span className="font-mono text-sm text-foreground/80 font-semibold tracking-wide">
             #{item.ticketNumber}
           </span>
+          <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
+            {new Date(item.ticketDate).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })}
+          </span>
         </div>
       ),
     },
@@ -531,9 +534,9 @@ export default function TicketsManagementClient({
     {
       label: "Ações",
       key: "id",
-      className: "w-40 text-right pr-4",
+      className: "w-32 text-center",
       render: (item) => (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-center gap-1">
           {!item.technician && user?.id && (
             <Button
               variant="outline"
@@ -811,6 +814,8 @@ export default function TicketsManagementClient({
               setSortBy(b); setSortOrder(o);
             }}
           >
+            <option value="ticketNumber:desc">Maior Ticket</option>
+            <option value="ticketNumber:asc">Menor Ticket</option>
             <option value="ticketDate:desc">Mais recentes</option>
             <option value="ticketDate:asc">Mais antigos</option>
             <option value="totalTimeMinutes:desc">Maior duração</option>
