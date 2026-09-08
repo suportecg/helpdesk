@@ -561,7 +561,7 @@ export function TicketModal({
                         <option value="EM_ATENDIMENTO">Em Atendimento</option>
                         <option value="AGUARDANDO_TERCEIROS">Aguardando Terceiros</option>
                         <option value="AGUARDANDO_USUARIO">Aguardando Usuário</option>
-                        <option value="RESOLVIDO">Resolvido (Concluir)</option>
+                        <option value="RESOLVIDO">Resolvido</option>
                         <option value="CANCELADO">Cancelado</option>
                       </select>
                     </div>

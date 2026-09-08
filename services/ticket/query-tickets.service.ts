@@ -152,7 +152,7 @@ export async function getTicketsPaginated(options: TicketFilterOptions) {
     if (statusWhere.AND.length === 0) delete statusWhere.AND;
   }
 
-  const [total, openCount, resolvedCount, waitingCount, data] = await Promise.all([
+  const [total, openCount, resolvedCount, waitingCount, inProgressCount, data] = await Promise.all([
     prisma.ticket.count({ where }),
     prisma.ticket.count({
       where: {
@@ -165,6 +165,7 @@ export async function getTicketsPaginated(options: TicketFilterOptions) {
     }),
     prisma.ticket.count({ where: { ...statusWhere, status: "RESOLVIDO" } }),
     prisma.ticket.count({ where: { ...statusWhere, status: "AGUARDANDO_USUARIO" } }),
+    prisma.ticket.count({ where: { ...statusWhere, status: "EM_ATENDIMENTO" } }),
     prisma.ticket.findMany({
       where,
       orderBy,
@@ -187,6 +188,7 @@ export async function getTicketsPaginated(options: TicketFilterOptions) {
       openCount,
       resolvedCount,
       waitingCount,
+      inProgressCount,
       page,
       limit,
       totalPages: Math.ceil(total / limit),

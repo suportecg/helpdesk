@@ -48,14 +48,18 @@ export function getBrazilianHolidays(year: number): string[] {
 
 /**
  * Calcula a diferença em minutos de horas úteis entre duas datas.
- * Horas úteis: Seg a Sex, das 07:00 às 18:00 (ignora almoço conforme solicitado).
+ * Horas úteis: Seg a Sex, das 08:00 às 12:00 e das 13:00 às 17:00 (8 horas diárias).
  * Finais de semana e feriados nacionais são ignorados.
  */
 export function calculateBusinessMinutes(startDate: Date, endDate: Date): number {
   if (endDate < startDate) return 0;
 
-  const startHour = 7;
-  const endHour = 18;
+  const periods = [
+    { start: 8, end: 12 },
+    { start: 13, end: 17 }
+  ];
+  
+  const minutesPerFullDay = periods.reduce((acc, p) => acc + (p.end - p.start) * 60, 0);
   let totalMinutes = 0;
 
   let current = new Date(startDate.getTime());
@@ -63,17 +67,17 @@ export function calculateBusinessMinutes(startDate: Date, endDate: Date): number
   // Se a data final for a mesma do início e no mesmo dia (otimização)
   if (current.toDateString() === endDate.toDateString()) {
     if (isWorkingDay(current)) {
-      return getWorkingMinutesInDay(current, endDate, startHour, endHour);
+      return getWorkingMinutesInDay(current, endDate, periods);
     }
     return 0;
   }
 
   // Adicionar minutos do primeiro dia
   if (isWorkingDay(current)) {
-    // Fim do dia para o primeiro dia é 18:00
+    // Para o primeiro dia, calculamos os minutos restantes no dia
     const endOfDay = new Date(current);
-    endOfDay.setHours(endHour, 0, 0, 0);
-    totalMinutes += getWorkingMinutesInDay(current, endOfDay, startHour, endHour);
+    endOfDay.setHours(23, 59, 59, 999);
+    totalMinutes += getWorkingMinutesInDay(current, endOfDay, periods);
   }
 
   // Avançar para o próximo dia à meia noite
@@ -83,7 +87,7 @@ export function calculateBusinessMinutes(startDate: Date, endDate: Date): number
   // Somar dias inteiros entre start e end
   while (current.toDateString() !== endDate.toDateString() && current < endDate) {
     if (isWorkingDay(current)) {
-      totalMinutes += (endHour - startHour) * 60;
+      totalMinutes += minutesPerFullDay;
     }
     current.setDate(current.getDate() + 1);
   }
@@ -91,9 +95,8 @@ export function calculateBusinessMinutes(startDate: Date, endDate: Date): number
   // Adicionar minutos do último dia (se start e end não foram no mesmo dia)
   if (current.toDateString() === endDate.toDateString() && isWorkingDay(endDate)) {
     const startOfLastDay = new Date(endDate);
-    startOfLastDay.setHours(startHour, 0, 0, 0);
-    // Se o fim for antes das 07h, getWorkingMinutesInDay já vai tratar e retornar 0
-    totalMinutes += getWorkingMinutesInDay(startOfLastDay, endDate, startHour, endHour);
+    startOfLastDay.setHours(0, 0, 0, 0);
+    totalMinutes += getWorkingMinutesInDay(startOfLastDay, endDate, periods);
   }
 
   return totalMinutes;
@@ -113,30 +116,28 @@ function isWorkingDay(date: Date): boolean {
   return true;
 }
 
-function getWorkingMinutesInDay(start: Date, end: Date, startHour: number, endHour: number): number {
-  let sTime = start.getTime();
-  let eTime = end.getTime();
+function getWorkingMinutesInDay(start: Date, end: Date, periods: {start: number, end: number}[]): number {
+  const sTime = start.getTime();
+  const eTime = end.getTime();
+  let total = 0;
 
-  const dayStart = new Date(start);
-  dayStart.setHours(startHour, 0, 0, 0);
-  
-  const dayEnd = new Date(start);
-  dayEnd.setHours(endHour, 0, 0, 0);
+  for (const period of periods) {
+    const periodStart = new Date(start);
+    periodStart.setHours(period.start, 0, 0, 0);
+    
+    const periodEnd = new Date(start);
+    periodEnd.setHours(period.end, 0, 0, 0);
 
-  // Ajustar inícios antes das 07h para 07h
-  if (sTime < dayStart.getTime()) {
-    sTime = dayStart.getTime();
+    let calcStart = sTime;
+    let calcEnd = eTime;
+
+    if (calcStart < periodStart.getTime()) calcStart = periodStart.getTime();
+    if (calcEnd > periodEnd.getTime()) calcEnd = periodEnd.getTime();
+
+    if (calcStart < calcEnd) {
+      total += Math.round((calcEnd - calcStart) / 60000);
+    }
   }
-  // Ajustar fins após 18h para 18h
-  if (eTime > dayEnd.getTime()) {
-    eTime = dayEnd.getTime();
-  }
 
-  // Se começou depois das 18h ou terminou antes das 07h
-  if (sTime >= dayEnd.getTime() || eTime <= dayStart.getTime()) {
-    return 0;
-  }
-
-  const diffMs = eTime - sTime;
-  return diffMs > 0 ? Math.round(diffMs / 60000) : 0;
+  return total;
 }

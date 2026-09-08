@@ -132,6 +132,7 @@ export default function TicketsManagementClient({
   const [openCount, setOpenCount] = useState(0);
   const [resolvedCount, setResolvedCount] = useState(0);
   const [waitingCount, setWaitingCount] = useState(0);
+  const [inProgressCount, setInProgressCount] = useState(0);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
@@ -207,6 +208,7 @@ export default function TicketsManagementClient({
         setOpenCount(body.meta?.openCount || 0);
         setResolvedCount(body.meta?.resolvedCount || 0);
         setWaitingCount(body.meta?.waitingCount || 0);
+        setInProgressCount(body.meta?.inProgressCount || 0);
       }
     } catch (err) {
       console.error("Erro ao buscar chamados:", err);
@@ -681,7 +683,7 @@ export default function TicketsManagementClient({
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div 
           onClick={() => { setStatusFilter("ALL"); setPage(1); }}
           className={`glass-card rounded-[2rem] p-6 h-full relative overflow-hidden group hover-lift cursor-pointer transition-all ${statusFilter === "ALL" ? "ring-2 ring-primary shadow-lg" : ""}`}
@@ -715,6 +717,24 @@ export default function TicketsManagementClient({
           </div>
           <div className="text-4xl font-display font-bold text-foreground mt-4 relative z-10">
             {loading ? <Skeleton className="h-10 w-16" /> : openCount}
+          </div>
+        </div>
+
+        <div 
+          onClick={() => { setStatusFilter("EM_ATENDIMENTO"); setPage(1); }}
+          className={`glass-card rounded-[2rem] p-6 h-full relative overflow-hidden group hover-lift cursor-pointer transition-all ${statusFilter === "EM_ATENDIMENTO" ? "ring-2 ring-indigo-500 shadow-lg" : ""}`}
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
+            <UserCircleCheck weight="duotone" className="w-24 h-24 text-indigo-500" />
+          </div>
+          <div className="flex items-center gap-3 mb-2 relative z-10">
+            <div className="p-3 bg-indigo-500/10 rounded-2xl">
+              <UserCircleCheck weight="bold" className="w-5 h-5 text-indigo-500" />
+            </div>
+            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Em Atend.</span>
+          </div>
+          <div className="text-4xl font-display font-bold text-foreground mt-4 relative z-10">
+            {loading ? <Skeleton className="h-10 w-16" /> : inProgressCount}
           </div>
         </div>
 
@@ -797,6 +817,7 @@ export default function TicketsManagementClient({
           >
             <option value="ALL">Todos Status</option>
             <option value="ABERTO">Em Aberto</option>
+            <option value="EM_ATENDIMENTO">Em Atendimento</option>
             <option value="RESOLVIDO">Resolvido</option>
             <option value="AGUARDANDO_USUARIO">Aguardando</option>
             <option value="AGUARDANDO_PECA">Agendado</option>
