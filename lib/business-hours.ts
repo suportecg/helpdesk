@@ -48,15 +48,15 @@ export function getBrazilianHolidays(year: number): string[] {
 
 /**
  * Calcula a diferença em minutos de horas úteis entre duas datas.
- * Horas úteis: Seg a Sex, das 08:00 às 12:00 e das 13:00 às 17:00 (8 horas diárias).
+ * Horas úteis: Seg a Sex, das 07:00 às 12:00 e das 13:00 às 18:00 (10 horas diárias).
  * Finais de semana e feriados nacionais são ignorados.
  */
 export function calculateBusinessMinutes(startDate: Date, endDate: Date): number {
   if (endDate < startDate) return 0;
 
   const periods = [
-    { start: 8, end: 12 },
-    { start: 13, end: 17 }
+    { start: 7, end: 12 },
+    { start: 13, end: 18 }
   ];
   
   const minutesPerFullDay = periods.reduce((acc, p) => acc + (p.end - p.start) * 60, 0);
