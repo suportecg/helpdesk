@@ -641,12 +641,16 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
   // Filtros
   const whereCurrent: Prisma.TicketWhereInput = {
     deletedAt: null,
-    ticketDate: { gte: range.start, lte: range.end },
+    ...(params.sectorId ? { sectorId: params.sectorId } : {}),
+    ...(params.serviceId ? { serviceId: params.serviceId } : {}),
+    ...(params.technicianId ? { technicianId: params.technicianId } : {}),
+    OR: [
+      { ticketDate: { gte: range.start, lte: range.end } },
+      { status: { notIn: ["RESOLVIDO", "CANCELADO"] } },
+      { endTime: { gte: range.start, lte: range.end }, status: "RESOLVIDO" },
+      { endTime: null, updatedAt: { gte: range.start, lte: range.end }, status: "RESOLVIDO" }
+    ],
   };
-
-  if (params.sectorId) whereCurrent.sectorId = params.sectorId;
-  if (params.serviceId) whereCurrent.serviceId = params.serviceId;
-  if (params.technicianId) whereCurrent.technicianId = params.technicianId;
 
   // Busca paralela principal
   const [tickets, history, activeTechs] = await Promise.all([
@@ -680,12 +684,21 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
 
   // Busca paralela para a Equipe, se o teamPeriod for diferente
   let teamTickets = tickets;
+  let teamRange = range;
   if (params.teamPeriod && params.teamPeriod !== params.period) {
-    const teamRange = getPeriodRange({ period: params.teamPeriod });
+    teamRange = getPeriodRange({ period: params.teamPeriod });
     teamTickets = await prisma.ticket.findMany({
       where: {
         deletedAt: null,
-        ticketDate: { gte: teamRange.start, lte: teamRange.end },
+        ...(params.sectorId ? { sectorId: params.sectorId } : {}),
+        ...(params.serviceId ? { serviceId: params.serviceId } : {}),
+        ...(params.technicianId ? { technicianId: params.technicianId } : {}),
+        OR: [
+          { ticketDate: { gte: teamRange.start, lte: teamRange.end } },
+          { status: { notIn: ["RESOLVIDO", "CANCELADO"] } },
+          { endTime: { gte: teamRange.start, lte: teamRange.end }, status: "RESOLVIDO" },
+          { endTime: null, updatedAt: { gte: teamRange.start, lte: teamRange.end }, status: "RESOLVIDO" }
+        ],
       },
       include: {
         sector: true,
@@ -765,17 +778,20 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
 
   // Popula team stats usando o array de tickets correto (teamTickets)
   teamTickets.forEach(t => {
+    // Only count as active if it's currently open
     if (t.status !== "RESOLVIDO" && t.status !== "CANCELADO" && t.technicianId && techStats[t.technicianId]) {
       techStats[t.technicianId].activeCount++;
     }
     
     if (t.status === "RESOLVIDO") {
-      const closedDate = new Date(t.updatedAt).toISOString().slice(0, 10);
+      const resolvedDate = t.endTime ? new Date(t.endTime) : new Date(t.updatedAt);
+      const closedDate = resolvedDate.toISOString().slice(0, 10);
       if (closedDate === todayStr && t.technicianId && techStats[t.technicianId]) {
         techStats[t.technicianId].resolvedToday++;
       }
       
-      if (t.technicianId && techStats[t.technicianId]) {
+      // Only compute averages for tickets resolved WITHIN the team period
+      if (t.technicianId && techStats[t.technicianId] && resolvedDate >= teamRange.start && resolvedDate <= teamRange.end) {
         techStats[t.technicianId].resolvedInPeriod++;
         techStats[t.technicianId].totalTimeInPeriod += calculateEffectiveTime(t);
       }
@@ -788,14 +804,21 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
   });
 
   tickets.forEach(t => {
-    // Basic counts
-    if (t.status === "ABERTO") inProgress++;
-    if (t.status === "EM_ANDAMENTO" || t.status === "EM_ATENDIMENTO") inService++;
-    if (t.status === "AGUARDANDO_USUARIO" || t.status === "AGUARDANDO_PECA" || t.status === "AGUARDANDO") waiting++;
-    if (!t.technicianId) unassigned++;
+    const isActive = t.status !== "RESOLVIDO" && t.status !== "CANCELADO";
+    const resolvedDate = t.endTime ? new Date(t.endTime) : new Date(t.updatedAt);
+    const createdDate = new Date(t.ticketDate || t.createdAt);
+    const resolvedInPeriod = t.status === "RESOLVIDO" && resolvedDate >= range.start && resolvedDate <= range.end;
+
+    // Basic counts (ONLY FOR ACTIVE TICKETS)
+    if (isActive) {
+      if (t.status === "ABERTO") inProgress++;
+      if (t.status === "EM_ANDAMENTO" || t.status === "EM_ATENDIMENTO") inService++;
+      if (t.status === "AGUARDANDO_USUARIO" || t.status === "AGUARDANDO_PECA" || t.status === "AGUARDANDO") waiting++;
+      if (!t.technicianId) unassigned++;
+    }
     
     // Critical
-    if (t.status !== "RESOLVIDO" && t.status !== "CANCELADO" && (t.priority === "ALTA" || t.priority === "CRITICA")) {
+    if (isActive && (t.priority === "ALTA" || t.priority === "CRITICA")) {
       criticalCount++;
       criticalTickets.push({
         id: t.id,
@@ -807,9 +830,9 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
       });
     }
 
-    // Resolved today
-    if (t.status === "RESOLVIDO") {
-      const closedDate = new Date(t.updatedAt).toISOString().slice(0, 10);
+    // Resolved in period
+    if (resolvedInPeriod) {
+      const closedDate = resolvedDate.toISOString().slice(0, 10);
       if (closedDate === todayStr) {
         resolvedToday++;
       }
@@ -818,12 +841,14 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
       }
     }
 
-    // SLA calculation and SLA Risk
     if (t.dueDate) {
-      totalWithSla++;
       if (t.status === "RESOLVIDO") {
-        if (new Date(t.updatedAt) <= new Date(t.dueDate)) totalSlaMet++;
-      } else if (t.status !== "CANCELADO") {
+        if (resolvedInPeriod) {
+          totalWithSla++;
+          if (resolvedDate <= new Date(t.dueDate)) totalSlaMet++;
+        }
+      } else if (isActive) {
+        totalWithSla++;
         const dueTime = new Date(t.dueDate).getTime();
         const nowTime = now.getTime();
         if (nowTime <= dueTime) {
@@ -857,22 +882,29 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
     }
 
     // Tickets by hour (Adjusted for BRT timezone - America/Sao_Paulo)
-    const dateBRT = new Date(new Date(t.createdAt).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-    const hour = dateBRT.getHours();
-    hoursData[hour].tickets++;
-    if (t.status === "RESOLVIDO") {
-      hoursData[hour].resolved++;
+    // Only map tickets created in the period into the "opened" hour
+    if (createdDate >= range.start && createdDate <= range.end) {
+      const dateBRT = new Date(createdDate.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+      const hour = dateBRT.getHours();
+      hoursData[hour].tickets++;
     }
     
-    const effectiveTime = calculateEffectiveTime(t);
-    hoursData[hour].totalMinutes += effectiveTime;
+    // Only map tickets resolved in the period into the "resolved" hour
+    if (resolvedInPeriod) {
+      const dateBRT = new Date(resolvedDate.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+      const hour = dateBRT.getHours();
+      hoursData[hour].resolved++;
+      const effectiveTime = calculateEffectiveTime(t);
+      hoursData[hour].totalMinutes += effectiveTime;
+    }
   });
 
   // Calculate SLA %
   const slaPercent = totalWithSla > 0 ? Math.round((totalSlaMet / totalWithSla) * 100) : 100;
   
   // Calculate Avg Time
-  const resolvedCount = tickets.filter(t => t.status === "RESOLVIDO").length;
+  // resolvedCount should only be tickets resolved in the period
+  const resolvedCount = tickets.filter(t => t.status === "RESOLVIDO" && (t.endTime ? new Date(t.endTime) : new Date(t.updatedAt)) >= range.start && (t.endTime ? new Date(t.endTime) : new Date(t.updatedAt)) <= range.end).length;
   const avgTimeMinutes = resolvedCount > 0 ? Math.round(totalResolvedTime / resolvedCount) : 0;
 
   // Format charts

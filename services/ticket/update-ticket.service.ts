@@ -136,9 +136,9 @@ export async function updateTicket(
   if (existing.serviceId !== updated.serviceId) {
     historyEntries.push({
       eventType: "SERVICE_CHANGED",
-      description: `Serviço alterado para "${updated.service.name}".`,
-      oldValue: existing.service.name,
-      newValue: updated.service.name,
+      description: `Serviço alterado para "${updated.service?.name || "Sem serviço"}".`,
+      oldValue: existing.service?.name || "Sem serviço",
+      newValue: updated.service?.name || "Sem serviço",
     });
   }
 
