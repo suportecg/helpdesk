@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Bold, Italic, Paperclip, Smile, Send } from "lucide-react";
+import { Bold, Italic, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SignatureSettingsModal from "../../emails/SignatureSettingsModal";
 
@@ -159,13 +159,6 @@ export function TicketActionComposer({
           </Button>
           
           <div className="w-px h-4 bg-border mx-1" />
-          
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => alert("Anexos em breve")}>
-            <Paperclip className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => alert("Emojis em breve")}>
-            <Smile className="h-4 w-4" />
-          </Button>
         </div>
 
         {/* EDITOR */}

@@ -128,27 +128,27 @@ export default function SignatureSettingsModal({ onClose, onSave }: SignatureSet
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Nome</label>
-                <input required type="text" value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Hudson Eduardo" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <input required type="text" value={nome} onChange={e => setNome(e.target.value)} placeholder="" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
                 <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Cargo</label>
-                <input required type="text" value={cargo} onChange={e => setCargo(e.target.value)} placeholder="Ex: Auxiliar de TI" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <input required type="text" value={cargo} onChange={e => setCargo(e.target.value)} placeholder="" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
                 <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Empresa</label>
-                <input required type="text" value={empresa} onChange={e => setEmpresa(e.target.value)} placeholder="Ex: CG Construções" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <input required type="text" value={empresa} onChange={e => setEmpresa(e.target.value)} placeholder="" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
                 <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">E-mail</label>
-                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Ex: hudsoneduardo@..." className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
                 <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Telefone</label>
-                <input required type="text" value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="Ex: (85) 99209-6253" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <input required type="text" value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
                 <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Website</label>
-                <input required type="text" value={site} onChange={e => setSite(e.target.value)} placeholder="Ex: www.cgconstrucoes.com" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <input required type="text" value={site} onChange={e => setSite(e.target.value)} placeholder="" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
             </div>
 

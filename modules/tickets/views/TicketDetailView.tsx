@@ -128,7 +128,7 @@ export function TicketDetailView({ ticketId }: { ticketId: string }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 gap-2 uppercase text-xs font-bold tracking-wider">
-                {ticket.status}
+                {ticket.status.replace(/_/g, ' ')}
                 <div className="w-2 h-2 rounded-full bg-primary" />
               </Button>
             </DropdownMenuTrigger>
