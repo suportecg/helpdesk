@@ -4,12 +4,12 @@ import { getSession } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   // Proteger o endpoint para não ser chamado por qualquer um
-  // Pode ser chamado pelo cron da Vercel ou via interface (passando o token certo)
+  // Pode ser chamado pelo cron-job.org ou via interface (passando o token certo)
   const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET || process.env.NEXT_PUBLIC_CRON_SECRET || "helpdesk-cron-secret-123";
+  const cronSecret = process.env.CRON_SECRET;
   
-  // Verifica se a requisição tem o segredo do cron
-  const isCronAuthorized = authHeader === `Bearer ${cronSecret}`;
+  // Verifica se a requisição tem o segredo do cron configurado e válido
+  const isCronAuthorized = Boolean(cronSecret && authHeader === `Bearer ${cronSecret}`);
   
   // Ou verifica se foi chamada por um admin logado no painel
   const session = await getSession();
@@ -36,13 +36,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Também permitimos GET para facilitar o Vercel Cron
+// Também permitimos GET para facilitar chamadas externas (ex: cron-job.org)
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET || process.env.NEXT_PUBLIC_CRON_SECRET || "helpdesk-cron-secret-123";
+  const cronSecret = process.env.CRON_SECRET;
   
-  // Verifica se a requisição tem o segredo do cron
-  const isCronAuthorized = authHeader === `Bearer ${cronSecret}`;
+  // Verifica se a requisição tem o segredo do cron configurado e válido
+  const isCronAuthorized = Boolean(cronSecret && authHeader === `Bearer ${cronSecret}`);
   
   // Ou verifica se foi chamada por um admin logado no painel
   const session = await getSession();
