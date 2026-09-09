@@ -126,21 +126,12 @@ export async function checkAndProcessEmails() {
 
             } else {
               // Criação de um novo ticket
-              const firstSector = await prisma.sector.findFirst({ where: { isActive: true } });
-              const firstService = await prisma.service.findFirst({ where: { isActive: true } });
-              
-              if (!firstSector || !firstService) {
-                throw new Error("Sistema não possui setores ou serviços ativos para criar chamados.");
-              }
-  
               const ticket = await createTicket(
                 {
                   requesterName: fromName,
                   requesterEmail: fromAddress,
                   problem: subject,
                   description: description,
-                  sectorId: firstSector.id,
-                  serviceId: firstService.id,
                   origin: 'EMAIL',
                   status: 'ABERTO', // Force ABERTO to increment "Em Aberto" queue properly
                   priority: settings.defaultPriority as any || 'MEDIA',

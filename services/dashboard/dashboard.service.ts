@@ -19,6 +19,7 @@ export interface DashboardFilterParams {
   serviceId?: string;
   technicianId?: string;
   monthYear?: string; // "07-2026" format for monthly filtering
+  teamPeriod?: DashboardPeriod;
 }
 
 export interface ChartDataPoint {
@@ -647,7 +648,7 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
   if (params.serviceId) whereCurrent.serviceId = params.serviceId;
   if (params.technicianId) whereCurrent.technicianId = params.technicianId;
 
-  // Busca paralela
+  // Busca paralela principal
   const [tickets, history, activeTechs] = await Promise.all([
     prisma.ticket.findMany({
       where: whereCurrent,
@@ -677,10 +678,30 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
     }),
   ]);
 
+  // Busca paralela para a Equipe, se o teamPeriod for diferente
+  let teamTickets = tickets;
+  if (params.teamPeriod && params.teamPeriod !== params.period) {
+    const teamRange = getPeriodRange({ period: params.teamPeriod });
+    teamTickets = await prisma.ticket.findMany({
+      where: {
+        deletedAt: null,
+        ticketDate: { gte: teamRange.start, lte: teamRange.end },
+      },
+      include: {
+        sector: true,
+        service: true,
+        technician: true,
+        requester: true,
+        pauses: true,
+      },
+    });
+  }
+
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
 
   let inProgress = 0;
+  let inService = 0;
   let waiting = 0;
   let unassigned = 0;
   let resolvedToday = 0;
@@ -699,10 +720,28 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
   }));
 
   const criticalTickets: any[] = [];
-  const techStats: Record<string, { id: string, name: string, activeCount: number, resolvedToday: number }> = {};
+  const slaRiskTickets: any[] = [];
+  
+  const techStats: Record<string, { 
+    id: string, 
+    name: string, 
+    activeCount: number, 
+    resolvedToday: number,
+    resolvedInPeriod: number,
+    totalTimeInPeriod: number,
+    avgTimeMinutes: number
+  }> = {};
 
   activeTechs.forEach(tech => {
-    techStats[tech.id] = { id: tech.id, name: tech.name, activeCount: 0, resolvedToday: 0 };
+    techStats[tech.id] = { 
+      id: tech.id, 
+      name: tech.name, 
+      activeCount: 0, 
+      resolvedToday: 0,
+      resolvedInPeriod: 0,
+      totalTimeInPeriod: 0,
+      avgTimeMinutes: 0
+    };
   });
 
   const calculateEffectiveTime = (t: any): number => {
@@ -724,10 +763,35 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
     return 0;
   };
 
+  // Popula team stats usando o array de tickets correto (teamTickets)
+  teamTickets.forEach(t => {
+    if (t.status !== "RESOLVIDO" && t.status !== "CANCELADO" && t.technicianId && techStats[t.technicianId]) {
+      techStats[t.technicianId].activeCount++;
+    }
+    
+    if (t.status === "RESOLVIDO") {
+      const closedDate = new Date(t.updatedAt).toISOString().slice(0, 10);
+      if (closedDate === todayStr && t.technicianId && techStats[t.technicianId]) {
+        techStats[t.technicianId].resolvedToday++;
+      }
+      
+      if (t.technicianId && techStats[t.technicianId]) {
+        techStats[t.technicianId].resolvedInPeriod++;
+        techStats[t.technicianId].totalTimeInPeriod += calculateEffectiveTime(t);
+      }
+    }
+  });
+
+  // Calcula tempo médio
+  Object.values(techStats).forEach(ts => {
+    ts.avgTimeMinutes = ts.resolvedInPeriod > 0 ? Math.round(ts.totalTimeInPeriod / ts.resolvedInPeriod) : 0;
+  });
+
   tickets.forEach(t => {
     // Basic counts
     if (t.status === "ABERTO") inProgress++;
-    if (t.status === "AGUARDANDO_USUARIO" || t.status === "AGUARDANDO_PECA") waiting++;
+    if (t.status === "EM_ANDAMENTO" || t.status === "EM_ATENDIMENTO") inService++;
+    if (t.status === "AGUARDANDO_USUARIO" || t.status === "AGUARDANDO_PECA" || t.status === "AGUARDANDO") waiting++;
     if (!t.technicianId) unassigned++;
     
     // Critical
@@ -748,28 +812,47 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
       const closedDate = new Date(t.updatedAt).toISOString().slice(0, 10);
       if (closedDate === todayStr) {
         resolvedToday++;
-        if (t.technicianId && techStats[t.technicianId]) {
-          techStats[t.technicianId].resolvedToday++;
-        }
       }
-      
       if (typeof t.totalTimeMinutes === 'number') {
          totalResolvedTime += t.totalTimeMinutes;
       }
     }
 
-    // Active per tech
-    if (t.status !== "RESOLVIDO" && t.status !== "CANCELADO" && t.technicianId && techStats[t.technicianId]) {
-      techStats[t.technicianId].activeCount++;
-    }
-
-    // SLA calculation
+    // SLA calculation and SLA Risk
     if (t.dueDate) {
       totalWithSla++;
       if (t.status === "RESOLVIDO") {
         if (new Date(t.updatedAt) <= new Date(t.dueDate)) totalSlaMet++;
       } else if (t.status !== "CANCELADO") {
-        if (now <= new Date(t.dueDate)) totalSlaMet++;
+        const dueTime = new Date(t.dueDate).getTime();
+        const nowTime = now.getTime();
+        if (nowTime <= dueTime) {
+          totalSlaMet++;
+          
+          // Se faltam 2 horas ou menos, é risco de SLA
+          const msLeft = dueTime - nowTime;
+          if (msLeft <= 2 * 60 * 60 * 1000) {
+            slaRiskTickets.push({
+              id: t.id,
+              number: t.ticketNumber,
+              title: t.problem,
+              dueDate: t.dueDate,
+              msLeft,
+              technicianName: t.technician?.name || null
+            });
+          }
+        } else {
+            // Estourado
+            slaRiskTickets.push({
+              id: t.id,
+              number: t.ticketNumber,
+              title: t.problem,
+              dueDate: t.dueDate,
+              msLeft: dueTime - nowTime, // Negativo
+              technicianName: t.technician?.name || null,
+              breached: true
+            });
+        }
       }
     }
 
@@ -802,11 +885,15 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
 
   const teamList = Object.values(techStats).sort((a, b) => b.activeCount - a.activeCount);
   const rankingList = [...teamList].sort((a, b) => b.resolvedToday - a.resolvedToday).slice(0, 5);
+  
+  // Ordenar chamados de risco por quão estourados/próximos estão
+  slaRiskTickets.sort((a, b) => a.msLeft - b.msLeft);
 
   return {
     kpis: {
       total: tickets.length,
       inProgress,
+      inService,
       waiting,
       unassigned,
       resolvedToday,
@@ -814,12 +901,14 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
       slaPercent,
       avgTimeMinutes,
       avgTimeFormatted: formatMinutes(avgTimeMinutes),
+      slaRiskCount: slaRiskTickets.length
     },
     charts: {
       byHour: byHourChart,
     },
     lists: {
       criticalTickets: criticalTickets.slice(0, 5),
+      slaRiskTickets: slaRiskTickets.slice(0, 10),
       recentEvents: history.map(h => ({
         id: h.id,
         actor: h.actorName || "Sistema",

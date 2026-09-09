@@ -9,9 +9,9 @@ export interface CreateTicketInput {
   requesterName: string;
   requesterEmail?: string;
   requesterId?: string;
-  sectorId: string;
+  sectorId?: string | null;
   technicianId?: string | null;
-  serviceId: string;
+  serviceId?: string | null;
   problem: string;
   description?: string;
   status?: StatusType;
@@ -97,16 +97,17 @@ export async function createTicket(
   const totalTimeMinutes = calculateTotalTimeMinutes(startTime, endTime);
   const ticketDateObj = input.ticketDate ? new Date(input.ticketDate) : new Date();
 
-  // Buscar SLA do serviço para calcular dueDate
-  const service = await prisma.service.findUnique({
-    where: { id: input.serviceId },
-    select: { slaHours: true }
-  });
-  
   let dueDate: Date | null = null;
-  if (service?.slaHours) {
-    dueDate = new Date(ticketDateObj.getTime());
-    dueDate.setHours(dueDate.getHours() + service.slaHours);
+  if (input.serviceId) {
+    const service = await prisma.service.findUnique({
+      where: { id: input.serviceId },
+      select: { slaHours: true }
+    });
+    
+    if (service?.slaHours) {
+      dueDate = new Date(ticketDateObj.getTime());
+      dueDate.setHours(dueDate.getHours() + service.slaHours);
+    }
   }
 
   const ticket: any = await createTicketInMonthWithRetry(
@@ -114,9 +115,9 @@ export async function createTicket(
       problem: input.problem.trim(),
       description: input.description?.trim() || null,
       requesterId: requester.id,
-      sectorId: input.sectorId,
+      sectorId: input.sectorId || null,
       technicianId: input.technicianId || null,
-      serviceId: input.serviceId,
+      serviceId: input.serviceId || null,
       status,
       origin: input.origin || "MANUAL",
       priority: input.priority || "MEDIA",

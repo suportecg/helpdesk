@@ -134,9 +134,11 @@ export function ChangeStatusModal({
 
   const statusList = [
     { code: "ABERTO", label: "Aberto", icon: Clock, color: "text-amber-500" },
+    { code: "EM_ATENDIMENTO", label: "Em Atendimento", icon: Clock, color: "text-indigo-500" },
+    { code: "AGUARDANDO_USUARIO", label: "Aguard. Usuário", icon: AlertTriangle, color: "text-blue-500" },
+    { code: "AGUARDANDO_TERCEIROS", label: "Aguard. Terceiros", icon: AlertTriangle, color: "text-orange-500" },
     { code: "RESOLVIDO", label: "Resolvido", icon: CheckCircle2, color: "text-emerald-500" },
-    { code: "AGUARDANDO_USUARIO", label: "Aguardando", icon: AlertTriangle, color: "text-blue-500" },
-    { code: "AGUARDANDO_PECA", label: "Agendado", icon: Clock, color: "text-purple-500" },
+    { code: "CANCELADO", label: "Cancelado", icon: AlertTriangle, color: "text-red-500" },
   ];
 
   return (

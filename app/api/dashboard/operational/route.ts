@@ -39,6 +39,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const teamPeriod = searchParams.get("teamPeriod") as DashboardPeriod | undefined;
+
     const data = await getOperationalDashboardData({
       period: monthYear ? "MONTHLY_SPECIFIC" : (periodParam || "TODAY"),
       startDate,
@@ -47,6 +49,7 @@ export async function GET(request: NextRequest) {
       sectorId: sectorId !== "ALL" ? sectorId : undefined,
       serviceId: serviceId !== "ALL" ? serviceId : undefined,
       technicianId: technicianId !== "ALL" ? technicianId : undefined,
+      teamPeriod: teamPeriod,
     });
 
     return NextResponse.json({ ...data, userName: session.name }, { status: 200 });

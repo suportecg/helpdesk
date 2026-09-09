@@ -357,12 +357,12 @@ model Ticket {
   description      String?        // Descrição (opcional)
   requesterId      String         // FK Solicitante
   requester        Requester      @relation(fields: [requesterId], references: [id])
-  sectorId         String         // FK Setor
-  sector           Sector         @relation(fields: [sectorId], references: [id])
+  sectorId         String?        // FK Setor
+  sector           Sector?        @relation(fields: [sectorId], references: [id])
   technicianId     String?        // FK Técnico Responsável
   technician       User?          @relation("TicketTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
-  serviceId        String         // FK Serviço (catálogo)
-  service          Service        @relation(fields: [serviceId], references: [id])
+  serviceId        String?        // FK Serviço (catálogo)
+  service          Service?       @relation(fields: [serviceId], references: [id])
   status           StatusType     @default(ABERTO)
   origin           OrigemType     @default(MANUAL)
   priority         PrioridadeType @default(MEDIA)
