@@ -162,7 +162,7 @@ export default function EmailTemplatesManager() {
                   required
                   value={formData.name || ""}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  className="w-full bg-card border border-input rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                   placeholder="Ex: Abertura de Chamado"
                 />
               </div>
@@ -189,7 +189,7 @@ export default function EmailTemplatesManager() {
                 required
                 value={formData.subject || ""}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                className="w-full bg-card border border-input rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                 placeholder="Chamado #{{ticketNumber}} Aberto"
               />
               <p className="text-xs text-muted-foreground mt-1">Variáveis no assunto: {'{{ticketNumber}}, {{systemName}}'}</p>
@@ -261,7 +261,7 @@ export default function EmailTemplatesManager() {
 
         {/* Modal de Preview */}
         {isPreviewOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-card/80 backdrop-blur-sm animate-in fade-in">
             <div className="bg-card border border-border w-full max-w-3xl rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
               <div className="flex items-center justify-between p-4 border-b border-border/50">
                 <h3 className="font-bold flex items-center gap-2"><Eye /> Pré-visualização do Template</h3>
@@ -272,12 +272,12 @@ export default function EmailTemplatesManager() {
               <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-[#f1f5f9]">
                 {/* Mock do layout base do email */}
                 <div 
-                  className="max-w-[600px] mx-auto bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden font-sans"
+                  className="max-w-[600px] mx-auto bg-card rounded-lg shadow-sm border border-border/60 overflow-hidden font-sans"
                   style={{ fontFamily: "Arial, sans-serif" }}
                 >
                   <div className="h-2 w-full" style={{ backgroundColor: formData.primaryColor || "#2563eb" }}></div>
                   <div className="p-8 text-gray-800" dangerouslySetInnerHTML={{ __html: getPreviewHtml() }} />
-                  <div className="bg-gray-50 border-t border-gray-100 p-6 text-center text-xs text-gray-500">
+                  <div className="bg-muted/30 border-t border-gray-100 p-6 text-center text-xs text-gray-500">
                     Este é um e-mail automático enviado por CG Construções HelpDesk.
                   </div>
                 </div>

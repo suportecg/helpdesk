@@ -91,15 +91,15 @@ export default function SignatureSettingsModal({ onClose, onSave }: SignatureSet
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-card rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+        <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between bg-muted/30">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             Configurar Assinatura
           </h2>
           <button 
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+            className="p-2 text-muted-foreground/80 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
           >
             <X className="w-5 h-5" weight="bold" />
           </button>
@@ -113,48 +113,48 @@ export default function SignatureSettingsModal({ onClose, onSave }: SignatureSet
                 <ImageSquare className="w-6 h-6" />
               </div>
               <div>
-                <label className="text-[12px] font-bold uppercase tracking-wider text-slate-700 mb-1 block">URL da Logo</label>
+                <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">URL da Logo</label>
                 <input 
                   type="url"
                   placeholder="https://exemplo.com/logo.png"
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
-                  className="w-full text-sm bg-white border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-[#4f78f5] transition-colors"
+                  className="w-full text-sm bg-card border border-border rounded-md px-3 py-2 outline-none focus:border-[#4f78f5] transition-colors"
                 />
-                <p className="text-[11px] text-slate-500 mt-1.5">Insira o link direto para a imagem da logo da empresa.</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5">Insira o link direto para a imagem da logo da empresa.</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Nome</label>
-                <input required type="text" value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Hudson Eduardo" className="w-full text-sm bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Nome</label>
+                <input required type="text" value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Hudson Eduardo" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
-                <label className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Cargo</label>
-                <input required type="text" value={cargo} onChange={e => setCargo(e.target.value)} placeholder="Ex: Auxiliar de TI" className="w-full text-sm bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Cargo</label>
+                <input required type="text" value={cargo} onChange={e => setCargo(e.target.value)} placeholder="Ex: Auxiliar de TI" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
-                <label className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Empresa</label>
-                <input required type="text" value={empresa} onChange={e => setEmpresa(e.target.value)} placeholder="Ex: CG Construções" className="w-full text-sm bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Empresa</label>
+                <input required type="text" value={empresa} onChange={e => setEmpresa(e.target.value)} placeholder="Ex: CG Construções" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
-                <label className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">E-mail</label>
-                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Ex: hudsoneduardo@..." className="w-full text-sm bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">E-mail</label>
+                <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Ex: hudsoneduardo@..." className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
-                <label className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Telefone</label>
-                <input required type="text" value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="Ex: (85) 99209-6253" className="w-full text-sm bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Telefone</label>
+                <input required type="text" value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="Ex: (85) 99209-6253" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
               <div>
-                <label className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Website</label>
-                <input required type="text" value={site} onChange={e => setSite(e.target.value)} placeholder="Ex: www.cgconstrucoes.com" className="w-full text-sm bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
+                <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Website</label>
+                <input required type="text" value={site} onChange={e => setSite(e.target.value)} placeholder="Ex: www.cgconstrucoes.com" className="w-full text-sm bg-muted/30 border border-border/60 rounded-md px-3 py-2.5 outline-none focus:border-[#4f78f5]" />
               </div>
             </div>
 
             <div className="mt-8">
-              <label className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-2 block">Pré-visualização</label>
-              <div className="border border-slate-200 rounded-lg p-5 bg-white shadow-sm overflow-x-auto">
+              <label className="text-[12px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Pré-visualização</label>
+              <div className="border border-border/60 rounded-lg p-5 bg-card shadow-sm overflow-x-auto">
                 <table style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", marginTop: "10px", borderCollapse: "collapse" }}>
                   <tbody>
                     <tr>
@@ -187,11 +187,11 @@ export default function SignatureSettingsModal({ onClose, onSave }: SignatureSet
           </form>
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+        <div className="px-6 py-4 bg-muted/30 border-t border-border/40 flex justify-end gap-3">
           <button 
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+            className="px-5 py-2.5 rounded-lg text-sm font-bold text-muted-foreground hover:bg-slate-200 transition-colors"
           >
             Cancelar
           </button>
