@@ -76,6 +76,21 @@ export async function updateTicket(
     endTime = null;
   }
 
+  if (status === "RESOLVIDO" && existing.status !== "RESOLVIDO") {
+    const openChildrenCount = await prisma.ticket.count({
+      where: {
+        parentId: id,
+        status: {
+          notIn: ["RESOLVIDO", "CANCELADO"]
+        }
+      }
+    });
+
+    if (openChildrenCount > 0) {
+      throw new Error("Não é possível resolver este chamado pois ele possui chamados filhos ainda em aberto.");
+    }
+  }
+
   const totalTimeMinutes = calculateTotalTimeMinutes(startTime, endTime);
 
   let dueDate = existing.dueDate;

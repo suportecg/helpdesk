@@ -44,9 +44,12 @@ export function DataTable<T>({
     <div className="w-full overflow-hidden rounded-xl border border-border bg-card">
       <Table className={className}>
         <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40">
+          <TableRow className="border-b bg-transparent hover:bg-transparent">
             {columns.map((col) => (
-              <TableHead key={col.key} className={col.className}>
+              <TableHead 
+                key={col.key} 
+                className={`h-11 text-[11px] font-medium uppercase tracking-wider text-muted-foreground ${col.className || ""}`}
+              >
                 {col.label}
               </TableHead>
             ))}
@@ -81,7 +84,7 @@ export function DataTable<T>({
                 <TableRow
                   key={key}
                   onClick={onRowClick ? () => onRowClick(item) : undefined}
-                  className={onRowClick ? "cursor-pointer hover:bg-muted/60" : undefined}
+                  className={onRowClick ? "cursor-pointer hover:bg-muted/30 transition-colors group" : "hover:bg-muted/30 transition-colors group"}
                 >
                   {columns.map((col) => (
                     <TableCell key={col.key} className={col.className}>

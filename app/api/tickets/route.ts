@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
       startTime,
       endTime,
       observations,
+      parentId,
     } = body;
 
     if (!requesterName || !sectorId || !serviceId || !problem) {
@@ -121,6 +122,7 @@ export async function POST(request: NextRequest) {
         startTime,
         endTime,
         observations,
+        parentId,
       },
       session.id,
       session.name,

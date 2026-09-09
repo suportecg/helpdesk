@@ -56,7 +56,7 @@ export async function POST(
 
     const { id } = await params;
     const body = await request.json();
-    const { text, isInternal, replyAll } = body;
+    const { text, isInternal, replyAll, nextStatus, solutionHtml, signatureHtml } = body;
 
     const content = text || body.content; // backward compatibility
 
@@ -64,7 +64,7 @@ export async function POST(
       return NextResponse.json({ error: "O comentário não pode estar vazio." }, { status: 400 });
     }
 
-    const comment = await addTicketComment(id, content, session.id, session.name, isInternal, replyAll);
+    const comment = await addTicketComment(id, content, session.id, session.name, isInternal, replyAll, nextStatus, solutionHtml, signatureHtml);
     return NextResponse.json(comment, { status: 201 });
   } catch (error: any) {
     console.error("[HelpDesk API] Erro em POST /api/tickets/[id]/comments:", error);

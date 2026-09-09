@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { to, subject, content, inReplyTo, menuPath, isPublic, attachments, cc } = data;
+    const { to, subject, content, inReplyTo, menuPath, isPublic, attachments, cc, ticketId, nextStatus, solutionHtml } = data;
 
     if (!to || !subject || !content) {
       return NextResponse.json({ error: "Campos 'to', 'subject' e 'content' são obrigatórios" }, { status: 400 });
@@ -60,12 +60,63 @@ export async function POST(request: NextRequest) {
         }
         
         replies.push(newReply);
-        
-        await prisma.processedEmail.update({
-          where: { messageId: inReplyTo },
-          data: { manualReplies: replies }
+        let safeSolution = undefined;
+        if (solutionHtml && isPublic) {
+          const DOMPurify = require("isomorphic-dompurify");
+          safeSolution = DOMPurify.sanitize(solutionHtml);
+        }
+
+        await prisma.$transaction(async (tx) => {
+          await tx.processedEmail.update({
+            where: { messageId: inReplyTo },
+            data: { manualReplies: replies }
+          });
+          
+          if (ticketId && nextStatus) {
+            await tx.ticket.update({
+              where: { id: ticketId },
+              data: {
+                status: nextStatus,
+                ...(safeSolution !== undefined ? { solution: safeSolution } : {})
+              }
+            });
+            await tx.ticketHistory.create({
+              data: {
+                ticketId,
+                actorId: session.id || "admin",
+                actorName: session.name || "Admin",
+                eventType: "STATUS_CHANGED",
+                description: `Alterou o status para ${nextStatus}.`,
+              },
+            });
+          }
         });
       }
+    } else if (ticketId && nextStatus) {
+      // Caso não seja um inReplyTo (ex: e-mail solto mas atrelado a ticketId), ainda queremos atualizar status
+      let safeSolution = undefined;
+      if (solutionHtml && isPublic) {
+        const DOMPurify = require("isomorphic-dompurify");
+        safeSolution = DOMPurify.sanitize(solutionHtml);
+      }
+      await prisma.$transaction(async (tx) => {
+        await tx.ticket.update({
+          where: { id: ticketId },
+          data: {
+            status: nextStatus,
+            ...(safeSolution !== undefined ? { solution: safeSolution } : {})
+          }
+        });
+        await tx.ticketHistory.create({
+          data: {
+            ticketId,
+            actorId: session.id || "admin",
+            actorName: session.name || "Admin",
+            eventType: "STATUS_CHANGED",
+            description: `Alterou o status para ${nextStatus}.`,
+          },
+        });
+      });
     }
 
     return NextResponse.json({ success: true, message: "E-mail enviado com sucesso" });

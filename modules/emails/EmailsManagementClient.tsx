@@ -319,26 +319,32 @@ export default function EmailsManagementClient({ initialEmails }: EmailsManageme
                         </div>
                         
                         {/* 7. REMETENTE & 9. ID */}
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-[13px] text-slate-500 mb-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-[13px] text-slate-500 mb-3">
                           <span className="truncate" title={email.from || ""}>
-                            De: <span className="font-medium text-slate-600">{email.from}</span>
+                            De: <span className="font-semibold text-slate-700">{email.from}</span>
                           </span>
                           <span className="hidden sm:inline text-slate-300">•</span>
-                          <span className="truncate font-mono text-[11px] text-slate-400" title={email.messageId}>
-                            ID: {email.messageId}
-                          </span>
+                          
+                          <div className="group/id relative" onClick={(e) => e.stopPropagation()}>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 cursor-pointer hover:text-[#4f78f5] transition-colors flex items-center gap-1">
+                              <Code className="w-3.5 h-3.5" /> ID da Mensagem
+                            </span>
+                            <div className="absolute left-0 top-full mt-1.5 hidden group-hover/id:block bg-slate-800 text-slate-100 text-[10px] p-2.5 rounded shadow-xl z-50 max-w-sm break-all font-mono border border-slate-700">
+                              {email.messageId}
+                            </div>
+                          </div>
                         </div>
                         
                         {/* 10. BADGES */}
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
                           {email.ticketId && (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#4f78f5]/10 text-[#4f78f5] text-[10px] font-bold uppercase tracking-wider">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#4f78f5]/10 text-[#4f78f5] text-[10px] font-bold uppercase tracking-wider shadow-sm border border-[#4f78f5]/20">
                               Ticket #{email.ticket?.ticketNumber || email.ticketId} Gerado
                             </div>
                           )}
                           
                           {email.status === 'ERROR' && (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 text-[10px] font-bold uppercase tracking-wider">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 text-[10px] font-bold uppercase tracking-wider shadow-sm border border-amber-500/20">
                               Falha no processamento
                             </div>
                           )}

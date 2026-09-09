@@ -24,6 +24,7 @@ export interface CreateTicketInput {
   cc?: string | null;
   totalTimeMinutes?: number | null;
   isArchived?: boolean;
+  parentId?: string | null;
 }
 
 /**
@@ -110,6 +111,19 @@ export async function createTicket(
     }
   }
 
+  if (input.parentId) {
+    const parentTicket = await prisma.ticket.findUnique({
+      where: { id: input.parentId },
+      select: { id: true, parentId: true }
+    });
+    if (!parentTicket) {
+      throw new Error("O chamado pai informado não existe.");
+    }
+    if (parentTicket.parentId) {
+      throw new Error("A hierarquia de chamados é limitada a 1 nível. Não é possível vincular um chamado a outro que já é um chamado filho.");
+    }
+  }
+
   const ticket: any = await createTicketInMonthWithRetry(
     {
       problem: input.problem.trim(),
@@ -129,6 +143,7 @@ export async function createTicket(
       observations: input.observations?.trim() || null,
       isArchived: input.isArchived || false,
       cc: input.cc || null,
+      parentId: input.parentId || null,
     },
     ticketDateObj
   );
@@ -139,7 +154,7 @@ export async function createTicket(
       actorId: actorId || null,
       actorName: actorName || "Sistema",
       eventType: "CREATED",
-      description: "Chamado criado.",
+      description: ticket.origin === "EMAIL" ? "Ticket aberto por e-mail." : "Ticket criado.",
     },
   });
 

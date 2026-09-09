@@ -36,11 +36,14 @@ import { getTicketMonthYear, formatTicketNumber } from "@/services/ticket/ticket
 import { calculateBusinessMinutes } from "@/lib/business-hours";
 import { RequesterHistoryCard } from "./RequesterHistoryCard";
 import { Combobox } from "@/components/common/Combobox";
+import SignatureSettingsModal from "../emails/SignatureSettingsModal";
+import { Pencil } from "lucide-react";
 
 export interface TicketModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ticketId?: string | null;
+  parentId?: string | null;
   sectors: Array<{ id: string; name: string }>;
   services: Array<{ id: string; name: string; category?: string | null }>;
   technicians: Array<{ id: string; name: string; email: string }>;
@@ -57,6 +60,7 @@ export function TicketModal({
   technicians,
   onSaved,
   initialStatus,
+  parentId,
 }: TicketModalProps) {
   const isEditing = Boolean(ticketId);
 
@@ -99,6 +103,8 @@ export function TicketModal({
   
   const [ccAddresses, setCcAddresses] = useState<string | null>(null);
   const [replyAll, setReplyAll] = useState(true);
+  const [signatureHtml, setSignatureHtml] = useState("");
+  const [showSignatureSettings, setShowSignatureSettings] = useState(false);
 
   // Load ticket data if editing
   useEffect(() => {
@@ -142,6 +148,16 @@ export function TicketModal({
     } else {
       setStartTime(toLocalDatetimeString(new Date()));
     }
+
+    // Load signature
+    try {
+      const savedSig = localStorage.getItem("@helpdesk:signature");
+      if (savedSig) {
+        const sig = JSON.parse(savedSig);
+        setSignatureHtml(sig.html || "");
+      }
+    } catch (e) {}
+
   }, [open, ticketId]);
 
   async function fetchTicketDetails(id: string, toLocalDatetimeString: (d: any) => string) {
@@ -259,6 +275,7 @@ export function TicketModal({
         sectorId,
         serviceId,
         technicianId: technicianId || null,
+        parentId: parentId || undefined,
         problem,
         description,
         status,
@@ -338,6 +355,7 @@ export function TicketModal({
           text: newComment,
           isInternal: isInternalComment,
           replyAll: !isInternalComment && replyAll ? true : false,
+          signatureHtml: (!isInternalComment && signatureHtml) ? signatureHtml : undefined
         }),
       });
       if (res.ok) {
@@ -354,527 +372,521 @@ export function TicketModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[780px] max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" />
-            {isEditing ? "Editar Chamado" : "Novo Chamado"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? "Atualize as informações operacionais, acompanhe a timeline e comentários internos."
-              : "Substituição completa da planilha de TI com numeração automática e histórico."}
-          </DialogDescription>
-        </DialogHeader>
-
-        {/* Abas */}
-        <div className="flex items-center gap-1 border-b border-border/60 pb-2 mt-2">
-          <Button
-            type="button"
-            variant={activeTab === "INFO" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveTab("INFO")}
-            className="text-xs"
-          >
-            <FileText className="w-3.5 h-3.5 mr-1.5" />
-            Informações
-          </Button>
-          {isEditing && (
-            <>
-              <Button
-                type="button"
-                variant={activeTab === "TIMELINE" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setActiveTab("TIMELINE")}
-                className="text-xs"
-              >
-                <History className="w-3.5 h-3.5 mr-1.5" />
-                Histórico (Timeline)
-                {historyEvents.length > 0 && (
-                  <Badge variant="secondary" className="ml-1.5 px-1 py-0 text-[10px]">
-                    {historyEvents.length}
-                  </Badge>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant={activeTab === "COMMENTS" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setActiveTab("COMMENTS")}
-                className="text-xs"
-              >
-                <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
-                Comentários Internos
-                {comments.length > 0 && (
-                  <Badge variant="secondary" className="ml-1.5 px-1 py-0 text-[10px]">
-                    {comments.length}
-                  </Badge>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant={activeTab === "ATTACHMENTS" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setActiveTab("ATTACHMENTS")}
-                className="text-xs"
-              >
-                <FileText className="w-3.5 h-3.5 mr-1.5" />
-                Anexos
-                {attachments.length > 0 && (
-                  <Badge variant="secondary" className="ml-1.5 px-1 py-0 text-[10px]">
-                    {attachments.length}
-                  </Badge>
-                )}
-              </Button>
-            </>
-          )}
-        </div>
-
+      <DialogContent className="sm:max-w-[1100px] h-[90vh] max-h-[900px] p-0 overflow-hidden bg-background border-border/60 shadow-2xl flex flex-col md:flex-row [&>button:last-child]:top-4 [&>button:last-child]:right-4">
         {loading ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">
+          <div className="w-full flex items-center justify-center p-12 text-sm text-muted-foreground">
             Carregando detalhes do chamado...
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 py-2">
-            {/* ABA: INFORMAÇÕES */}
-            {activeTab === "INFO" && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Lado Esquerdo - Campos Principais (2 colunas) */}
-                <div className="md:col-span-2 space-y-3">
-                  {/* Solicitante (Combobox inteligente / Cadastro automático) */}
-                  <div>
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-                      Solicitante * (Digite para auto-completar ou criar)
-                    </label>
-                    <Combobox
-                      options={suggestions.map((s) => ({
-                        id: s.id || s.name,
-                        name: s.name,
-                        subtitle: s.email,
-                      }))}
-                      value={requesterId || requesterName}
-                      onChange={(val, item) => {
-                        if (item) {
-                          handleSelectSuggestion({
-                            id: item.id,
-                            name: item.name,
-                            email: item.subtitle || "",
-                          });
-                        } else {
-                          setRequesterName("");
-                          setRequesterId(null);
-                        }
-                      }}
-                      onSearchChange={(query) => {
-                        setRequesterName(query);
-                        handleRequesterChange(query);
-                      }}
-                      placeholder={requesterName || "Selecione ou crie o solicitante..."}
-                      searchPlaceholder="Digite nome ou e-mail..."
-                      allowCreate={true}
-                      onCreate={(typedName) => {
-                        setRequesterName(typedName);
-                        setRequesterId(null);
-                      }}
-                      createLabelPrefix="+ Criar"
-                      isLoading={isLoadingRequesters}
-                      onOpen={handleLoadAllRequesters}
-                    />
-                  </div>
+          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row w-full h-full overflow-hidden">
+            {/* COLUNA ESQUERDA - SIDEBAR DE PROPRIEDADES */}
+            <div className="w-full md:w-[32%] bg-muted/10 border-r border-border/40 p-5 overflow-y-auto flex flex-col gap-4">
+              <div className="mb-2">
+                <DialogTitle className="flex items-center gap-2 text-lg font-bold">
+                  <FileText className="w-5 h-5 text-primary" />
+                  {isEditing ? "Editar Chamado" : "Novo Chamado"}
+                </DialogTitle>
+                <DialogDescription className="text-xs mt-1">
+                  {isEditing ? "Atualize as informações operacionais." : "Preencha as propriedades."}
+                </DialogDescription>
+              </div>
 
-                  {/* Setor e Serviço */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-                        Setor *
-                      </label>
-                      <Combobox
-                        options={sectors.map((s) => ({
-                          id: s.id,
-                          name: s.name,
-                        }))}
-                        value={sectorId}
-                        onChange={(val) => setSectorId(val || "")}
-                        placeholder="Selecione o Setor..."
-                        searchPlaceholder="Pesquisar setor..."
-                      />
-                    </div>
+              {/* Solicitante */}
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                  Solicitante *
+                </label>
+                <Combobox
+                  options={suggestions.map((s) => ({
+                    id: s.id || s.name,
+                    name: s.name,
+                    subtitle: s.email,
+                  }))}
+                  value={requesterId || requesterName}
+                  onChange={(val, item) => {
+                    if (item) {
+                      handleSelectSuggestion({
+                        id: item.id,
+                        name: item.name,
+                        email: item.subtitle || "",
+                      });
+                    } else {
+                      setRequesterName("");
+                      setRequesterId(null);
+                    }
+                  }}
+                  onSearchChange={(query) => {
+                    setRequesterName(query);
+                    handleRequesterChange(query);
+                  }}
+                  placeholder={requesterName || "Buscar ou criar..."}
+                  searchPlaceholder="Digite nome ou e-mail..."
+                  allowCreate={true}
+                  onCreate={(typedName) => {
+                    setRequesterName(typedName);
+                    setRequesterId(null);
+                  }}
+                  createLabelPrefix="+ Criar"
+                  isLoading={isLoadingRequesters}
+                  onOpen={handleLoadAllRequesters}
+                />
+              </div>
 
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-                        Serviço (Catálogo) *
-                      </label>
-                      <Combobox
-                        options={services.map((sv) => ({
-                          id: sv.id,
-                          name: sv.name,
-                          badge: sv.category || "TI",
-                        }))}
-                        value={serviceId}
-                        onChange={(val) => setServiceId(val || "")}
-                        placeholder="Selecione o Serviço..."
-                        searchPlaceholder="Pesquisar serviço..."
-                      />
-                    </div>
-                  </div>
+              {/* Setor */}
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                  Setor *
+                </label>
+                <Combobox
+                  options={sectors.map((s) => ({
+                    id: s.id,
+                    name: s.name,
+                  }))}
+                  value={sectorId}
+                  onChange={(val) => setSectorId(val || "")}
+                  placeholder="Selecione o Setor..."
+                  searchPlaceholder="Pesquisar setor..."
+                />
+              </div>
 
-                  {/* Problema (Texto Livre Obrigatório) */}
-                  <div>
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-                      Problema * (Texto Livre — Nunca Será Cadastro)
-                    </label>
-                    <Input
-                      placeholder="Ex: Impressora apresentando lentidão ao imprimir boletos Fortes"
-                      value={problem}
-                      onChange={(e) => setProblem(e.target.value)}
-                      className="text-sm"
-                      required
-                    />
-                  </div>
+              {/* Serviço */}
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                  Serviço (Catálogo) *
+                </label>
+                <Combobox
+                  options={services.map((sv) => ({
+                    id: sv.id,
+                    name: sv.name,
+                    badge: sv.category || "TI",
+                  }))}
+                  value={serviceId}
+                  onChange={(val) => setServiceId(val || "")}
+                  placeholder="Selecione o Serviço..."
+                  searchPlaceholder="Pesquisar serviço..."
+                />
+              </div>
 
-                  {/* Descrição (Opcional) */}
-                  <div>
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-                      Descrição Detalhada (Opcional)
-                    </label>
-                    <textarea
-                      placeholder="Informe observações técnicas iniciais ou relato do usuário..."
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={3}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
-                  {/* Status, Origem e Prioridade */}
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-                        Status
-                      </label>
-                      <select
-                        className="w-full h-9 px-2 text-xs rounded-md border border-input bg-background"
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                      >
-                        <option value="ABERTO">Aberto</option>
-                        <option value="EM_ATENDIMENTO">Em Atendimento</option>
-                        <option value="AGUARDANDO_TERCEIROS">Aguardando Terceiros</option>
-                        <option value="AGUARDANDO_USUARIO">Aguardando Usuário</option>
-                        <option value="RESOLVIDO">Resolvido</option>
-                        <option value="CANCELADO">Cancelado</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-                        Origem
-                      </label>
-                      <select
-                        className="w-full h-9 px-2 text-xs rounded-md border border-input bg-background"
-                        value={origin}
-                        onChange={(e) => setOrigin(e.target.value)}
-                      >
-                        <option value="MANUAL">Manual</option>
-                        <option value="WHATSAPP">WhatsApp</option>
-                        <option value="EMAIL">E-mail</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-                        Prioridade
-                      </label>
-                      <select
-                        className="w-full h-9 px-2 text-xs rounded-md border border-input bg-background"
-                        value={priority}
-                        onChange={(e) => setPriority(e.target.value)}
-                      >
-                        <option value="BAIXA">Baixa</option>
-                        <option value="MEDIA">Média</option>
-                        <option value="ALTA">Alta</option>
-                        <option value="CRITICA">Crítica</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Técnico Responsável */}
-                  <div>
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-                      Técnico Responsável (ADMIN ou TI)
-                    </label>
-                    <Combobox
-                      options={technicians.map((t) => ({
-                        id: t.id,
-                        name: t.name,
-                        subtitle: t.email,
-                      }))}
-                      value={technicianId}
-                      onChange={(val) => setTechnicianId(val || "")}
-                      placeholder="(Sem técnico — Fila Geral)"
-                      searchPlaceholder="Pesquisar técnico (ADMIN/TI)..."
-                    />
-                  </div>
-
-                  {/* Horários e Cálculo Automático de Tempo */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/20 p-4 rounded-lg border border-border/50">
-                    <div>
-                      <label className="text-xs font-medium text-muted-foreground block mb-1">
-                        Início
-                      </label>
-                      <div className="flex items-center w-full bg-background border border-input rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-primary transition-all">
-                        <input
-                          type="datetime-local"
-                          value={startTime ? startTime.substring(0, 16) : ''}
-                          onChange={(e) => setStartTime(e.target.value)}
-                          className="bg-transparent outline-none text-sm w-full"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-muted-foreground block mb-1">
-                        Fim
-                      </label>
-                      <div className="flex items-center w-full bg-background border border-input rounded-md px-3 py-2 focus-within:ring-2 focus-within:ring-primary transition-all">
-                        <input
-                          type="datetime-local"
-                          value={endTime ? endTime.substring(0, 16) : ''}
-                          onChange={(e) => setEndTime(e.target.value)}
-                          className="bg-transparent outline-none text-sm w-full"
-                        />
-                      </div>
-                    </div>
-                    <div className="md:col-span-2 flex flex-col items-center justify-center bg-primary/10 rounded-md p-3 border border-primary/20 shadow-sm mt-2">
-                      <span className="text-xs font-medium text-primary mb-0.5">
-                        Tempo total (auto)
-                      </span>
-                      <span className="text-2xl font-bold font-mono text-primary">
-                        {getFormattedDuration()}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {status === "RESOLVIDO" && (
-                    <div className="pt-2 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <Label htmlFor="solutionText" className="text-emerald-600 flex items-center gap-1.5 mb-1.5">
-                        Solução / Resolução do Chamado
-                      </Label>
-                      <Textarea
-                        id="solutionText"
-                        placeholder="Descreva o que foi feito para solucionar este chamado (Isso será enviado ao cliente por e-mail)..."
-                        value={solutionText}
-                        onChange={(e) => setSolutionText(e.target.value)}
-                        rows={3}
-                        className="border-emerald-200 focus-visible:ring-emerald-500 bg-emerald-50/30"
-                      />
-                      <p className="text-[10px] text-muted-foreground mt-1">Ao salvar o chamado como Concluído, um e-mail será enviado ao solicitante contendo esta solução.</p>
-                    </div>
-                  )}
+              {/* Status, Prioridade, Origem */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                    Status
+                  </label>
+                  <select
+                    className="w-full h-9 px-2 text-[13px] rounded-md border border-input bg-background focus:bg-background outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                  >
+                    <option value="ABERTO">Aberto</option>
+                    <option value="EM_ATENDIMENTO">Em Atend.</option>
+                    <option value="AGUARDANDO_TERCEIROS">Aguard. Terceiros</option>
+                    <option value="AGUARDANDO_USUARIO">Aguard. Usuário</option>
+                    <option value="RESOLVIDO">Resolvido</option>
+                    <option value="CANCELADO">Cancelado</option>
+                  </select>
                 </div>
-
-                {/* Lado Direito - Card de Histórico do Solicitante */}
-                <div className="space-y-3">
-                  <RequesterHistoryCard
-                    requesterId={requesterId}
-                    requesterName={requesterName}
-                  />
-
-                  {/* Observações Operacionais */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
-                      Observações
-                    </label>
-                    <textarea
-                      placeholder="Anotações extras da equipe de TI..."
-                      value={observations}
-                      onChange={(e) => setObservations(e.target.value)}
-                      rows={3}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                    Prioridade
+                  </label>
+                  <select
+                    className="w-full h-9 px-2 text-[13px] rounded-md border border-input bg-background focus:bg-background outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value)}
+                  >
+                    <option value="BAIXA">Baixa</option>
+                    <option value="MEDIA">Média</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="CRITICA">Crítica</option>
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                    Origem
+                  </label>
+                  <select
+                    className="w-full h-9 px-2 text-[13px] rounded-md border border-input bg-background focus:bg-background outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    value={origin}
+                    onChange={(e) => setOrigin(e.target.value)}
+                  >
+                    <option value="MANUAL">Manual</option>
+                    <option value="WHATSAPP">WhatsApp</option>
+                    <option value="EMAIL">E-mail</option>
+                  </select>
                 </div>
               </div>
-            )}
 
-            {/* ABA: HISTÓRICO (TIMELINE) */}
-            {activeTab === "TIMELINE" && (
-              <div className="space-y-3 py-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Trilha de Eventos e Alterações Operacionais
-                </h4>
-                {historyEvents.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    Nenhum evento registrado nesta timeline.
-                  </p>
-                ) : (
-                  <div className="space-y-3 border-l-2 border-primary/30 pl-4 my-2">
-                    {historyEvents.map((ev) => (
-                      <div key={ev.id} className="relative flex flex-col gap-0.5 text-xs">
-                        <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-background" />
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-foreground">
-                            {ev.description}
-                          </span>
-                          <span className="font-mono text-[11px] text-muted-foreground">
-                            {new Date(ev.createdAt).toLocaleTimeString("pt-BR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}{" "}
-                            ({new Date(ev.createdAt).toLocaleDateString("pt-BR")})
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground">
-                          Autor: <span className="font-medium">{ev.actorName || "Sistema"}</span>
-                        </p>
-                        {ev.oldValue && ev.newValue && (
-                          <div className="text-[10px] bg-muted/40 p-1.5 rounded mt-1 font-mono">
-                            De: <span className="line-through text-red-500">{ev.oldValue}</span> → Para:{" "}
-                            <span className="text-emerald-500 font-bold">{ev.newValue}</span>
+              {/* Técnico */}
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                  Técnico Responsável
+                </label>
+                <Combobox
+                  options={technicians.map((t) => ({
+                    id: t.id,
+                    name: t.name,
+                    subtitle: t.email,
+                  }))}
+                  value={technicianId}
+                  onChange={(val) => setTechnicianId(val || "")}
+                  placeholder="(Fila Geral)"
+                  searchPlaceholder="Pesquisar técnico..."
+                />
+              </div>
+
+              {/* Tempos */}
+              <div className="bg-background border border-border/60 shadow-sm rounded-xl p-4 space-y-4 mt-auto">
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase text-muted-foreground block mb-1.5">
+                      Início
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={startTime ? startTime.substring(0, 16) : ''}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full bg-transparent border-b-2 border-input/50 text-[13px] outline-none focus:border-primary pb-1.5 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold uppercase text-muted-foreground block mb-1.5">
+                      Fim
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={endTime ? endTime.substring(0, 16) : ''}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="w-full bg-transparent border-b-2 border-input/50 text-[13px] outline-none focus:border-primary pb-1.5 transition-colors"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-border/40">
+                  <span className="text-[11px] font-bold uppercase text-muted-foreground">Tempo Total</span>
+                  <span className="text-lg font-bold font-mono text-primary">{getFormattedDuration()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* COLUNA DIREITA - MAIN AREA */}
+            <div className="w-full md:w-[68%] flex flex-col h-full bg-background relative">
+              {/* Header Tabs if Editing */}
+              {isEditing && (
+                <div className="flex items-center gap-1 border-b border-border/40 p-4 bg-muted/5 shrink-0">
+                  <Button
+                    type="button"
+                    variant={activeTab === "INFO" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveTab("INFO")}
+                    className="text-[11px] h-7"
+                  >
+                    Detalhes do Chamado
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={activeTab === "TIMELINE" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveTab("TIMELINE")}
+                    className="text-[11px] h-7"
+                  >
+                    <History className="w-3.5 h-3.5 mr-1" /> Timeline
+                    {historyEvents.length > 0 && <span className="ml-1 opacity-70">({historyEvents.length})</span>}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={activeTab === "COMMENTS" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveTab("COMMENTS")}
+                    className="text-[11px] h-7"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 mr-1" /> Notas Internas
+                    {comments.length > 0 && <span className="ml-1 opacity-70">({comments.length})</span>}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={activeTab === "ATTACHMENTS" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveTab("ATTACHMENTS")}
+                    className="text-[11px] h-7"
+                  >
+                    <FileText className="w-3.5 h-3.5 mr-1" /> Anexos
+                    {attachments.length > 0 && <span className="ml-1 opacity-70">({attachments.length})</span>}
+                  </Button>
+                </div>
+              )}
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {activeTab === "INFO" && (
+                  <div className="flex flex-col h-full">
+                    {/* Assunto grande */}
+                    <div className="shrink-0">
+                      <Input
+                        placeholder="Assunto do ticket (Problema principal)..."
+                        value={problem}
+                        onChange={(e) => setProblem(e.target.value)}
+                        className="text-2xl font-bold border-0 border-b-2 border-transparent hover:border-border focus-visible:border-primary focus-visible:ring-0 rounded-none px-0 h-auto py-2 placeholder:text-muted-foreground/40 shadow-none"
+                        required
+                      />
+                    </div>
+
+                    {/* Descrição Detalhada simulando "Ação" */}
+                    <div className="flex-1 mt-6 flex flex-col border border-border/60 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-primary/50 transition-all shadow-sm bg-background">
+                      <div className="bg-primary/5 px-4 py-2 border-b border-border/40 flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                          <MessageSquare className="w-3.5 h-3.5" /> Descrição Completa do Chamado
+                        </span>
+                      </div>
+                      <textarea
+                        placeholder="Descreva todos os detalhes do chamado, passos para reproduzir, ou a mensagem inicial do usuário..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="flex-1 w-full min-h-[200px] bg-transparent p-4 text-[13px] outline-none resize-none leading-relaxed"
+                      />
+                    </div>
+
+                    {/* Solução se resolvido */}
+                    {status === "RESOLVIDO" && (
+                      <div className="mt-4 p-4 border border-emerald-200/50 bg-emerald-50/50 rounded-xl shrink-0">
+                        <Label className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 mb-2 block">
+                          Solução / Resolução (Enviada ao cliente)
+                        </Label>
+                        <Textarea
+                          placeholder="Descreva o que foi feito para solucionar este chamado..."
+                          value={solutionText}
+                          onChange={(e) => setSolutionText(e.target.value)}
+                          className="min-h-[100px] border-emerald-200/50 focus-visible:ring-emerald-500/50 bg-white/50 text-[13px]"
+                        />
+                      </div>
+                    )}
+
+                    {/* Observações Internas */}
+                    <div className="mt-4 bg-muted/10 p-4 border border-border/40 rounded-xl shrink-0">
+                      <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2 block">
+                        Observações da Equipe (Somente TI)
+                      </Label>
+                      <Textarea
+                        placeholder="Anotações técnicas, alertas, etc..."
+                        value={observations}
+                        onChange={(e) => setObservations(e.target.value)}
+                        className="min-h-[80px] bg-background border-input/60 text-[13px] shadow-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* ABA: HISTÓRICO (TIMELINE) */}
+                {activeTab === "TIMELINE" && (
+                  <div className="space-y-4">
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-4">
+                      Trilha de Eventos e Alterações
+                    </h4>
+                    {historyEvents.length === 0 ? (
+                      <p className="text-[13px] text-muted-foreground p-4 bg-muted/10 rounded-lg text-center border border-dashed border-border/50">
+                        Nenhum evento registrado nesta timeline.
+                      </p>
+                    ) : (
+                      <div className="space-y-4 border-l-2 border-primary/20 pl-5 ml-2">
+                        {historyEvents.map((ev) => (
+                          <div key={ev.id} className="relative flex flex-col gap-0.5 text-[13px]">
+                            <div className="absolute -left-[27px] top-1.5 w-3 h-3 rounded-full bg-background border-2 border-primary" />
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-foreground">
+                                {ev.description}
+                              </span>
+                              <span className="font-mono text-[11px] text-muted-foreground">
+                                {new Date(ev.createdAt).toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                              Autor: <span className="font-medium text-foreground/80">{ev.actorName || "Sistema"}</span>
+                            </p>
+                            {ev.oldValue && ev.newValue && (
+                              <div className="text-[11px] bg-muted/30 p-2 rounded-md mt-1.5 font-mono border border-border/40">
+                                De: <span className="line-through text-danger/80">{ev.oldValue}</span> <span className="mx-1 text-muted-foreground">→</span> 
+                                Para: <span className="text-emerald-600 font-bold">{ev.newValue}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ABA: COMENTÁRIOS INTERNOS */}
+                {activeTab === "COMMENTS" && (
+                  <div className="space-y-4 flex flex-col h-full">
+                    <div className="shrink-0 bg-background rounded-xl border border-border/60 shadow-sm overflow-hidden flex flex-col">
+                      <div className="flex flex-col bg-background relative">
+                        <Textarea 
+                          rows={4}
+                          placeholder={isInternalComment ? "Escreva uma nota interna (oculta do cliente)..." : "Escreva sua resposta (será enviada ao cliente)..."}
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          className="w-full text-[13px] bg-transparent border-0 outline-none focus-visible:ring-0 resize-y custom-scrollbar min-h-[100px] p-4 pb-2 shadow-none"
+                        />
+                        {(!isInternalComment && signatureHtml) && (
+                          <div className="px-4 pb-4">
+                            <div className="text-[13px] text-muted-foreground" dangerouslySetInnerHTML={{ __html: signatureHtml }} />
                           </div>
                         )}
                       </div>
-                    ))}
+                      
+                      <div className="bg-muted/30 border-t border-border/50 p-3 flex justify-between items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id="internalNote"
+                              checked={isInternalComment}
+                              onChange={(e) => setIsInternalComment(e.target.checked)}
+                              className="rounded border-border text-primary cursor-pointer w-4 h-4"
+                            />
+                            <Label htmlFor="internalNote" className="text-[12px] font-semibold cursor-pointer text-muted-foreground">
+                              Nota Interna
+                            </Label>
+                          </div>
+                          
+                          {!isInternalComment && (
+                            <>
+                              <div className="h-4 w-px bg-border/50 hidden sm:block" />
+                              <button
+                                type="button"
+                                onClick={() => setShowSignatureSettings(true)}
+                                className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary flex items-center gap-1.5 transition-colors bg-background px-2.5 py-1.5 border border-border/60 rounded shadow-sm"
+                              >
+                                <Pencil className="w-3.5 h-3.5" /> Assinatura
+                              </button>
+                            </>
+                          )}
+                          
+                          {!isInternalComment && ccAddresses && (
+                            <>
+                              <div className="h-4 w-px bg-border/50 hidden sm:block" />
+                              <div className="flex items-center gap-2">
+                                <input 
+                                  type="checkbox" 
+                                  id="replyAll" 
+                                  checked={replyAll}
+                                  onChange={(e) => setReplyAll(e.target.checked)}
+                                  className="rounded border-border text-primary cursor-pointer w-4 h-4"
+                                />
+                                <Label htmlFor="replyAll" className="text-[12px] cursor-pointer text-muted-foreground" title={ccAddresses}>
+                                  Responder Todos
+                                </Label>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        
+                        <Button
+                          type="button"
+                          onClick={handleAddComment}
+                          disabled={addingComment || !newComment.trim()}
+                          className="h-9 px-5 font-bold"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          Enviar
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 flex-1 overflow-y-auto">
+                      {comments.length === 0 ? (
+                        <p className="text-[13px] text-muted-foreground p-4 text-center border border-dashed border-border/50 rounded-lg">
+                          Nenhum comentário interno cadastrado.
+                        </p>
+                      ) : (
+                        comments.map((c) => (
+                          <div key={c.id} className="p-4 rounded-xl border border-border/60 bg-background shadow-sm space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[13px] font-bold text-foreground">
+                                  {c.author?.name || "Técnico TI"}
+                                </span>
+                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 uppercase tracking-tight">
+                                  {c.author?.role || "TI"}
+                                </Badge>
+                              </div>
+                              <span className="text-[11px] text-muted-foreground font-mono">
+                                {new Date(c.createdAt).toLocaleString("pt-BR")}
+                              </span>
+                            </div>
+                            <p className="text-[13px] text-foreground mt-1 whitespace-pre-line leading-relaxed">
+                              {c.content}
+                            </p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ABA: ANEXOS */}
+                {activeTab === "ATTACHMENTS" && (
+                  <div className="space-y-4 flex flex-col h-full">
+                    <div className="flex flex-col gap-3 p-6 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 items-center justify-center text-center hover:bg-primary/10 transition-colors shrink-0">
+                      <p className="text-[13px] text-muted-foreground font-medium">Anexe arquivos úteis ao chamado (PNG, JPG, PDF, DOCX, XLSX)</p>
+                      <label className={`cursor-pointer inline-flex h-9 items-center justify-center rounded-md bg-primary px-5 text-[13px] font-bold text-primary-foreground shadow transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] ${uploadingAttachment ? "opacity-50 pointer-events-none" : ""}`}>
+                          {uploadingAttachment ? "Enviando..." : "Selecionar Arquivo"}
+                          <input type="file" className="hidden" accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx" onChange={handleFileUpload} disabled={uploadingAttachment} />
+                      </label>
+                    </div>
+                    <div className="space-y-2 mt-4 flex-1 overflow-y-auto">
+                      {attachments.length === 0 ? (
+                          <p className="text-[13px] text-muted-foreground text-center p-4 bg-muted/10 rounded-lg border border-dashed border-border/50">Nenhum anexo encontrado.</p>
+                      ) : (
+                          attachments.map((att) => (
+                            <div key={att.id} className="flex items-center justify-between p-3.5 border border-border/60 rounded-xl bg-background shadow-sm hover:shadow-md transition-shadow group">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                  <div className="bg-primary/10 p-2.5 rounded-lg group-hover:bg-primary/20 transition-colors">
+                                      <FileText className="w-4 h-4 flex-shrink-0 text-primary" />
+                                  </div>
+                                  <span className="text-[13px] font-semibold truncate group-hover:text-primary transition-colors">{att.fileName}</span>
+                                </div>
+                                <a href={att.fileUrl} target="_blank" rel="noreferrer" className="text-[11px] uppercase font-bold bg-primary/10 text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors whitespace-nowrap ml-2">
+                                  Baixar
+                                </a>
+                            </div>
+                          ))
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
-            )}
 
-            {/* ABA: COMENTÁRIOS INTERNOS */}
-            {activeTab === "COMMENTS" && (
-              <div className="space-y-4 py-2">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Escreva um comentário ou resposta..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="text-xs"
-                  />
+              {/* Botões de Ação na Base da Coluna Direita (Apenas no painel de INFO) */}
+              {activeTab === "INFO" && (
+                <div className="p-4 border-t border-border/40 bg-muted/5 flex items-center justify-end gap-3 mt-auto shrink-0">
                   <Button
                     type="button"
-                    size="sm"
-                    onClick={handleAddComment}
-                    disabled={addingComment || !newComment.trim()}
+                    variant="ghost"
+                    onClick={() => onOpenChange(false)}
+                    disabled={saving}
+                    className="text-[13px] font-semibold"
                   >
-                    <Send className="w-3.5 h-3.5 mr-1.5" />
-                    Enviar
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={saving}
+                    className="px-6 py-5 text-[14px] shadow-md hover:shadow-lg transition-all"
+                  >
+                    {saving ? "Salvando..." : isEditing ? "Salvar Alterações" : "Criar Chamado"}
+                    {!saving && <Send className="w-4 h-4 ml-2" />}
                   </Button>
                 </div>
-                
-                <div className="flex items-center gap-4 px-1 pb-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="internalNote"
-                      checked={isInternalComment}
-                      onChange={(e) => setIsInternalComment(e.target.checked)}
-                      className="rounded border-border text-primary cursor-pointer w-3.5 h-3.5"
-                    />
-                    <Label htmlFor="internalNote" className="text-xs font-semibold cursor-pointer text-muted-foreground">Nota Interna (Oculta)</Label>
-                  </div>
-                  
-                  {!isInternalComment && ccAddresses && (
-                    <div className="flex items-center gap-2 ml-2 border-l border-border/50 pl-4">
-                      <input 
-                        type="checkbox" 
-                        id="replyAll" 
-                        checked={replyAll}
-                        onChange={(e) => setReplyAll(e.target.checked)}
-                        className="rounded border-border text-primary cursor-pointer w-3.5 h-3.5"
-                      />
-                      <Label htmlFor="replyAll" className="text-xs cursor-pointer truncate max-w-[200px]" title={ccAddresses}>
-                        Responder a todos em cópia ({ccAddresses.split(',').length})
-                      </Label>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {comments.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">
-                      Nenhum comentário interno cadastrado neste chamado.
-                    </p>
-                  ) : (
-                    comments.map((c) => (
-                      <div
-                        key={c.id}
-                        className="p-3 rounded-lg border border-border/60 bg-muted/10 space-y-1"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-foreground">
-                              {c.author?.name || "Técnico TI"}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className="text-[9px] px-1.5 py-0 uppercase tracking-tight"
-                            >
-                              {c.author?.role || "TI"}
-                            </Badge>
-                          </div>
-                          <span className="text-[10px] text-muted-foreground font-mono">
-                            {new Date(c.createdAt).toLocaleString("pt-BR")}
-                          </span>
-                        </div>
-                        <p className="text-xs text-foreground mt-1 whitespace-pre-line">
-                          {c.content}
-                        </p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* ABA: ANEXOS */}
-            {activeTab === "ATTACHMENTS" && (
-              <div className="space-y-4 py-2">
-                 <div className="flex flex-col gap-2 p-4 border border-dashed border-primary/40 rounded-lg bg-primary/5 items-center justify-center text-center hover:bg-primary/10 transition-colors">
-                    <p className="text-xs text-muted-foreground font-medium">Anexe arquivos úteis ao chamado (PNG, JPG, PDF, DOCX, XLSX)</p>
-                    <label className={`cursor-pointer inline-flex h-8 items-center justify-center rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground shadow transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] ${uploadingAttachment ? "opacity-50 pointer-events-none" : ""}`}>
-                        {uploadingAttachment ? "Enviando..." : "Selecionar Arquivo"}
-                        <input type="file" className="hidden" accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx" onChange={handleFileUpload} disabled={uploadingAttachment} />
-                    </label>
-                 </div>
-                 <div className="space-y-2 mt-4 max-h-[300px] overflow-y-auto">
-                    {attachments.length === 0 ? (
-                       <p className="text-xs text-muted-foreground text-center py-4 bg-muted/20 rounded-md border border-border/50">Nenhum anexo encontrado.</p>
-                    ) : (
-                       attachments.map((att) => (
-                          <div key={att.id} className="flex items-center justify-between p-3 border border-border/60 rounded-md bg-background shadow-sm hover:shadow-md transition-shadow group">
-                              <div className="flex items-center gap-3 overflow-hidden">
-                                 <div className="bg-primary/10 p-2 rounded-md group-hover:bg-primary/20 transition-colors">
-                                    <FileText className="w-4 h-4 flex-shrink-0 text-primary" />
-                                 </div>
-                                 <span className="text-xs font-semibold truncate group-hover:text-primary transition-colors">{att.fileName}</span>
-                              </div>
-                              <a href={att.fileUrl} target="_blank" rel="noreferrer" className="text-[10px] uppercase font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-md hover:bg-primary hover:text-primary-foreground transition-colors whitespace-nowrap ml-2">
-                                 Baixar
-                              </a>
-                          </div>
-                       ))
-                    )}
-                 </div>
-              </div>
-            )}
-
-            {activeTab === "INFO" && (
-              <DialogFooter className="gap-2 pt-2 border-t border-border/40">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={saving}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={saving}>
-                  {saving ? "Salvando..." : isEditing ? "Salvar Alterações" : "Cadastrar Chamado"}
-                </Button>
-              </DialogFooter>
-            )}
+              )}
+            </div>
           </form>
         )}
       </DialogContent>
+      {showSignatureSettings && (
+        <SignatureSettingsModal
+          onClose={() => setShowSignatureSettings(false)}
+          onSave={(html) => setSignatureHtml(html)}
+        />
+      )}
     </Dialog>
   );
 }

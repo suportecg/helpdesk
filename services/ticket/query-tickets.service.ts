@@ -42,6 +42,11 @@ export async function getTicketById(id: string) {
         orderBy: { createdAt: "desc" },
       },
       attachments: true,
+      processedEmails: {
+        orderBy: { receivedAt: "asc" }
+      },
+      parent: { select: { id: true, ticketNumber: true, status: true, problem: true } },
+      children: { select: { id: true, ticketNumber: true, status: true, problem: true } }
     },
   });
 
@@ -62,6 +67,12 @@ export async function getTicketsPaginated(options: TicketFilterOptions) {
     deletedAt: null,
     isArchived: options.isArchived === true,
   };
+
+  // Por padrão, não exibe chamados filhos na listagem e não contabiliza no dashboard
+  // Apenas exibe se houver uma busca específica textual que encontre o chamado filho.
+  if (!options.query || options.query.trim().length === 0) {
+    where.parentId = null;
+  }
 
   if (options.role === "SOLICITANTE" && options.userId) {
      const user = await prisma.user.findUnique({ where: { id: options.userId } });

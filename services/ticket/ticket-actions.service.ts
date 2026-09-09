@@ -160,28 +160,61 @@ export async function addTicketComment(
   authorId: string,
   authorName?: string,
   isInternal: boolean = true,
-  replyAll: boolean = false
+  replyAll: boolean = false,
+  nextStatus?: string,
+  solutionHtml?: string,
+  signatureHtml?: string
 ) {
-  const comment = await prisma.ticketComment.create({
-    data: {
-      ticketId,
-      authorId,
-      content: content.trim(),
-      isInternal,
-    },
-    include: {
-      author: { select: { id: true, name: true, email: true, avatar: true, role: true } },
-    },
-  });
+  // Purify solution if provided
+  let safeSolution = undefined;
+  if (solutionHtml && !isInternal) {
+    const DOMPurify = require("isomorphic-dompurify");
+    safeSolution = DOMPurify.sanitize(solutionHtml);
+  }
 
-  await prisma.ticketHistory.create({
-    data: {
-      ticketId,
-      actorId: authorId,
-      actorName: authorName || comment.author.name,
-      eventType: "COMMENT_ADDED",
-      description: isInternal ? `Adicionou nota interna.` : `Adicionou resposta pública.`,
-    },
+  const result = await prisma.$transaction(async (tx) => {
+    const comment = await tx.ticketComment.create({
+      data: {
+        ticketId,
+        authorId,
+        content: content.trim(),
+        isInternal,
+      },
+      include: {
+        author: { select: { id: true, name: true, email: true, avatar: true, role: true } },
+      },
+    });
+
+    await tx.ticketHistory.create({
+      data: {
+        ticketId,
+        actorId: authorId,
+        actorName: authorName || comment.author.name,
+        eventType: "COMMENT_ADDED",
+        description: isInternal ? `Adicionou nota interna.` : `Adicionou resposta pública.`,
+      },
+    });
+
+    if (nextStatus) {
+      await tx.ticket.update({
+        where: { id: ticketId },
+        data: {
+          status: nextStatus as any,
+          ...(safeSolution !== undefined ? { solution: safeSolution } : {})
+        }
+      });
+      await tx.ticketHistory.create({
+        data: {
+          ticketId,
+          actorId: authorId,
+          actorName: authorName || comment.author.name,
+          eventType: "STATUS_CHANGED",
+          description: `Alterou o status para ${nextStatus}.`,
+        },
+      });
+    }
+
+    return comment;
   });
 
   if (!isInternal && replyAll) {
@@ -202,7 +235,7 @@ export async function addTicketComment(
             <blockquote style="border-left: 4px solid #ccc; padding-left: 10px; margin-left: 0; color: #555;">
               ${content.replace(/\n/g, '<br/>')}
             </blockquote>
-            <p>Para responder, basta responder a este e-mail.</p>
+            ${signatureHtml ? `<br/><br/>${signatureHtml}` : `<p>Para responder, basta responder a este e-mail.</p>`}
           `;
           
           let inReplyTo: string | undefined = undefined;
@@ -224,5 +257,5 @@ export async function addTicketComment(
     }
   }
 
-  return comment;
+  return result;
 }

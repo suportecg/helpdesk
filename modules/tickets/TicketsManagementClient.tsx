@@ -178,7 +178,7 @@ export default function TicketsManagementClient({
         setTechnicians(tiUsers);
       }
     } catch (err) {
-      console.error("Erro ao carregar dados auxiliares de chamados:", err);
+      console.error("Erro ao carregar dados auxiliares de tickets:", err);
     }
   }, []);
 
@@ -211,7 +211,7 @@ export default function TicketsManagementClient({
         setInProgressCount(body.meta?.inProgressCount || 0);
       }
     } catch (err) {
-      console.error("Erro ao buscar chamados:", err);
+      console.error("Erro ao buscar tickets:", err);
     } finally {
       setLoading(false);
     }
@@ -271,42 +271,42 @@ export default function TicketsManagementClient({
     switch (status) {
       case "ABERTO":
         return (
-          <Badge className="bg-transparent text-amber-500 border-amber-500/20 hover:bg-amber-500/10 text-[11px] px-2 py-0.5 font-medium shadow-none">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse" /> Aberto
+          <Badge className="bg-transparent text-amber-600 dark:text-amber-500 border border-border/50 hover:bg-amber-50 dark:hover:bg-amber-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5" /> Aberto
           </Badge>
         );
       case "EM_ATENDIMENTO":
         return (
-          <Badge className="bg-transparent text-indigo-500 border-indigo-500/20 hover:bg-indigo-500/10 text-[11px] px-2 py-0.5 font-medium shadow-none">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 animate-pulse" /> Em Atendimento
+          <Badge className="bg-transparent text-indigo-600 dark:text-indigo-500 border border-border/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5" /> Em Atendimento
           </Badge>
         );
       case "RESOLVIDO":
         return (
-          <Badge className="bg-transparent text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10 text-[11px] px-2 py-0.5 font-medium shadow-none">
+          <Badge className="bg-transparent text-emerald-600 dark:text-emerald-500 border border-border/50 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5" /> Resolvido
           </Badge>
         );
       case "AGUARDANDO_USUARIO":
         return (
-          <Badge className="bg-transparent text-blue-500 border-blue-500/20 hover:bg-blue-500/10 text-[11px] px-2 py-0.5 font-medium shadow-none">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5" /> Aguardando Cliente
+          <Badge className="bg-transparent text-blue-600 dark:text-blue-500 border border-border/50 hover:bg-blue-50 dark:hover:bg-blue-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5" /> Aguardando
           </Badge>
         );
       case "AGUARDANDO_PECA":
         return (
-          <Badge className="bg-transparent text-purple-500 border-purple-500/20 hover:bg-purple-500/10 text-[11px] px-2 py-0.5 font-medium shadow-none">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5" /> Aguardando Peça
+          <Badge className="bg-transparent text-purple-600 dark:text-purple-500 border border-border/50 hover:bg-purple-50 dark:hover:bg-purple-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5" /> Peça
           </Badge>
         );
       case "CANCELADO":
         return (
-          <Badge className="bg-transparent text-zinc-500 border-zinc-500/20 hover:bg-zinc-500/10 text-[11px] px-2 py-0.5 font-medium shadow-none">
-            <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 mr-1.5" /> Cancelado
+          <Badge className="bg-transparent text-zinc-600 dark:text-zinc-500 border border-border/50 hover:bg-zinc-50 dark:hover:bg-zinc-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 mr-1.5" /> Cancelado
           </Badge>
         );
       default:
-        return <Badge variant="outline" className="text-[11px] shadow-none">{status}</Badge>;
+        return <Badge variant="outline" className="text-[10px] shadow-none whitespace-nowrap border-border/50">{status}</Badge>;
     }
   }
 
@@ -349,12 +349,12 @@ export default function TicketsManagementClient({
       const res = await fetch(`/api/tickets/${confirmArchive.id}/archive`, {
         method: "PUT",
       });
-      if (!res.ok) throw new Error("Erro ao arquivar chamado");
-      toast.success(confirmArchive.isArchived ? "Chamado restaurado!" : "Chamado arquivado!");
+      if (!res.ok) throw new Error("Erro ao arquivar ticket");
+      toast.success(confirmArchive.isArchived ? "Ticket restaurado!" : "Ticket arquivado!");
       setConfirmArchive(null);
       fetchTickets();
     } catch (err: any) {
-      toast.error(err.message || "Erro ao arquivar chamado");
+      toast.error(err.message || "Erro ao arquivar ticket");
     }
   }
 
@@ -364,12 +364,12 @@ export default function TicketsManagementClient({
       const res = await fetch(`/api/tickets/${confirmDelete.id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Erro ao excluir chamado");
-      toast.success("Chamado excluído com sucesso!");
+      if (!res.ok) throw new Error("Erro ao excluir ticket");
+      toast.success("Ticket excluído com sucesso!");
       setConfirmDelete(null);
       fetchTickets();
     } catch (err: any) {
-      toast.error(err.message || "Erro ao excluir chamado");
+      toast.error(err.message || "Erro ao excluir ticket");
     }
   }
 
@@ -377,12 +377,12 @@ export default function TicketsManagementClient({
     setIsDeleting(true);
     try {
       const res = await fetch("/api/tickets/all", { method: "DELETE" });
-      if (!res.ok) throw new Error("Erro ao excluir todos os chamados");
-      toast.success("Todos os chamados foram excluídos com sucesso!");
+      if (!res.ok) throw new Error("Erro ao excluir todos os tickets");
+      toast.success("Todos os tickets foram excluídos com sucesso!");
       setConfirmDeleteAll(false);
       fetchTickets();
     } catch (err: any) {
-      toast.error(err.message || "Erro ao excluir todos os chamados");
+      toast.error(err.message || "Erro ao excluir todos os tickets");
     } finally {
       setIsDeleting(false);
     }
@@ -410,123 +410,100 @@ export default function TicketsManagementClient({
 
   const columns: Column<TicketRow>[] = [
     {
-      label: "TICKET",
+      label: "Chamado",
       key: "ticketNumber",
-      className: "w-20 text-center font-mono",
+      className: "w-20 text-left pl-6",
       render: (item) => (
-        <div className="flex flex-col items-center justify-center relative w-fit mx-auto">
+        <div className="flex items-center relative w-fit">
           {item.hasUnreadReply && (
-            <span className="absolute -top-1 -right-2.5 flex h-2.5 w-2.5">
+            <span className="absolute -left-3 top-1.5 flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-danger" title="Nova resposta do cliente"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-danger" title="Nova resposta do cliente"></span>
             </span>
           )}
-          <span className="font-mono text-sm text-foreground/80 font-semibold tracking-wide">
+          <span className="font-mono text-sm text-foreground font-semibold tracking-wide">
             #{item.ticketNumber}
-          </span>
-          <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
-            {new Date(item.startTime || item.createdAt).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' })}
           </span>
         </div>
       ),
     },
     {
-      label: "Solicitante & Setor",
+      label: "Solicitante",
       key: "requester",
-      className: "w-48",
+      className: "w-48 text-left",
       render: (item) => (
         <div className="flex flex-col">
-          <span className="font-semibold text-foreground text-xs truncate">
+          <span className="font-semibold text-foreground text-[13px] truncate">
             {item.requester?.name}
           </span>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">
-              {item.sector?.name}
-            </Badge>
-            {item.requester?.department && (
-              <span className="text-[10px] text-muted-foreground truncate">
-                {item.requester.department}
+          {item.sector?.name && (
+            <span className="text-[11px] text-muted-foreground truncate mt-0.5 font-medium">
+              {item.sector.name}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      label: "Solicitação",
+      key: "problem",
+      className: "w-auto min-w-[300px] max-w-[450px] text-left pr-4",
+      render: (item) => (
+        <div className="flex flex-col gap-0.5" title={item.description ? `${item.problem}\n\n${item.description}` : item.problem}>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-primary truncate hover:underline cursor-default">
+              [{item.service?.name}]
+            </span>
+            {item.origin && (
+              <span className="text-[9px] uppercase tracking-wider text-muted-foreground/80 font-mono">
+                {item.origin}
               </span>
             )}
           </div>
-        </div>
-      ),
-    },
-    {
-      label: "Serviço & Problema",
-      key: "problem",
-      className: "w-auto px-4",
-      render: (item) => (
-        <div className="flex flex-col">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-primary truncate">
-              [{item.service?.name}]
-            </span>
-          </div>
-          <span className="text-xs font-medium text-foreground truncate mt-0.5">
+          <span className="text-[13px] font-medium text-foreground truncate">
             {item.problem}
           </span>
-          {item.description && (
-            <span className="text-[10px] text-muted-foreground truncate">
-              {item.description}
-            </span>
-          )}
         </div>
       ),
     },
     {
-      label: "Técnico Responsável",
+      label: "Técnico",
       key: "technician",
-      className: "w-40",
+      className: "w-40 text-left",
       render: (item) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {item.technician ? (
             <>
-              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
                 {item.technician.name.substring(0, 2).toUpperCase()}
               </div>
-              <span className="text-xs font-medium truncate">{item.technician.name}</span>
+              <span className="text-[13px] font-medium truncate">{item.technician.name.split(' ')[0]} {item.technician.name.split(' ').length > 1 ? item.technician.name.split(' ').pop()?.charAt(0) + '.' : ''}</span>
             </>
           ) : (
-            <Badge variant="outline" className="text-[10px] text-muted-foreground border-dashed">
-              Fila Geral
-            </Badge>
+            <span className="text-[13px] text-muted-foreground/70 italic font-medium">Sem técnico</span>
           )}
         </div>
       ),
     },
     {
-      label: "Tempo Total",
+      label: "Tempo",
       key: "totalTimeMinutes",
-      className: "w-24 text-center font-mono",
+      className: "w-28 text-left",
       render: (item) => {
         let slaColor = "text-muted-foreground";
-        let slaText = "";
         if (item.dueDate && item.status !== "RESOLVIDO" && item.status !== "CANCELADO") {
            const due = new Date(item.dueDate).getTime();
            const now = Date.now();
-           if (now > due) {
-              slaColor = "text-red-500 font-bold";
-              slaText = " (Atrasado)";
-           } else if (due - now < 3600000) {
-              slaColor = "text-amber-500 font-bold";
-              slaText = " (Critico)";
-           } else {
-              slaColor = "text-emerald-500 font-medium";
-              slaText = " (No Prazo)";
-           }
+           if (now > due) slaColor = "text-red-500 font-bold";
+           else if (due - now < 3600000) slaColor = "text-amber-600 font-bold dark:text-amber-500";
+           else slaColor = "text-emerald-600 font-medium dark:text-emerald-500";
         }
         return (
-          <div className="flex flex-col items-center justify-center">
-            <span className="inline-flex items-center gap-1 text-[11px] font-mono px-1.5 py-0.5 text-muted-foreground">
-              <Clock className="w-3 h-3 opacity-50" />
+          <div className="flex items-center gap-1.5" title={item.dueDate ? `Previsão: ${new Date(item.dueDate).toLocaleString("pt-BR")}` : undefined}>
+            <Clock className={`w-4 h-4 opacity-70 ${slaColor}`} />
+            <span className={`text-[12px] whitespace-nowrap ${slaColor}`}>
               {getDynamicTimeBadge(item)}
             </span>
-            {item.dueDate && item.status !== "RESOLVIDO" && item.status !== "CANCELADO" && (
-              <span className={`text-[9px] ${slaColor}`}>
-                {new Date(item.dueDate).toLocaleDateString("pt-BR")} às {new Date(item.dueDate).toLocaleTimeString("pt-BR", {hour: '2-digit', minute:'2-digit'})} {slaText}
-              </span>
-            )}
           </div>
         );
       },
@@ -534,29 +511,19 @@ export default function TicketsManagementClient({
     {
       label: "Status",
       key: "status",
-      className: "w-32 text-center",
+      className: "w-32 text-left",
       render: (item) => renderStatusBadge(item.status),
-    },
-    {
-      label: "Origem",
-      key: "origin",
-      className: "w-20 text-center",
-      render: (item) => (
-        <Badge variant="outline" className="text-[10px] font-mono">
-          {item.origin}
-        </Badge>
-      ),
     },
     {
       label: "Ações",
       key: "id",
-      className: "w-32 text-center",
+      className: "w-32 text-right pr-6",
       render: (item) => (
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-end gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
           {!item.technician && user?.id && (
             <Button
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={async (e) => {
                 e.stopPropagation();
                 try {
@@ -566,31 +533,28 @@ export default function TicketsManagementClient({
                     body: JSON.stringify({ technicianId: user.id, status: "EM_ATENDIMENTO" }),
                   });
                   if (!res.ok) throw new Error("Erro");
-                  toast.success("Chamado atribuído a você! Atualize as informações se necessário.");
+                  toast.success("Ticket atribuído a você!");
                   fetchTickets();
-                  setSelectedTicketId(item.id);
                   setTimeout(() => {
-                    setModalOpen(true);
+                    router.push(`/chamados/${item.id}`);
                   }, 300);
                 } catch {
-                  toast.error("Falha ao assumir chamado.");
+                  toast.error("Falha ao assumir ticket.");
                 }
               }}
-              className="h-8 px-2 text-xs border-primary text-primary hover:bg-primary/10 gap-1.5 rounded-full"
-              title="Assumir Chamado"
+              className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+              title="Assumir Ticket"
             >
-              <UserCircleCheck weight="bold" className="w-3.5 h-3.5" />
-              Assumir
+              <UserCircleCheck className="w-4 h-4" />
             </Button>
           )}
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
+            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedTicketId(item.id);
-              setModalOpen(true);
+              router.push(`/chamados/${item.id}`);
             }}
             title="Visualizar/Editar"
           >
@@ -599,7 +563,7 @@ export default function TicketsManagementClient({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-warning hover:text-warning hover:bg-warning/10 rounded-full transition-colors"
+            className="h-8 w-8 text-muted-foreground hover:text-warning hover:bg-warning/10 rounded-md transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               setActiveTicket(item);
@@ -612,7 +576,7 @@ export default function TicketsManagementClient({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-danger hover:text-danger hover:bg-danger/10 rounded-full transition-colors"
+            className="h-8 w-8 text-muted-foreground hover:text-danger hover:bg-danger/10 rounded-md transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               setConfirmDelete(item);
@@ -636,7 +600,7 @@ export default function TicketsManagementClient({
       <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold tracking-tight text-foreground flex items-center gap-2">
-            Chamados
+            Tickets
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Gestão inteligente de tickets e SLA.
@@ -678,7 +642,7 @@ export default function TicketsManagementClient({
             className="text-xs shadow-sm"
           >
             <Plus className="w-4 h-4 mr-1.5" />
-            Novo Chamado
+            Novo Ticket
           </Button>
         </div>
       </motion.div>
@@ -860,18 +824,17 @@ export default function TicketsManagementClient({
         </div>
       </motion.div>
 
-      {/* Tabela de Chamados */}
+      {/* Tabela de Tickets */}
       <motion.div variants={itemVariants} className="glass-card rounded-[2rem] p-2 overflow-hidden shadow-sm">
         <DataTable
           className="table-fixed"
           columns={columns}
           data={tickets}
           isLoading={loading}
-          emptyTitle="Nenhum chamado encontrado"
-          emptyDescription="Cadastre um novo chamado para substituir a planilha de TI ou limpe os filtros selecionados."
+          emptyTitle="Nenhum ticket encontrado"
+          emptyDescription="Cadastre um novo ticket para substituir a planilha de TI ou limpe os filtros selecionados."
           onRowClick={async (item) => {
-            setSelectedTicketId(item.id);
-            setModalOpen(true);
+            router.push(`/chamados/${item.id}`);
             if (item.hasUnreadReply) {
               // Limpa otimisticamente
               setTickets(tickets.map(t => t.id === item.id ? { ...t, hasUnreadReply: false } : t));
@@ -927,7 +890,7 @@ export default function TicketsManagementClient({
           setModalOpen(v);
           if (!v) setTicketModalInitialStatus(undefined);
         }}
-        ticketId={selectedTicketId}
+        ticketId={null} // Sempre null porque agora só serve para Criar Novo Ticket
         sectors={sectors}
         services={services}
         technicians={technicians}
@@ -955,10 +918,10 @@ export default function TicketsManagementClient({
       <ConfirmDialog
         open={Boolean(confirmArchive)}
         onOpenChange={(open) => !open && setConfirmArchive(null)}
-        title={confirmArchive?.isArchived ? "Restaurar Chamado?" : "Arquivar Chamado?"}
+        title={confirmArchive?.isArchived ? "Restaurar Ticket?" : "Arquivar Ticket?"}
         description={`Deseja realmente ${
           confirmArchive?.isArchived ? "restaurar" : "arquivar"
-        } o chamado #${confirmArchive?.ticketNumber} (${confirmArchive?.problem})?`}
+        } o ticket #${confirmArchive?.ticketNumber} (${confirmArchive?.problem})?`}
         confirmLabel={confirmArchive?.isArchived ? "Sim, Restaurar" : "Sim, Arquivar"}
         cancelLabel="Cancelar"
         onConfirm={handleArchiveConfirm}
@@ -967,8 +930,8 @@ export default function TicketsManagementClient({
       <ConfirmDialog
         open={Boolean(confirmDelete)}
         onOpenChange={(open) => !open && setConfirmDelete(null)}
-        title="Excluir Chamado (Soft Delete)?"
-        description={`Deseja inativar logicamente o chamado #${confirmDelete?.ticketNumber}? O histórico de auditoria será mantido.`}
+        title="Excluir Ticket (Soft Delete)?"
+        description={`Deseja inativar logicamente o ticket #${confirmDelete?.ticketNumber}? O histórico de auditoria será mantido.`}
         confirmLabel="Sim, Excluir"
         cancelLabel="Cancelar"
         variant="destructive"
@@ -978,8 +941,8 @@ export default function TicketsManagementClient({
       <ConfirmDialog
         open={confirmDeleteAll}
         onOpenChange={(open) => !open && setConfirmDeleteAll(false)}
-        title="Excluir TODOS os Chamados"
-        description="ATENÇÃO: Você está prestes a apagar TODOS os chamados da base de dados. Esta ação é irreversível. Deseja continuar?"
+        title="Excluir TODOS os Tickets"
+        description="ATENÇÃO: Você está prestes a apagar TODOS os tickets da base de dados. Esta ação é irreversível. Deseja continuar?"
         confirmLabel="Excluir Tudo"
         cancelLabel="Cancelar"
         variant="destructive"

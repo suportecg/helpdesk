@@ -342,7 +342,6 @@ export async function sendTicketResolvedEmail(ticketData: any, requesterEmail: s
 
   console.log(`[EMAIL] Preparando notificação de resolução para ${requesterEmail}...`);
   const settings = await getCorporateSettings();
-  const dateStr = new Date().toLocaleDateString('pt-BR');
   
   let template = await prisma.emailTemplate.findUnique({
     where: { code: 'TICKET_RESOLVED' }
@@ -351,42 +350,94 @@ export async function sendTicketResolvedEmail(ticketData: any, requesterEmail: s
   const vars: Record<string, string> = {
     '{{requesterName}}': requesterName || 'Cliente',
     '{{ticketNumber}}': String(ticketData.ticketNumber || ''),
-    '{{problem}}': ticketData.problem || '',
-    '{{status}}': 'RESOLVIDO',
-    '{{priority}}': ticketData.priority || '',
-    '{{date}}': dateStr,
-    '{{systemName}}': settings.systemName,
-    '{{solution}}': solutionText || 'Seu problema foi resolvido.',
+    '{{solution}}': solutionText || 'Chamado finalizado pela equipe de suporte.',
   };
   
   let subject = `Chamado #${ticketData.ticketNumber} resolvido — ${settings.systemName}`;
-  let content = '';
 
   if (template) {
     subject = template.subject;
-    content = template.bodyHtml;
     for (const [key, value] of Object.entries(vars)) {
       subject = subject.replace(new RegExp(key, 'g'), value);
-      content = content.replace(new RegExp(key, 'g'), value);
     }
-    if (!content.trim()) content = `<p>O chamado foi concluído.</p>`;
-  } else {
-    content = `
-      <p>Olá, <strong>${requesterName}</strong>!</p>
-      <p>Temos uma ótima notícia: o seu chamado foi <strong>resolvido</strong>!</p>
-      <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
-        <p style="margin: 0 0 8px 0;"><strong>Chamado:</strong> #${ticketData.ticketNumber}</p>
-        <p style="margin: 0 0 8px 0;"><strong>Solução:</strong> ${vars['{{solution}}']}</p>
-      </div>
-      <p>Se precisar de mais alguma coisa, não hesite em abrir um novo chamado.</p>
-    `;
   }
-  
-  const html = getEmailLayout(
-    template?.primaryColor ? { ...settings, primaryColor: template.primaryColor } : settings, 
-    template?.name || `Chamado #${ticketData.ticketNumber} Resolvido`, 
-    content
-  );
+
+  // Outlook desktop compatible table layout
+  const html = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Chamado Resolvido</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #ffffff;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+    <tr>
+      <td style="padding: 30px 20px 20px 20px;">
+        <!-- Header -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td style="font-size: 14px; font-weight: bold; color: #333333; text-transform: uppercase;">
+              CG CONSTRUÇÕES
+            </td>
+          </tr>
+          <tr>
+            <td style="font-size: 13px; color: #666666; padding-top: 4px;">
+              Central de Suporte de TI
+            </td>
+          </tr>
+        </table>
+
+        <!-- Title -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 30px;">
+          <tr>
+            <td style="font-size: 22px; font-weight: bold; color: #111111;">
+              Chamado #${vars['{{ticketNumber}}']} Resolvido
+            </td>
+          </tr>
+        </table>
+
+        <!-- Body -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 20px;">
+          <tr>
+            <td style="font-size: 15px; color: #333333; line-height: 1.5;">
+              Olá, <strong>${vars['{{requesterName}}']}</strong>!
+              <br><br>
+              Temos uma ótima notícia: o seu chamado foi <strong>resolvido</strong>!
+            </td>
+          </tr>
+        </table>
+
+        <!-- Info Box -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 25px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+          <tr>
+            <td style="padding: 16px; font-size: 14px; color: #333333; line-height: 1.6;">
+              <strong>Chamado:</strong> #${vars['{{ticketNumber}}']}<br>
+              <strong>Solução:</strong> ${vars['{{solution}}']}
+            </td>
+          </tr>
+        </table>
+
+        <!-- Footer Text -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 25px;">
+          <tr>
+            <td style="font-size: 14px; color: #333333;">
+              Se precisar de mais alguma coisa, não hesite em abrir um novo chamado.
+            </td>
+          </tr>
+          <tr>
+            <td style="font-size: 14px; color: #666666; padding-top: 25px;">
+              <strong>CG Construções</strong><br>
+              Central de Suporte de TI
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
   
   const { ccList, inReplyTo } = await getTicketEmailMetadata(ticketData.id);
 
