@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
         replies.push(newReply);
         let safeSolution = undefined;
         if (solutionHtml && isPublic) {
-          const DOMPurify = require("isomorphic-dompurify");
-          safeSolution = DOMPurify.sanitize(solutionHtml);
+          const sanitizeHtml = require("sanitize-html");
+          safeSolution = sanitizeHtml(solutionHtml);
         }
 
         await prisma.$transaction(async (tx) => {
@@ -96,8 +96,8 @@ export async function POST(request: NextRequest) {
       // Caso não seja um inReplyTo (ex: e-mail solto mas atrelado a ticketId), ainda queremos atualizar status
       let safeSolution = undefined;
       if (solutionHtml && isPublic) {
-        const DOMPurify = require("isomorphic-dompurify");
-        safeSolution = DOMPurify.sanitize(solutionHtml);
+        const sanitizeHtml = require("sanitize-html");
+        safeSolution = sanitizeHtml(solutionHtml);
       }
       await prisma.$transaction(async (tx) => {
         await tx.ticket.update({

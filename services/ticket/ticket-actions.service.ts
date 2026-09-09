@@ -168,8 +168,8 @@ export async function addTicketComment(
   // Purify solution if provided
   let safeSolution = undefined;
   if (solutionHtml && !isInternal) {
-    const DOMPurify = require("isomorphic-dompurify");
-    safeSolution = DOMPurify.sanitize(solutionHtml);
+    const sanitizeHtml = require("sanitize-html");
+    safeSolution = sanitizeHtml(solutionHtml);
   }
 
   const result = await prisma.$transaction(async (tx) => {
