@@ -25,7 +25,6 @@ import { TicketSidebar } from "../components/TicketSidebar";
 import { TicketActionComposer } from "../components/TicketActionComposer";
 import { TicketTimeline } from "../components/TicketTimeline";
 import { TicketRelationships } from "../components/TicketRelationships";
-import { TicketAIPanel } from "../components/TicketAIPanel";
 
 export function TicketDetailView({ ticketId }: { ticketId: string }) {
   const router = useRouter();
@@ -82,9 +81,10 @@ export function TicketDetailView({ ticketId }: { ticketId: string }) {
         body: JSON.stringify({ [field]: value }),
       });
       if (!res.ok) throw new Error("Erro ao atualizar campo");
+      const updatedTicket = await res.json();
       
-      // Update local state optimistic
-      setTicket((prev: any) => ({ ...prev, [field]: value }));
+      // Update local state with the actual data from the server (calculates SLA etc)
+      setTicket(updatedTicket);
       toast.success("Atualizado com sucesso");
     } catch (err) {
       toast.error("Erro ao atualizar informação");
@@ -124,22 +124,11 @@ export function TicketDetailView({ ticketId }: { ticketId: string }) {
 
           <div className="h-6 w-px bg-border mx-2" />
 
-          {/* Status Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 gap-2 uppercase text-xs font-bold tracking-wider">
-                {ticket.status.replace(/_/g, ' ')}
-                <div className="w-2 h-2 rounded-full bg-primary" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => handleUpdateField("status", "ABERTO")}>Aberto</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleUpdateField("status", "EM_ATENDIMENTO")}>Em Atendimento</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleUpdateField("status", "AGUARDANDO_USUARIO")}>Aguardando Usuário</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleUpdateField("status", "RESOLVIDO")}>Resolvido</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleUpdateField("status", "CANCELADO")}>Cancelado</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Status Badge */}
+          <Button variant="outline" size="sm" className="h-8 gap-2 uppercase text-xs font-bold tracking-wider cursor-default hover:bg-transparent">
+            {ticket.status.replace(/_/g, ' ')}
+            <div className="w-2 h-2 rounded-full bg-primary" />
+          </Button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -198,7 +187,6 @@ export function TicketDetailView({ ticketId }: { ticketId: string }) {
               onStatusChange={(status) => handleUpdateField("status", status)}
             />
 
-            {/* RELATIONSHIPS */}
             <TicketRelationships 
               ticket={ticket} 
               sectors={sectors}
@@ -206,9 +194,6 @@ export function TicketDetailView({ ticketId }: { ticketId: string }) {
               technicians={technicians}
               onRelationshipsUpdated={fetchTicketAndMetadata}
             />
-
-            {/* AI PANEL (Placeholder) */}
-            <TicketAIPanel />
 
             {/* TIMELINE */}
             <TicketTimeline ticket={ticket} />

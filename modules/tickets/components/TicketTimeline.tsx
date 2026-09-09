@@ -200,7 +200,7 @@ export function TicketTimeline({ ticket }: { ticket: any }) {
                   {ev.isHtml ? (
                     <div 
                       className="email-body-content max-w-full"
-                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(ev.content) }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(ev.content, { ADD_DATA_URI_TAGS: ['img'] }) }}
                     />
                   ) : (
                     <p className="whitespace-pre-wrap">{ev.content}</p>

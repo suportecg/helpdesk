@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { sendCustomEmail } from "@/services/email/email.service";
+import { sendCustomEmail, sendTicketResolvedEmail } from "@/services/email/email.service";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
@@ -20,14 +20,18 @@ export async function POST(request: NextRequest) {
     // Convert cc string to array if it exists and is a string, or use directly if it's an array
     let ccArray: string[] | undefined = undefined;
     if (cc) {
-        if (typeof cc === 'string') {
-            ccArray = cc.split(',').map(email => email.trim()).filter(Boolean);
-        } else if (Array.isArray(cc)) {
-            ccArray = cc;
-        }
+      if (typeof cc === 'string') {
+        ccArray = cc.split(/[,;]+/).map(email => email.trim()).filter(Boolean);
+      } else if (Array.isArray(cc)) {
+        ccArray = cc.map(email => typeof email === 'string' ? email.trim() : email).filter(Boolean);
+      }
+    }
+    if (ccArray && to) {
+      ccArray = ccArray.filter(e => e.toLowerCase() !== to.toLowerCase());
+      if (ccArray.length === 0) ccArray = undefined;
     }
 
-    const result = await sendCustomEmail(to, subject, content, inReplyTo, ccArray);
+    const result = await sendCustomEmail(to, subject, content, inReplyTo, ccArray, attachments);
 
     if (!result.success) {
       return NextResponse.json({ error: "Falha ao enviar e-mail", details: result.error }, { status: 500 });
@@ -72,51 +76,91 @@ export async function POST(request: NextRequest) {
             data: { manualReplies: replies }
           });
           
-          if (ticketId && nextStatus) {
-            await tx.ticket.update({
-              where: { id: ticketId },
-              data: {
-                status: nextStatus,
-                ...(safeSolution !== undefined ? { solution: safeSolution } : {})
-              }
-            });
-            await tx.ticketHistory.create({
-              data: {
-                ticketId,
-                actorId: session.id || "admin",
-                actorName: session.name || "Admin",
-                eventType: "STATUS_CHANGED",
-                description: `Alterou o status para ${nextStatus}.`,
-              },
-            });
+          if (ticketId) {
+            const ccStr = typeof cc === 'string' ? cc : (Array.isArray(cc) ? cc.join(', ') : undefined);
+            const dataToUpdate: any = {};
+            if (nextStatus) dataToUpdate.status = nextStatus;
+            if (safeSolution !== undefined) dataToUpdate.solution = safeSolution;
+            if (ccStr !== undefined) dataToUpdate.cc = ccStr ? ccStr.trim() : null;
+
+            if (Object.keys(dataToUpdate).length > 0) {
+              await tx.ticket.update({
+                where: { id: ticketId },
+                data: dataToUpdate
+              });
+            }
+
+            if (nextStatus) {
+              await tx.ticketHistory.create({
+                data: {
+                  ticketId,
+                  actorId: session.id || "admin",
+                  actorName: session.name || "Admin",
+                  eventType: "STATUS_CHANGED",
+                  description: `Alterou o status para ${nextStatus}.`,
+                },
+              });
+            }
           }
         });
       }
-    } else if (ticketId && nextStatus) {
-      // Caso não seja um inReplyTo (ex: e-mail solto mas atrelado a ticketId), ainda queremos atualizar status
+    } else if (ticketId) {
+      // Caso não seja um inReplyTo (ex: e-mail solto mas atrelado a ticketId), ainda queremos atualizar status/cc
       let safeSolution = undefined;
       if (solutionHtml && isPublic) {
         const sanitizeHtml = require("sanitize-html");
         safeSolution = sanitizeHtml(solutionHtml);
       }
       await prisma.$transaction(async (tx) => {
-        await tx.ticket.update({
-          where: { id: ticketId },
-          data: {
-            status: nextStatus,
-            ...(safeSolution !== undefined ? { solution: safeSolution } : {})
-          }
-        });
-        await tx.ticketHistory.create({
-          data: {
-            ticketId,
-            actorId: session.id || "admin",
-            actorName: session.name || "Admin",
-            eventType: "STATUS_CHANGED",
-            description: `Alterou o status para ${nextStatus}.`,
-          },
-        });
+        const ccStr = typeof cc === 'string' ? cc : (Array.isArray(cc) ? cc.join(', ') : undefined);
+        const dataToUpdate: any = {};
+        if (nextStatus) dataToUpdate.status = nextStatus;
+        if (safeSolution !== undefined) dataToUpdate.solution = safeSolution;
+        if (ccStr !== undefined) dataToUpdate.cc = ccStr ? ccStr.trim() : null;
+
+        if (Object.keys(dataToUpdate).length > 0) {
+          await tx.ticket.update({
+            where: { id: ticketId },
+            data: dataToUpdate
+          });
+        }
+
+        if (nextStatus) {
+          await tx.ticketHistory.create({
+            data: {
+              ticketId,
+              actorId: session.id || "admin",
+              actorName: session.name || "Admin",
+              eventType: "STATUS_CHANGED",
+              description: `Alterou o status para ${nextStatus}.`,
+            },
+          });
+        }
       });
+    }
+
+    if (ticketId && nextStatus === "RESOLVIDO") {
+      try {
+        const ticket = await prisma.ticket.findUnique({
+          where: { id: ticketId },
+          include: { requester: true, sector: true, technician: true, service: true }
+        });
+        if (ticket && ticket.requester.email) {
+          let safeSolution = undefined;
+          if (solutionHtml) {
+            const sanitizeHtml = require("sanitize-html");
+            safeSolution = sanitizeHtml(solutionHtml);
+          }
+          await sendTicketResolvedEmail(
+            ticket,
+            ticket.requester.email,
+            ticket.requester.name,
+            safeSolution || "Chamado finalizado pela equipe de suporte."
+          );
+        }
+      } catch (err) {
+        console.error("[EMAIL] Erro ao enviar e-mail de resolução:", err);
+      }
     }
 
     return NextResponse.json({ success: true, message: "E-mail enviado com sucesso" });

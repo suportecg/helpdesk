@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Combobox } from "@/components/common/Combobox";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
 export function TicketSidebar({
   ticket,
@@ -18,31 +16,6 @@ export function TicketSidebar({
   technicians: any[];
   onUpdateField: (field: string, value: any) => void;
 }) {
-  const [ccInput, setCcInput] = useState(ticket?.cc || "");
-  const [tagInput, setTagInput] = useState("");
-  const tags: string[] = ticket?.aiMetadata?.tags || [];
-
-  const handleSaveCc = () => {
-    if (ccInput !== ticket.cc) {
-      onUpdateField("cc", ccInput);
-    }
-  };
-
-  const handleAddTag = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
-      e.preventDefault();
-      const newTags = [...tags, tagInput.trim()];
-      const newMetadata = { ...(ticket.aiMetadata || {}), tags: newTags };
-      onUpdateField("aiMetadata", newMetadata);
-      setTagInput("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    const newTags = tags.filter((t: string) => t !== tagToRemove);
-    const newMetadata = { ...(ticket.aiMetadata || {}), tags: newTags };
-    onUpdateField("aiMetadata", newMetadata);
-  };
 
   return (
     <div className="p-6 space-y-6">
@@ -118,45 +91,6 @@ export function TicketSidebar({
           searchPlaceholder="Buscar setor..."
         />
       </div>
-
-      {/* Etiquetas (Tags) */}
-      <div className="space-y-2 pt-2 border-t">
-        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Etiquetas</label>
-        <div className="flex flex-wrap gap-1.5">
-          {tags.map((tag: string, idx: number) => (
-            <Badge key={idx} variant="secondary" className="px-2 py-0.5 text-xs flex items-center gap-1 group">
-              {tag}
-              <span 
-                className="cursor-pointer opacity-50 hover:opacity-100 hover:text-destructive"
-                onClick={() => handleRemoveTag(tag)}
-              >
-                &times;
-              </span>
-            </Badge>
-          ))}
-        </div>
-        <Input 
-          placeholder="Adicionar etiqueta... (Enter)" 
-          className="h-8 text-xs" 
-          value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
-          onKeyDown={handleAddTag}
-        />
-        <p className="text-[10px] text-muted-foreground">Salvas em aiMetadata (dívida técnica para futura tabela relacional)</p>
-      </div>
-
-      {/* Em cópia (Cc) */}
-      <div className="space-y-1 pt-2 border-t">
-        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Em Cópia (Cc)</label>
-        <Input 
-          placeholder="exemplo@email.com, outro@email.com" 
-          className="text-sm" 
-          value={ccInput}
-          onChange={(e) => setCcInput(e.target.value)}
-          onBlur={handleSaveCc}
-        />
-      </div>
-
     </div>
   );
 }

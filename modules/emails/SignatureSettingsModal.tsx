@@ -15,7 +15,7 @@ export default function SignatureSettingsModal({ onClose, onSave }: SignatureSet
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
   const [site, setSite] = useState("www.cgconstrucoes.com");
-  const [logoUrl, setLogoUrl] = useState("");
+  const [logoUrl, setLogoUrl] = useState("https://raw.githubusercontent.com/suportecg/helpdesk/main/public/cg-logo.png");
 
   useEffect(() => {
     const saved = localStorage.getItem("@helpdesk:signature_data");

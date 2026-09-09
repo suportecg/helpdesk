@@ -22,6 +22,7 @@ export interface UpdateTicketInput {
   observations?: string;
   solutionText?: string;
   hasUnreadReply?: boolean;
+  cc?: string | null;
 }
 
 /**
@@ -96,9 +97,8 @@ export async function updateTicket(
   let dueDate = existing.dueDate;
   if (input.serviceId !== undefined && input.serviceId !== existing.serviceId) {
     const service = await prisma.service.findUnique({ where: { id: input.serviceId }, select: { slaHours: true } });
-    if (service?.slaHours) {
-      dueDate = new Date(new Date(existing.ticketDate).getTime() + service.slaHours * 60 * 60 * 1000);
-    }
+    const hours = service?.slaHours || 2; // Default to 2 hours
+    dueDate = new Date(new Date(existing.ticketDate).getTime() + hours * 60 * 60 * 1000);
   }
 
   const updated = await prisma.ticket.update({
@@ -119,6 +119,8 @@ export async function updateTicket(
       dueDate,
       observations: input.observations !== undefined ? (input.observations ? input.observations.trim() : null) : existing.observations,
       hasUnreadReply: input.hasUnreadReply !== undefined ? input.hasUnreadReply : existing.hasUnreadReply,
+      cc: input.cc !== undefined ? (input.cc ? input.cc.trim() : null) : existing.cc,
+      ...(input.solutionText !== undefined ? { solution: input.solutionText ? require("sanitize-html")(input.solutionText.replace(/\n/g, '<br/>')) : null } : {})
     },
     include: {
       requester: true,
@@ -129,6 +131,15 @@ export async function updateTicket(
   });
 
   const historyEntries: Array<{ eventType: string; description: string; oldValue?: string; newValue?: string }> = [];
+
+  if (input.cc !== undefined && input.cc !== existing.cc) {
+    historyEntries.push({
+      eventType: "CC_CHANGED",
+      description: input.cc ? `Atualizou destinatários em cópia (Cc): ${input.cc}` : "Removeu destinatários em cópia.",
+      oldValue: existing.cc || undefined,
+      newValue: input.cc || undefined,
+    });
+  }
 
   if (existing.technicianId !== updated.technicianId) {
     if (updated.technician) {

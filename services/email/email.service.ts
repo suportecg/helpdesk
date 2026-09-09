@@ -153,11 +153,56 @@ function getEmailLayout(settings: any, title: string, content: string): string {
 }
 
 /**
+ * Extrai imagens base64 (data:image/...) do HTML e converte em anexos CID inline,
+ * garantindo compatibilidade com clientes de e-mail (como Gmail e Outlook) que bloqueiam data URIs.
+ */
+function extractInlineBase64Images(html: string) {
+  const attachments: Array<{
+    content: string;
+    filename: string;
+    type: string;
+    disposition: string;
+    content_id: string;
+  }> = [];
+
+  let index = 0;
+  const processedHtml = html.replace(
+    /<img([^>]+)src=["']data:(image\/[a-zA-Z0-9+.-]+);base64,([^"']+)["']([^>]*)>/gi,
+    (match, prefix, mimeType, base64Data, suffix) => {
+      const ext = mimeType.split('/')[1] || 'png';
+      const cid = `inline_img_${index}_${Date.now()}`;
+      attachments.push({
+        content: base64Data.trim(),
+        filename: `signature_logo_${index}.${ext}`,
+        type: mimeType,
+        disposition: 'inline',
+        content_id: cid,
+      });
+      index++;
+      return `<img${prefix}src="cid:${cid}"${suffix}>`;
+    }
+  );
+
+  return { html: processedHtml, attachments };
+}
+
+/**
  * Sends a raw HTML email using SendGrid.
  */
-export async function sendHtmlEmail(to: string, subject: string, html: string, inReplyToMessageId?: string, cc?: string[]) {
+export async function sendHtmlEmail(
+  to: string, 
+  subject: string, 
+  html: string, 
+  inReplyToMessageId?: string, 
+  cc?: string[],
+  existingAttachments?: any[]
+) {
   const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'suporte@empresa.com.br';
   const fromName = process.env.SENDGRID_FROM_NAME || 'HelpDesk';
+
+  // Converte imagens base64 em anexos inline (CID) para visualização perfeita no Gmail/Outlook
+  const { html: emailHtml, attachments: inlineAttachments } = extractInlineBase64Images(html);
+  const allAttachments = [...(existingAttachments || []), ...inlineAttachments];
 
   const msg: any = {
     to,
@@ -166,15 +211,19 @@ export async function sendHtmlEmail(to: string, subject: string, html: string, i
       name: fromName,
     },
     subject,
-    html,
+    html: emailHtml,
   };
 
   if (cc && cc.length > 0) {
     msg.cc = cc;
   }
 
+  if (allAttachments.length > 0) {
+    msg.attachments = allAttachments;
+  }
+
   if (inReplyToMessageId) {
-    // Para agrupar no GMail / Outlookk
+    // Para agrupar no GMail / Outlook
     msg.headers = {
       'In-Reply-To': inReplyToMessageId,
       'References': inReplyToMessageId,
@@ -184,15 +233,15 @@ export async function sendHtmlEmail(to: string, subject: string, html: string, i
   try {
     await sgMail.send(msg);
     console.log(`[EMAIL] E-mail enviado com sucesso para ${to}`);
-    return { success: true, bodyHtml: html };
+    return { success: true, bodyHtml: emailHtml };
   } catch (error: any) {
     console.error(`[EMAIL] Falha ao enviar e-mail para ${to}:`, error.response?.body || error.message);
     // Retornamos falso em vez de lançar exceção para não quebrar fluxos (ex: criação de chamado)
-    return { success: false, error: error.message, bodyHtml: html };
+    return { success: false, error: error.message, bodyHtml: emailHtml };
   }
 }
 
-async function getTicketEmailMetadata(ticketId: string) {
+async function getTicketEmailMetadata(ticketId: string, requesterEmail?: string) {
   try {
     const t = await prisma.ticket.findUnique({
       where: { id: ticketId },
@@ -205,7 +254,17 @@ async function getTicketEmailMetadata(ticketId: string) {
         } 
       }
     });
-    const ccList = t?.cc ? t.cc.split(',').map(c => c.trim()).filter(Boolean) : undefined;
+    let ccList = t?.cc 
+      ? t.cc.split(/[,;]+/).map(c => c.trim()).filter(Boolean) 
+      : undefined;
+
+    if (ccList && requesterEmail) {
+      ccList = ccList.filter(c => c.toLowerCase() !== requesterEmail.toLowerCase());
+    }
+    if (ccList && ccList.length === 0) {
+      ccList = undefined;
+    }
+
     const inReplyTo = t?.processedEmails?.[0]?.messageId;
     return { ccList, inReplyTo };
   } catch (e) {
@@ -216,13 +275,31 @@ async function getTicketEmailMetadata(ticketId: string) {
 /**
  * Envia um e-mail customizado digitado manualmente pelo administrador.
  */
-export async function sendCustomEmail(to: string, subject: string, content: string, inReplyToMessageId?: string, cc?: string[]) {
+export async function sendCustomEmail(
+  to: string, 
+  subject: string, 
+  content: string, 
+  inReplyToMessageId?: string, 
+  cc?: string[],
+  attachments?: any[]
+) {
   const settings = await getCorporateSettings();
   
+  let cleanCc = cc;
+  if (cleanCc && Array.isArray(cleanCc)) {
+    cleanCc = cleanCc
+      .map(c => typeof c === 'string' ? c.trim() : c)
+      .filter(Boolean)
+      .filter(c => c.toLowerCase() !== to.toLowerCase());
+    if (cleanCc.length === 0) {
+      cleanCc = undefined;
+    }
+  }
+
   // Como o content já vem como HTML (do editor frontend ou templates),
   // não substituímos os \n por <br /> para não quebrar tabelas e layouts como a assinatura.
   const html = getEmailLayout(settings, "", content);
-  return sendHtmlEmail(to, subject, html, inReplyToMessageId, cc);
+  return sendHtmlEmail(to, subject, html, inReplyToMessageId, cleanCc, attachments);
 }
 
 /**
@@ -329,7 +406,7 @@ export async function sendTicketCreatedEmail(ticketData: any, requesterEmail: st
     content
   );
   
-  const { ccList, inReplyTo } = await getTicketEmailMetadata(ticketData.id);
+  const { ccList, inReplyTo } = await getTicketEmailMetadata(ticketData.id, requesterEmail);
   
   return sendHtmlEmail(requesterEmail, subject, html, inReplyTo, ccList);
 }
@@ -439,7 +516,7 @@ export async function sendTicketResolvedEmail(ticketData: any, requesterEmail: s
 </html>
   `;
   
-  const { ccList, inReplyTo } = await getTicketEmailMetadata(ticketData.id);
+  const { ccList, inReplyTo } = await getTicketEmailMetadata(ticketData.id, requesterEmail);
 
   return sendHtmlEmail(requesterEmail, subject, html, inReplyTo, ccList);
 }

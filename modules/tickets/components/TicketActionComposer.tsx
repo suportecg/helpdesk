@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Bold, Italic, Send } from "lucide-react";
+import { Bold, Italic, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import SignatureSettingsModal from "../../emails/SignatureSettingsModal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function TicketActionComposer({ 
   ticket, 
@@ -20,17 +20,39 @@ export function TicketActionComposer({
   const [activeTab, setActiveTab] = useState<"PUBLIC" | "INTERNAL">("PUBLIC");
   const [submitting, setSubmitting] = useState(false);
   const [nextStatus, setNextStatus] = useState<string>("KEEP"); // "KEEP" means don't change
+  const [solutionText, setSolutionText] = useState("");
   const [signatureHtml, setSignatureHtml] = useState("");
   const [showSignatureSettings, setShowSignatureSettings] = useState(false);
+  const [reopening, setReopening] = useState(false);
+  const [ccValue, setCcValue] = useState(ticket?.cc || "");
+  const [showCc, setShowCc] = useState(!!ticket?.cc);
 
   useEffect(() => {
-    try {
-      const savedSig = localStorage.getItem("@helpdesk:signature");
-      if (savedSig) {
-        const sig = JSON.parse(savedSig);
-        setSignatureHtml(sig.html || "");
-      }
-    } catch (e) {}
+    setCcValue(ticket?.cc || "");
+    setShowCc(!!ticket?.cc);
+  }, [ticket?.id, ticket?.cc]);
+
+  const isClosed = ["RESOLVIDO", "CANCELADO", "CONCLUIDO"].includes(ticket.status);
+
+  useEffect(() => {
+    // Busca a assinatura do perfil do usuário no backend
+    fetch("/api/profile")
+      .then(res => res.json())
+      .then(data => {
+        if (data.signatureHtml) {
+          setSignatureHtml(data.signatureHtml);
+        } else {
+          // Fallback legacy temporário
+          try {
+            const savedSig = localStorage.getItem("@helpdesk:signature");
+            if (savedSig) {
+              const sig = JSON.parse(savedSig);
+              setSignatureHtml(sig.html || "");
+            }
+          } catch (e) {}
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const editor = useEditor({
@@ -43,16 +65,89 @@ export function TicketActionComposer({
     },
   });
 
+  const handleReopen = async () => {
+    setReopening(true);
+    try {
+      if (ticket.origin === "EMAIL" || ticket.requester?.email) {
+        const inReplyTo = ticket.processedEmails?.[ticket.processedEmails.length - 1]?.messageId;
+        const payload = {
+          to: ticket.requester?.email,
+          cc: ticket.cc,
+          subject: `Re: ${ticket.problem}`,
+          content: "<p>Este chamado foi reaberto.</p>",
+          inReplyTo,
+          isPublic: true,
+          ticketId: ticket.id,
+          nextStatus: "ABERTO"
+        };
+        const res = await fetch(`/api/email/reply`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error("Erro ao enviar e-mail de reabertura");
+      } else {
+        const res = await fetch(`/api/tickets/${ticket.id}/comments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            text: "Chamado reaberto pelo atendente.", 
+            isInternal: false,
+            nextStatus: "ABERTO"
+          }),
+        });
+        if (!res.ok) throw new Error("Erro ao reabrir");
+      }
+      toast.success("Chamado reaberto com sucesso!");
+      onActionAdded();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao reabrir chamado");
+    } finally {
+      setReopening(false);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!editor || editor.isEmpty) return;
+    if (!editor) return;
+    const isSolutionOnly = nextStatus === "RESOLVIDO" && solutionText.trim().length > 0;
+    
+    if (editor.isEmpty && !isSolutionOnly) return;
     
     setSubmitting(true);
     const contentHtml = editor.getHTML();
     const contentText = editor.getText();
 
     try {
+      if (editor.isEmpty && isSolutionOnly) {
+         const res = await fetch(`/api/tickets/${ticket.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+               status: "RESOLVIDO",
+               solutionText: solutionText,
+               cc: ccValue || null
+            })
+         });
+         if (!res.ok) throw new Error("Erro ao resolver chamado");
+         toast.success("Chamado resolvido com sucesso!");
+         editor.commands.setContent("");
+         setSolutionText("");
+         setNextStatus("KEEP");
+         onActionAdded();
+         return;
+      }
+
       if (activeTab === "PUBLIC") {
         const finalHtml = signatureHtml ? contentHtml + "<br/><br/>" + signatureHtml : contentHtml;
+
+        // Se CC foi editado, atualiza também no chamado
+        if (ccValue !== (ticket.cc || "")) {
+          fetch(`/api/tickets/${ticket.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cc: ccValue || null }),
+          }).catch(console.error);
+        }
 
         // Ação Pública
         if (ticket.origin === "EMAIL" || ticket.requester?.email) {
@@ -60,14 +155,14 @@ export function TicketActionComposer({
           const inReplyTo = ticket.processedEmails?.[ticket.processedEmails.length - 1]?.messageId;
           const payload = {
             to: ticket.requester?.email,
-            cc: ticket.cc,
+            cc: ccValue || undefined,
             subject: `Re: ${ticket.problem}`,
             content: finalHtml,
             inReplyTo,
             isPublic: true,
             ticketId: ticket.id,
             nextStatus: nextStatus !== "KEEP" && nextStatus !== ticket.status ? nextStatus : undefined,
-            solutionHtml: (activeTab === "PUBLIC" && nextStatus === "RESOLVIDO" && editor.getText().trim().length > 0) ? finalHtml : undefined
+            solutionHtml: (nextStatus === "RESOLVIDO" && solutionText.trim().length > 0) ? solutionText.replace(/\n/g, '<br/>') : undefined
           };
 
           const res = await fetch(`/api/email/reply`, {
@@ -85,7 +180,7 @@ export function TicketActionComposer({
               text: contentText, 
               isInternal: false,
               nextStatus: nextStatus !== "KEEP" && nextStatus !== ticket.status ? nextStatus : undefined,
-              solutionHtml: (activeTab === "PUBLIC" && nextStatus === "RESOLVIDO" && editor.getText().trim().length > 0) ? finalHtml : undefined,
+              solutionHtml: (nextStatus === "RESOLVIDO" && solutionText.trim().length > 0) ? solutionText.replace(/\n/g, '<br/>') : undefined,
               signatureHtml: signatureHtml || undefined
             }),
           });
@@ -108,6 +203,8 @@ export function TicketActionComposer({
 
       toast.success("Ação adicionada com sucesso!");
       editor.commands.setContent("");
+      setSolutionText("");
+      setNextStatus("KEEP");
       onActionAdded();
     } catch (err: any) {
       toast.error(err.message || "Erro ao adicionar ação");
@@ -117,7 +214,22 @@ export function TicketActionComposer({
   };
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden relative">
+      {isClosed && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-[2px]">
+          <Button onClick={handleReopen} disabled={reopening} size="lg" className="shadow-lg font-semibold tracking-wide">
+            {reopening ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Reabrindo...
+              </>
+            ) : (
+              "Reabrir Ticket"
+            )}
+          </Button>
+        </div>
+      )}
+
       {/* TABS */}
       <div className="flex border-b border-border/50 bg-muted/20">
         <button
@@ -140,26 +252,78 @@ export function TicketActionComposer({
 
       <div className={activeTab === "INTERNAL" ? "bg-warning/5" : "bg-background"}>
         {/* TOOLBAR */}
-        <div className="flex items-center gap-1 border-b border-border/50 p-2 bg-muted/10">
+        <div className="flex items-center gap-1.5 border-b border-border/50 p-2 bg-muted/10">
           <Button 
+            type="button"
             variant="ghost" 
             size="icon" 
             className={`h-8 w-8 ${editor?.isActive("bold") ? "bg-muted text-foreground" : "text-muted-foreground"}`}
             onClick={() => editor?.chain().focus().toggleBold().run()}
+            title="Negrito"
           >
             <Bold className="h-4 w-4" />
           </Button>
           <Button 
+            type="button"
             variant="ghost" 
             size="icon" 
             className={`h-8 w-8 ${editor?.isActive("italic") ? "bg-muted text-foreground" : "text-muted-foreground"}`}
             onClick={() => editor?.chain().focus().toggleItalic().run()}
+            title="Itálico"
           >
             <Italic className="h-4 w-4" />
           </Button>
           
           <div className="w-px h-4 bg-border mx-1" />
+
+          {activeTab === "PUBLIC" && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={`h-8 px-2.5 text-xs font-semibold gap-1.5 transition-colors ${
+                showCc || ccValue.trim()
+                  ? "bg-primary/10 text-primary hover:bg-primary/20" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setShowCc(!showCc)}
+              title="Adicionar / Editar destinatários em cópia (Cc)"
+            >
+              <span className="font-bold">Cc</span>
+              {ccValue.trim() ? (
+                <span className="bg-primary text-primary-foreground rounded-full min-w-4 h-4 px-1 text-[10px] flex items-center justify-center font-bold">
+                  {ccValue.split(/[,;]+/).map((e: string) => e.trim()).filter(Boolean).length}
+                </span>
+              ) : null}
+            </Button>
+          )}
         </div>
+
+        {/* CC INPUT ROW */}
+        {activeTab === "PUBLIC" && showCc && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-muted/25 border-b border-border/40 text-xs animate-in fade-in duration-150">
+            <span className="font-bold text-muted-foreground uppercase text-[11px] shrink-0">
+              Cc:
+            </span>
+            <input
+              type="text"
+              placeholder="Digite os e-mails separados por vírgula (ex: email1@empresa.com, email2@empresa.com)"
+              value={ccValue}
+              onChange={(e) => setCcValue(e.target.value)}
+              className="w-full bg-transparent outline-none text-foreground placeholder:text-muted-foreground/60 text-xs py-0.5"
+            />
+            {ccValue && (
+              <button
+                type="button"
+                onClick={() => setCcValue("")}
+                className="text-muted-foreground hover:text-foreground text-xs px-1.5 py-0.5 rounded hover:bg-muted/50"
+                title="Limpar Cc"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )}
 
         {/* EDITOR */}
         <div className="cursor-text" onClick={() => editor?.commands.focus()}>
@@ -169,7 +333,24 @@ export function TicketActionComposer({
         {/* SIGNATURE PREVIEW */}
         {(activeTab === "PUBLIC" && signatureHtml) && (
           <div className="px-4 pb-4">
-            <div className="text-[13px] text-muted-foreground pt-4 mt-2 border-t border-border/50" dangerouslySetInnerHTML={{ __html: signatureHtml }} />
+            <div className="text-[13px] text-muted-foreground pt-4 mt-2 border-t border-border/50" dangerouslySetInnerHTML={{ __html: signatureHtml.replace(/<img /g, '<img referrerpolicy="no-referrer" ') }} />
+          </div>
+        )}
+
+        {/* SOLUTION TEXTAREA */}
+        {nextStatus === "RESOLVIDO" && (
+          <div className="p-4 border-t border-border/50 bg-background/50">
+            <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+               Solução Oficial do Chamado
+            </label>
+            <p className="text-xs text-muted-foreground mb-3">Esta solução será registrada e enviada no e-mail de encerramento do chamado para o solicitante.</p>
+            <textarea
+              className="w-full min-h-[100px] p-3 text-sm rounded-md border border-input bg-background focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"
+              placeholder="Descreva detalhadamente a solução aplicada..."
+              value={solutionText}
+              onChange={(e) => setSolutionText(e.target.value)}
+            />
           </div>
         )}
 
@@ -180,29 +361,35 @@ export function TicketActionComposer({
               {activeTab === "PUBLIC" ? "Esta mensagem será enviada ao solicitante." : "Esta nota ficará oculta para o solicitante."}
             </p>
             {activeTab === "PUBLIC" && (
-              <button
-                type="button"
-                onClick={() => setShowSignatureSettings(true)}
-                className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground hover:text-primary flex items-center gap-1.5 transition-colors bg-background px-2.5 py-1.5 border border-border/60 rounded shadow-sm"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l12.69-12.69L204.69,96Z"></path></svg>
-                Assinatura
-              </button>
+              <p className="text-[10px] text-muted-foreground/60 italic">Sua assinatura será adicionada automaticamente. Edite em "Meu Perfil".</p>
             )}
           </div>
           
           <div className="flex items-center">
-            <select 
-              className="h-9 px-3 py-1 bg-background border border-border rounded-l-md text-sm outline-none focus:ring-1 focus:ring-primary shadow-sm"
-              value={nextStatus}
-              onChange={(e) => setNextStatus(e.target.value)}
-            >
-              <option value="KEEP">Manter status atual</option>
-              <option value="ABERTO">Aberto</option>
-              <option value="EM_ATENDIMENTO">Em Atendimento</option>
-              <option value="AGUARDANDO_USUARIO">Aguardando Usuário</option>
-              <option value="RESOLVIDO">Resolvido</option>
-            </select>
+            <Select value={nextStatus} onValueChange={(val) => val && setNextStatus(val)}>
+              <SelectTrigger className={`h-9 w-48 rounded-r-none focus:ring-0 focus:ring-offset-0 ${
+                nextStatus === "KEEP" ? "text-muted-foreground" :
+                nextStatus === "ABERTO" ? "text-amber-600 font-medium" :
+                nextStatus === "EM_ATENDIMENTO" ? "text-indigo-600 font-medium" :
+                nextStatus === "AGUARDANDO_USUARIO" ? "text-blue-600 font-medium" :
+                nextStatus === "RESOLVIDO" ? "text-emerald-600 font-medium" : ""
+              }`}>
+                <SelectValue placeholder="Status">
+                  {nextStatus === "KEEP" && "Manter status atual"}
+                  {nextStatus === "ABERTO" && "Aberto"}
+                  {nextStatus === "EM_ATENDIMENTO" && "Em Atendimento"}
+                  {nextStatus === "AGUARDANDO_USUARIO" && "Aguardando Usuário"}
+                  {nextStatus === "RESOLVIDO" && "Resolvido"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="KEEP">Manter status atual</SelectItem>
+                <SelectItem value="ABERTO" className="text-amber-600 font-medium focus:text-amber-600 focus:bg-amber-50 dark:focus:bg-amber-500/10">Aberto</SelectItem>
+                <SelectItem value="EM_ATENDIMENTO" className="text-indigo-600 font-medium focus:text-indigo-600 focus:bg-indigo-50 dark:focus:bg-indigo-500/10">Em Atendimento</SelectItem>
+                <SelectItem value="AGUARDANDO_USUARIO" className="text-blue-600 font-medium focus:text-blue-600 focus:bg-blue-50 dark:focus:bg-blue-500/10">Aguardando Usuário</SelectItem>
+                <SelectItem value="RESOLVIDO" className="text-emerald-600 font-medium focus:text-emerald-600 focus:bg-emerald-50 dark:focus:bg-emerald-500/10">Resolvido</SelectItem>
+              </SelectContent>
+            </Select>
             <Button 
               onClick={handleSubmit} 
               disabled={submitting}
@@ -219,12 +406,6 @@ export function TicketActionComposer({
         </div>
       </div>
       
-      {showSignatureSettings && (
-        <SignatureSettingsModal
-          onClose={() => setShowSignatureSettings(false)}
-          onSave={(html) => setSignatureHtml(html)}
-        />
-      )}
     </div>
   );
 }

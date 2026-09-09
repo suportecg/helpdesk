@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { RoleType, Prisma } from "@prisma/client";
 import { logAuditEvent } from "../audit/audit.service";
+import { generateDefaultSignature } from "@/lib/default-signature";
 
 export interface UserListParams {
   page?: number;
@@ -141,7 +142,11 @@ export async function createUser(
     }
   } else {
     user = await prisma.user.create({
-      data: { ...userData, email: emailNormalized },
+      data: {
+        ...userData,
+        email: emailNormalized,
+        signatureHtml: (data as any).signatureHtml || generateDefaultSignature(userData.name, emailNormalized, userData.department || undefined),
+      },
       include: { sector: true },
     });
   }

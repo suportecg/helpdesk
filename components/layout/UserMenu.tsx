@@ -2,6 +2,7 @@
 
 import React from "react";
 import { SignOut, User, Shield, Buildings } from "@phosphor-icons/react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { ROLE_LABELS, ROLE_COLORS } from "@/utils/rbac";
@@ -68,9 +69,11 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-          <User className="h-4 w-4 text-muted-foreground" />
-          <span>Meu Perfil</span>
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/perfil" className="flex items-center gap-2 w-full">
+            <User className="h-4 w-4 text-muted-foreground" />
+            <span>Meu Perfil</span>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
           <Buildings className="h-4 w-4 text-muted-foreground" />

@@ -149,7 +149,7 @@ export async function duplicateTicket(
   return newTicket;
 }
 
-import { sendCustomEmail } from "../email/email.service";
+import { sendCustomEmail, sendTicketResolvedEmail } from "../email/email.service";
 
 /**
  * Adicionar comentário interno ao chamado
@@ -254,6 +254,25 @@ export async function addTicketComment(
       }
     } catch (err) {
       console.error("[EMAIL] Erro ao enviar notificação de resposta:", err);
+    }
+  }
+
+  if (nextStatus === "RESOLVIDO") {
+    try {
+      const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+        include: { requester: true, sector: true, technician: true, service: true }
+      });
+      if (ticket && ticket.requester.email) {
+        await sendTicketResolvedEmail(
+          ticket,
+          ticket.requester.email,
+          ticket.requester.name,
+          safeSolution || "Chamado finalizado pela equipe de suporte."
+        );
+      }
+    } catch (err) {
+      console.error("[EMAIL] Erro ao enviar e-mail de resolução:", err);
     }
   }
 
