@@ -45,6 +45,8 @@ export function getStatusLabel(status: StatusType): string {
       return "Aguardando usuário";
     case "AGUARDANDO_PECA":
       return "Aguardando peça";
+    case "AGUARDANDO_TERCEIROS":
+      return "Aguardando terceiros";
     case "RESOLVIDO":
       return "Resolvido";
     case "CANCELADO":

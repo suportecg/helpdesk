@@ -61,6 +61,7 @@ export async function createTicketInMonthWithRetry(dataWithoutNum: any, ticketDa
         });
       });
     } catch (err: any) {
+      console.error(`[CREATE TICKET] Error on attempt ${attempt + 1}:`, err);
       attempt++;
       if (attempt >= maxAttempts) {
         throw new Error(
