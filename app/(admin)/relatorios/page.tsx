@@ -8,7 +8,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Relatórios Executivos de BI & Analytics — CG Construções HelpDesk",
+  title: "Relatórios Executivos de BI & Analytics — Chamado",
   description: "Central gerencial de indicadores, tempos de atendimento e exportação PDF corporativa",
 };
 

@@ -430,6 +430,12 @@ export function TicketModal({
                   isLoading={isLoadingRequesters}
                   onOpen={handleLoadAllRequesters}
                 />
+                <div className="mt-3">
+                  <RequesterHistoryCard
+                    requesterId={requesterId}
+                    requesterName={requesterName}
+                  />
+                </div>
               </div>
 
               {/* Setor */}

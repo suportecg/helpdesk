@@ -4,7 +4,7 @@ import { PortalHero } from "@/components/layout/PortalHero";
 import TicketsManagementClient from "@/modules/tickets/TicketsManagementClient";
 
 export const metadata: Metadata = {
-  title: "Meus Chamados - CG Construções HelpDesk",
+  title: "Meus Chamados - Chamado",
   description: "Acompanhe e gerencie seus tickets de atendimento.",
 };
 

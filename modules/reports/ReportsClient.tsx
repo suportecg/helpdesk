@@ -362,7 +362,7 @@ export function ReportsClient() {
             className={`flex-1 min-w-[160px] p-4 rounded-[1.5rem] text-left transition-all duration-300 border ${
               reportMode === m.id
                 ? "bg-foreground text-background shadow-xl scale-[1.02] border-transparent"
-                : "bg-card border-border/40 text-foreground hover:border-foreground/20 hover:bg-accent/50"
+                : "bg-card border-border/40 text-foreground hover:border-foreground/20 hover:bg-accent/50 hover:shadow-lg"
             }`}
           >
             <p className="text-sm font-display font-bold tracking-wide uppercase mb-1">{m.label}</p>

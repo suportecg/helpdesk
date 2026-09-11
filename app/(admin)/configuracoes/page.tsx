@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { CorporateSettingsClient } from "@/modules/settings/CorporateSettingsClient";
 
 export const metadata = {
-  title: "Configurações Corporativas — CG Construções HelpDesk Pro",
+  title: "Configurações Corporativas — Chamado",
   description:
     "Gerenciamento corporativo do sistema, parâmetros White Label, políticas RBAC, SLAs e exportação gerencial PDF.",
 };

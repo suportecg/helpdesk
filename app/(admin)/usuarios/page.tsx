@@ -4,7 +4,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { UsersManagementClient } from "@/modules/users/UsersManagementClient";
 
 export const metadata: Metadata = {
-  title: "Usuários e Técnicos - CG Construções HelpDesk",
+  title: "Usuários e Técnicos - Chamado",
   description: "Gestão completa de técnicos, usuários, controle RBAC e permissões corporativas",
 };
 

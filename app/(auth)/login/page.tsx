@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { LoginForm } from "@/modules/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Acesso - CG Construções HelpDesk",
+  title: "Acesso - Chamado",
   description: "Autenticação no sistema profissional HelpDesk Pro",
 };
 

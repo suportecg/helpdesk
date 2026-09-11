@@ -8,7 +8,7 @@ import { Plus, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Dashboard Operacional — CG Construções HelpDesk",
+  title: "Dashboard Operacional — Chamado",
   description: "Central operacional de chamados, fila em atendimento e atividades de TI em tempo real",
 };
 

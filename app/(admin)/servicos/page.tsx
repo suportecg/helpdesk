@@ -3,7 +3,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { ServicesManagementClient } from "@/modules/services/ServicesManagementClient";
 
 export const metadata: Metadata = {
-  title: "Serviços - CG Construções HelpDesk",
+  title: "Serviços - Chamado",
   description: "Catálogo de serviços e SLA",
 };
 

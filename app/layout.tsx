@@ -12,9 +12,9 @@ const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space
 const jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" });
 
 export const metadata: Metadata = {
-  title: "CG Construções HelpDesk Pro — Sistema Profissional de Atendimento TI",
+  title: "Chamado",
   description:
-    "Sistema corporativo modular e White Label para gestão de chamados, técnicos, BI e atendimento da CG Construções (HelpDesk Pro).",
+    "Sistema corporativo modular e White Label para gestão de chamados, técnicos, BI e atendimento.",
   icons: [
     { rel: "icon", url: "/cg-logo.png" },
     { rel: "shortcut icon", url: "/cg-logo.png" },

@@ -458,10 +458,10 @@ export default function TicketsManagementClient({
         <div className="flex flex-col gap-0.5" title={item.description ? `${item.problem}\n\n${item.description}` : item.problem}>
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-semibold text-primary truncate hover:underline cursor-default">
-              [{item.service?.name}]
+              {item.service?.name}
             </span>
             {item.origin && (
-              <span className="text-[9px] uppercase tracking-wider text-muted-foreground/80 font-mono">
+              <span className="text-[9px] uppercase tracking-wider text-muted-foreground/80 font-semibold">
                 {item.origin}
               </span>
             )}

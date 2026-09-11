@@ -3,7 +3,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { RequestersManagementClient } from "@/modules/requesters/RequestersManagementClient";
 
 export const metadata: Metadata = {
-  title: "Solicitantes - CG Construções HelpDesk",
+  title: "Solicitantes - Chamado",
   description: "Cadastro de solicitantes e clientes do atendimento",
 };
 

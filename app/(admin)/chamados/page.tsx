@@ -4,7 +4,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import TicketsManagementClient from "@/modules/tickets/TicketsManagementClient";
 
 export const metadata: Metadata = {
-  title: "Gestão de Chamados - CG Construções HelpDesk",
+  title: "Gestão de Chamados - Chamado",
   description: "Sistema profissional de HelpDesk para substituir completamente a planilha de TI com numeração automática, histórico e SLAs",
 };
 

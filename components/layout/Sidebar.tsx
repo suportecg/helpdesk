@@ -99,7 +99,7 @@ export function Sidebar() {
             effectivelyCollapsed ? "justify-center px-0" : "justify-between px-6"
           )}
         >
-          <Link href="/dashboard" className="flex items-center gap-4 overflow-hidden group w-full">
+          <Link href="/dashboard" className={cn("flex items-center overflow-hidden group w-full", effectivelyCollapsed ? "justify-center" : "gap-4")}>
             <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-xl bg-white p-2 shadow-lg shadow-black/20 transition-all duration-500 group-hover:scale-105 group-hover:shadow-primary/30 relative z-10">
               <Image
                 src={config.logo}

@@ -3,7 +3,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { SectorsManagementClient } from "@/modules/sectors/SectorsManagementClient";
 
 export const metadata: Metadata = {
-  title: "Setores - CG Construções HelpDesk",
+  title: "Setores - Chamado",
   description: "Cadastro de setores e departamentos",
 };
 

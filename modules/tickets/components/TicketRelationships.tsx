@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { TicketModal } from "../TicketModal";
+import { Combobox } from "@/components/common/Combobox";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,34 @@ export function TicketRelationships({
   const [targetTicketStr, setTargetTicketStr] = useState("");
   const [mergeAction, setMergeAction] = useState<"LINK" | "MERGE_CANCEL">("LINK");
   const [isLinking, setIsLinking] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  React.useEffect(() => {
+    if (!isMergeModalOpen) {
+      setSearchQuery("");
+      setSearchResults([]);
+      return;
+    }
+    
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const queryParam = searchQuery ? `&query=${encodeURIComponent(searchQuery)}` : "";
+        const res = await fetch(`/api/tickets?limit=50${queryParam}`);
+        if (res.ok) {
+          const body = await res.json();
+          // Filter out the current ticket to avoid self-linking
+          setSearchResults((body.data || []).filter((t: any) => t.id !== ticket?.id));
+        }
+      } catch (err) {}
+      finally { setIsSearching(false); }
+    }, 500);
+    
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, isMergeModalOpen, ticket?.id]);
 
   if (!ticket) return null;
 
@@ -244,13 +273,23 @@ export function TicketRelationships({
                 <label className="text-right text-sm font-semibold">
                   Nº do Chamado
                 </label>
-                <Input
-                  id="targetTicketStr"
-                  value={targetTicketStr}
-                  onChange={(e) => setTargetTicketStr(e.target.value)}
-                  placeholder="Ex: 123"
-                  className="col-span-3"
-                />
+                <div className="col-span-3">
+                  <Combobox
+                    options={searchResults.map(t => ({
+                       id: String(t.ticketNumber),
+                       name: `#${t.ticketNumber} - ${t.problem}`,
+                       subtitle: t.requester?.name,
+                       badge: t.status
+                    }))}
+                    value={targetTicketStr}
+                    onChange={(val) => setTargetTicketStr(val || "")}
+                    onSearchChange={(q) => setSearchQuery(q)}
+                    isLoading={isSearching}
+                    placeholder="Selecione ou busque..."
+                    searchPlaceholder="Buscar por número, problema..."
+                    emptyText="Nenhum chamado encontrado."
+                  />
+                </div>
               </div>
               
               <div className="flex flex-col gap-3 mt-2 border rounded-md p-3 bg-muted/20">
