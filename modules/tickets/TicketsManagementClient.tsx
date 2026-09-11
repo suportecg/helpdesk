@@ -293,6 +293,12 @@ export default function TicketsManagementClient({
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5" /> Aguardando
           </Badge>
         );
+      case "AGUARDANDO_TERCEIROS":
+        return (
+          <Badge className="bg-transparent text-orange-600 dark:text-orange-500 border border-border/50 hover:bg-orange-50 dark:hover:bg-orange-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1.5" /> Aguard. Terceiros
+          </Badge>
+        );
       case "AGUARDANDO_PECA":
         return (
           <Badge className="bg-transparent text-purple-600 dark:text-purple-500 border border-border/50 hover:bg-purple-50 dark:hover:bg-purple-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
@@ -721,8 +727,8 @@ export default function TicketsManagementClient({
         </div>
 
         <div 
-          onClick={() => { setStatusFilter("AGUARDANDO_USUARIO"); setPage(1); }}
-          className={`glass-card rounded-[2rem] p-6 h-full relative overflow-hidden group hover-lift cursor-pointer transition-all ${statusFilter === "AGUARDANDO_USUARIO" ? "ring-2 ring-blue-500 shadow-lg" : ""}`}
+          onClick={() => { setStatusFilter("AGUARDANDO"); setPage(1); }}
+          className={`glass-card rounded-[2rem] p-6 h-full relative overflow-hidden group hover-lift cursor-pointer transition-all ${statusFilter === "AGUARDANDO" ? "ring-2 ring-blue-500 shadow-lg" : ""}`}
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
             <WarningCircle weight="duotone" className="w-24 h-24 text-blue-500" />
@@ -783,7 +789,7 @@ export default function TicketsManagementClient({
             <option value="ABERTO">Em Aberto</option>
             <option value="EM_ATENDIMENTO">Em Atendimento</option>
             <option value="RESOLVIDO">Resolvido</option>
-            <option value="AGUARDANDO_USUARIO">Aguardando</option>
+            <option value="AGUARDANDO">Aguardando</option>
             <option value="AGUARDANDO_PECA">Agendado</option>
           </select>
 

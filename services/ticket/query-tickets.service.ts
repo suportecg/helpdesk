@@ -88,6 +88,8 @@ export async function getTicketsPaginated(options: TicketFilterOptions) {
         ...(where.AND || []),
         { OR: [{ status: "ABERTO" }, { technicianId: null }] }
       ];
+    } else if (options.status === "AGUARDANDO") {
+      where.status = { in: ["AGUARDANDO_USUARIO", "AGUARDANDO_TERCEIROS"] };
     } else {
       where.status = options.status;
     }
@@ -175,7 +177,7 @@ export async function getTicketsPaginated(options: TicketFilterOptions) {
       }
     }),
     prisma.ticket.count({ where: { ...statusWhere, status: "RESOLVIDO" } }),
-    prisma.ticket.count({ where: { ...statusWhere, status: "AGUARDANDO_USUARIO" } }),
+    prisma.ticket.count({ where: { ...statusWhere, status: { in: ["AGUARDANDO_USUARIO", "AGUARDANDO_TERCEIROS"] } } }),
     prisma.ticket.count({ where: { ...statusWhere, status: "EM_ATENDIMENTO" } }),
     prisma.ticket.findMany({
       where,
