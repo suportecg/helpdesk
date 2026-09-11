@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { OrigemType, PrioridadeType, StatusType } from "@prisma/client";
 import { createAuditLog } from "@/services/audit/audit.service";
 import { getOrCreateRequester } from "@/services/requester/requester.service";
-import { calculateTotalTimeMinutes, getStatusLabel } from "./ticket-utils";
+import { calculateTotalTimeMinutes, getStatusLabel, formatTotalTimeMinutes } from "./ticket-utils";
 import { sendTicketResolvedEmail } from "../email/email.service";
 
 export interface UpdateTicketInput {
@@ -23,6 +23,8 @@ export interface UpdateTicketInput {
   solutionText?: string;
   hasUnreadReply?: boolean;
   cc?: string | null;
+  pauseReason?: string;
+  pauseNote?: string;
 }
 
 /**
@@ -131,6 +133,57 @@ export async function updateTicket(
   });
 
   const historyEntries: Array<{ eventType: string; description: string; oldValue?: string; newValue?: string }> = [];
+
+  // Ticket Pause Logic (Aguardando Terceiros)
+  if (existing.status !== updated.status) {
+    if (updated.status === "AGUARDANDO_TERCEIROS") {
+      // Entrando em pausa
+      const openPause = await prisma.ticketPause.findFirst({
+        where: { ticketId: id, endTime: null }
+      });
+      if (!openPause) {
+        await prisma.ticketPause.create({
+          data: {
+            ticketId: id,
+            userId: actorId || null,
+            reason: input.pauseReason || "Sem motivo especificado",
+            startTime: new Date()
+          }
+        });
+        historyEntries.push({
+          eventType: "SLA_PAUSED",
+          description: `SLA Pausado: ${input.pauseReason || "Aguardando Terceiros"}`,
+          oldValue: undefined,
+          newValue: undefined,
+        });
+        if (input.pauseNote) {
+          historyEntries.push({
+            eventType: "PAUSE_NOTE",
+            description: `Observação da pausa: ${input.pauseNote}`,
+          });
+        }
+      }
+    } else if (existing.status === "AGUARDANDO_TERCEIROS") {
+      // Saindo da pausa
+      const openPause = await prisma.ticketPause.findFirst({
+        where: { ticketId: id, endTime: null },
+        orderBy: { startTime: 'desc' }
+      });
+      if (openPause) {
+        const endTime = new Date();
+        const duration = calculateTotalTimeMinutes(openPause.startTime, endTime) || 0;
+        await prisma.ticketPause.update({
+          where: { id: openPause.id },
+          data: { endTime, duration }
+        });
+        historyEntries.push({
+          eventType: "SLA_RESUMED",
+          description: `SLA Retomado. Tempo aguardando: ${formatTotalTimeMinutes(duration)}`,
+        });
+      }
+    }
+  }
+
 
   if (input.cc !== undefined && input.cc !== existing.cc) {
     historyEntries.push({

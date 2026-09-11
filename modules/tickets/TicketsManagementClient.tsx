@@ -65,6 +65,7 @@ export interface TicketRow {
   technician?: { id: string; name: string; email: string; avatar?: string | null } | null;
   service: { id: string; name: string; category?: string | null };
   hasUnreadReply?: boolean;
+  pauses?: any[];
   _count?: { comments: number; history: number };
 }
 
@@ -255,16 +256,26 @@ export default function TicketsManagementClient({
     return `${h} h ${m} min`;
   }
 
+  
+  function getTotalPauseMinutes(item: any): number {
+    if (!item.pauses || item.pauses.length === 0) return 0;
+    return item.pauses.reduce((acc: number, pause: any) => {
+      if (pause.duration) return acc + pause.duration;
+      const sTime = new Date(pause.startTime);
+      const eTime = new Date();
+      return acc + calculateBusinessMinutes(sTime, eTime);
+    }, 0);
+  }
+
   function getDynamicTimeBadge(item: any): string {
-    // If ticket is resolved/canceled and has a fixed totalTimeMinutes, use it
+    const pauseMins = getTotalPauseMinutes(item);
     if ((item.status === "RESOLVIDO" || item.status === "CANCELADO") && typeof item.totalTimeMinutes === 'number') {
-      return formatTimeBadge(item.totalTimeMinutes);
+      return formatTimeBadge(Math.max(0, item.totalTimeMinutes - pauseMins));
     }
-    // For OPEN or IN PROGRESS tickets, dynamically calculate based on business hours
     const sTime = item.startTime ? new Date(item.startTime) : new Date(item.ticketDate);
     const eTime = item.endTime ? new Date(item.endTime) : new Date();
     const mins = calculateBusinessMinutes(sTime, eTime);
-    return formatTimeBadge(mins);
+    return formatTimeBadge(Math.max(0, mins - pauseMins));
   }
 
   function renderStatusBadge(status: string) {
@@ -497,19 +508,45 @@ export default function TicketsManagementClient({
       className: "w-28 text-left",
       render: (item) => {
         let slaColor = "text-muted-foreground";
+        let isPaused = item.status === "AGUARDANDO_TERCEIROS";
+        let tooltip = item.dueDate ? `Previsão original: ${new Date(item.dueDate).toLocaleString("pt-BR")}` : undefined;
+        let isBreached = false;
+
         if (item.dueDate && item.status !== "RESOLVIDO" && item.status !== "CANCELADO") {
            const due = new Date(item.dueDate).getTime();
+           
+           const totalRealPauseMs = (item.pauses || []).reduce((acc: number, p: any) => {
+             const start = new Date(p.startTime).getTime();
+             const end = p.endTime ? new Date(p.endTime).getTime() : Date.now();
+             return acc + (end - start);
+           }, 0);
+           
+           const adjustedDue = due + totalRealPauseMs;
            const now = Date.now();
-           if (now > due) slaColor = "text-red-500 font-bold";
-           else if (due - now < 3600000) slaColor = "text-amber-600 font-bold dark:text-amber-500";
-           else slaColor = "text-emerald-600 font-medium dark:text-emerald-500";
+           
+           if (now > adjustedDue) {
+             slaColor = "text-red-500 font-bold";
+             isBreached = true;
+           } else if (adjustedDue - now < 3600000) {
+             slaColor = "text-amber-600 font-bold dark:text-amber-500";
+           } else {
+             slaColor = "text-emerald-600 font-medium dark:text-emerald-500";
+           }
         }
+        
         return (
-          <div className="flex items-center gap-1.5" title={item.dueDate ? `Previsão: ${new Date(item.dueDate).toLocaleString("pt-BR")}` : undefined}>
-            <Clock className={`w-4 h-4 opacity-70 ${slaColor}`} />
-            <span className={`text-[12px] whitespace-nowrap ${slaColor}`}>
-              {getDynamicTimeBadge(item)}
-            </span>
+          <div className="flex flex-col gap-0.5" title={tooltip}>
+            <div className="flex items-center gap-1.5">
+              <Clock className={`w-4 h-4 opacity-70 ${isPaused && !isBreached ? 'text-amber-500' : slaColor}`} />
+              <span className={`text-[12px] whitespace-nowrap ${isPaused && !isBreached ? 'text-amber-600 font-semibold' : slaColor}`}>
+                {getDynamicTimeBadge(item)}
+              </span>
+            </div>
+            {isPaused && (
+              <span className="text-[10px] text-amber-600 font-semibold flex items-center">
+                ⏸ Pausado
+              </span>
+            )}
           </div>
         );
       },

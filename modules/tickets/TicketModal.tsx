@@ -31,7 +31,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Search,
-} from "lucide-react";
+PauseCircle, PlayCircle} from "lucide-react";
 import { getTicketMonthYear, formatTicketNumber } from "@/services/ticket/ticket-utils";
 import { calculateBusinessMinutes } from "@/lib/business-hours";
 import { RequesterHistoryCard } from "./RequesterHistoryCard";
@@ -80,6 +80,10 @@ export function TicketModal({
   const [problem, setProblem] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("ABERTO");
+  const [pauseReason, setPauseReason] = useState("");
+  const [pauseNote, setPauseNote] = useState("");
+  const [pauses, setPauses] = useState<any[]>([]);
+  const [dueDate, setDueDate] = useState<string | null>(null);
   const [origin, setOrigin] = useState("MANUAL");
   const [priority, setPriority] = useState("MEDIA");
   const [startTime, setStartTime] = useState("");
@@ -181,6 +185,8 @@ export function TicketModal({
         setEndTime(toLocalDatetimeString(data.endTime));
         setObservations(data.observations || "");
         setTotalTimeMinutes(data.totalTimeMinutes || null);
+        setPauses(data.pauses || []);
+        setDueDate(data.dueDate || null);
         setCcAddresses(data.cc || null);
         setHistoryEvents(data.history || []);
         setComments(data.comments || []);
@@ -285,6 +291,8 @@ export function TicketModal({
         endTime: endTime ? new Date(endTime).toISOString() : null,
         observations,
         solutionText: status === "RESOLVIDO" ? solutionText : undefined,
+        pauseReason: status === "AGUARDANDO_TERCEIROS" ? pauseReason : undefined,
+        pauseNote: status === "AGUARDANDO_TERCEIROS" ? pauseNote : undefined,
       };
 
       const url = isEditing ? `/api/tickets/${ticketId}` : "/api/tickets";
@@ -662,6 +670,127 @@ export function TicketModal({
                           onChange={(e) => setSolutionText(e.target.value)}
                           className="min-h-[100px] border-emerald-200/50 focus-visible:ring-emerald-500/50 bg-white/50 text-[13px]"
                         />
+                      </div>
+                    )}
+
+                    
+                    {/* PAUSE REASON AND SLA PANEL */}
+                    {status === "AGUARDANDO_TERCEIROS" && (
+                      <div className="mt-4 p-4 rounded-xl border border-amber-200/60 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-950/10 space-y-4 shrink-0">
+                        <div className="flex items-center justify-between">
+                           <span className="text-xs font-semibold uppercase tracking-wider text-amber-900 dark:text-amber-500 flex items-center gap-1.5">
+                             <PauseCircle className="w-3.5 h-3.5" />
+                             SLA Pausado
+                           </span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[11px] font-bold text-amber-900/70 dark:text-amber-500/70 uppercase tracking-wider mb-1.5 block">
+                              Motivo da Pausa *
+                            </label>
+                            <select
+                              value={pauseReason}
+                              onChange={(e) => setPauseReason(e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-amber-200 dark:border-amber-900/30 bg-white dark:bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-500"
+                              required={status === "AGUARDANDO_TERCEIROS"}
+                            >
+                              <option value="">Selecione um motivo...</option>
+                              <option value="Aguardando fornecedor">Aguardando fornecedor</option>
+                              <option value="Aguardando suporte externo">Aguardando suporte externo</option>
+                              <option value="Aguardando aprovação">Aguardando aprovação</option>
+                              <option value="Aguardando usuário externo">Aguardando usuário externo</option>
+                              <option value="Outro">Outro</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-bold text-amber-900/70 dark:text-amber-500/70 uppercase tracking-wider mb-1.5 block">
+                              Observação (Opcional)
+                            </label>
+                            <input 
+                              placeholder="Detalhes adicionais..."
+                              value={pauseNote}
+                              onChange={(e) => setPauseNote(e.target.value)}
+                              className="flex h-9 w-full rounded-md border border-amber-200 dark:border-amber-900/30 bg-white dark:bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {isEditing && (
+                      <div className="mt-4 p-4 rounded-xl border border-border/40 bg-muted/10 shrink-0">
+                        <div className="flex items-center justify-between mb-3">
+                           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                             <Clock className="w-3.5 h-3.5" />
+                             SLA & Tempo
+                           </span>
+                           {status === "AGUARDANDO_TERCEIROS" ? (
+                             <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-500 font-semibold text-[10px]">
+                               <PauseCircle className="w-3 h-3 mr-1" /> SLA PAUSADO
+                             </Badge>
+                           ) : (
+                             <Badge variant="outline" className="text-[10px] bg-background">
+                               SLA ATIVO
+                             </Badge>
+                           )}
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                           <div>
+                             <p className="text-[10px] text-muted-foreground uppercase">Tempo Total (Elapsed)</p>
+                             <p className="text-sm font-medium">{getFormattedDuration()}</p>
+                           </div>
+                           <div>
+                             <p className="text-[10px] text-muted-foreground uppercase">Em Espera (Pausas)</p>
+                             <p className="text-sm font-medium">
+                                {(() => {
+                                  if (!pauses || pauses.length === 0) return "0 min";
+                                  const mins = pauses.reduce((acc, p) => {
+                                    if (p.duration) return acc + p.duration;
+                                    return acc + Math.floor((Date.now() - new Date(p.startTime).getTime()) / 60000);
+                                  }, 0);
+                                  const h = Math.floor(mins / 60);
+                                  const m = mins % 60;
+                                  return h > 0 ? `${h}h ${m}m` : `${m} min`;
+                                })()}
+                             </p>
+                           </div>
+                           <div>
+                             <p className="text-[10px] text-muted-foreground uppercase">SLA Efetivo</p>
+                             <p className="text-sm font-medium">
+                               {(() => {
+                                  const s = startTime ? new Date(startTime).getTime() : Date.now();
+                                  const e = endTime ? new Date(endTime).getTime() : Date.now();
+                                  const elapsedMins = Math.floor((e - s) / 60000);
+                                  const pauseMins = pauses?.reduce((acc, p) => acc + (p.duration || Math.floor((Date.now() - new Date(p.startTime).getTime()) / 60000)), 0) || 0;
+                                  const effective = Math.max(0, elapsedMins - pauseMins);
+                                  const h = Math.floor(effective / 60);
+                                  const m = effective % 60;
+                                  return h > 0 ? `${h}h ${m}m` : `${m} min`;
+                               })()}
+                             </p>
+                           </div>
+                           <div>
+                             <p className="text-[10px] text-muted-foreground uppercase">Previsão</p>
+                             <p className="text-sm font-medium text-muted-foreground truncate" title={dueDate ? new Date(dueDate).toLocaleString("pt-BR") : "--"}>
+                               {dueDate ? new Date(dueDate).toLocaleString("pt-BR") : "--"}
+                             </p>
+                           </div>
+                        </div>
+                        {status === "AGUARDANDO_TERCEIROS" && (
+                           <div className="pt-3 mt-3 border-t border-border/50 flex justify-between items-center">
+                              <span className="text-[11px] text-muted-foreground">O chamado precisa ser retomado para continuar contando o SLA.</span>
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 text-xs bg-emerald-500/10 text-emerald-600 border-emerald-200 hover:bg-emerald-500/20"
+                                onClick={() => setStatus("EM_ATENDIMENTO")}
+                              >
+                                <PlayCircle className="w-3.5 h-3.5 mr-1.5" />
+                                Retomar Atendimento
+                              </Button>
+                           </div>
+                        )}
                       </div>
                     )}
 

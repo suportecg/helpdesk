@@ -46,7 +46,8 @@ export async function getTicketById(id: string) {
         orderBy: { receivedAt: "asc" }
       },
       parent: { select: { id: true, ticketNumber: true, status: true, problem: true } },
-      children: { select: { id: true, ticketNumber: true, status: true, problem: true } }
+      children: { select: { id: true, ticketNumber: true, status: true, problem: true } },
+      pauses: { orderBy: { startTime: "asc" } }
     },
   });
 
@@ -189,6 +190,7 @@ export async function getTicketsPaginated(options: TicketFilterOptions) {
         sector: { select: { id: true, name: true } },
         technician: { select: { id: true, name: true, email: true, avatar: true } },
         service: { select: { id: true, name: true, category: true } },
+        pauses: true,
         _count: { select: { comments: true, history: true } },
       },
     }),
