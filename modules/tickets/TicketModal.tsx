@@ -226,19 +226,6 @@ export function TicketModal({
     if (requesterId && val !== requesterName) {
       setRequesterId(null); // Desvincula se alterou
     }
-
-    if (!hasLoadedRequesters && val.trim().length >= 2) {
-      try {
-        const res = await fetch(`/api/requesters/suggest?q=${encodeURIComponent(val)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setSuggestions(data.suggestions || []);
-          setShowSuggestions(true);
-        }
-      } catch (err) {
-        console.error("Erro ao buscar solicitantes:", err);
-      }
-    }
   }
 
   function handleSelectSuggestion(s: { id: string; name: string; email: string }) {
