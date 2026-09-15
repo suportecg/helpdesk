@@ -134,9 +134,11 @@ export async function updateTicket(
 
   const historyEntries: Array<{ eventType: string; description: string; oldValue?: string; newValue?: string }> = [];
 
-  // Ticket Pause Logic (Aguardando Terceiros)
+  // Ticket Pause Logic (Aguardando Terceiros e Aguardando Usuário)
   if (existing.status !== updated.status) {
-    if (updated.status === "AGUARDANDO_TERCEIROS") {
+    const isPausedStatus = (status: string) => status === "AGUARDANDO_TERCEIROS" || status === "AGUARDANDO_USUARIO";
+
+    if (isPausedStatus(updated.status)) {
       // Entrando em pausa
       const openPause = await prisma.ticketPause.findFirst({
         where: { ticketId: id, endTime: null }
@@ -146,13 +148,13 @@ export async function updateTicket(
           data: {
             ticketId: id,
             userId: actorId || null,
-            reason: input.pauseReason || "Sem motivo especificado",
+            reason: input.pauseReason || `Pausa: ${updated.status}`,
             startTime: new Date()
           }
         });
         historyEntries.push({
           eventType: "SLA_PAUSED",
-          description: `SLA Pausado: ${input.pauseReason || "Aguardando Terceiros"}`,
+          description: `SLA Pausado: ${input.pauseReason || getStatusLabel(updated.status)}`,
           oldValue: undefined,
           newValue: undefined,
         });
@@ -163,7 +165,7 @@ export async function updateTicket(
           });
         }
       }
-    } else if (existing.status === "AGUARDANDO_TERCEIROS") {
+    } else if (isPausedStatus(existing.status)) {
       // Saindo da pausa
       const openPause = await prisma.ticketPause.findFirst({
         where: { ticketId: id, endTime: null },

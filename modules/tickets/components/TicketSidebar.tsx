@@ -18,7 +18,7 @@ export function TicketSidebar({
 }) {
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 pb-32 space-y-6">
       {/* Solicitante */}
       <div className="space-y-1">
         <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Solicitante</label>
@@ -62,7 +62,11 @@ export function TicketSidebar({
         <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Previsão de Solução</label>
         <input
           type="datetime-local"
-          value={ticket.dueDate ? new Date(ticket.dueDate).toISOString().substring(0, 16) : ''}
+          value={ticket.dueDate ? (() => {
+            const d = new Date(ticket.dueDate);
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+          })() : ''}
           onChange={(e) => onUpdateField("dueDate", e.target.value ? new Date(e.target.value).toISOString() : null)}
           className="w-full h-9 px-3 text-sm rounded-md border border-input bg-background shadow-sm"
         />

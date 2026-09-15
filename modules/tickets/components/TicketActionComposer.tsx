@@ -372,6 +372,7 @@ export function TicketActionComposer({
                 nextStatus === "ABERTO" ? "text-amber-600 font-medium" :
                 nextStatus === "EM_ATENDIMENTO" ? "text-indigo-600 font-medium" :
                 nextStatus === "AGUARDANDO_USUARIO" ? "text-blue-600 font-medium" :
+                nextStatus === "AGUARDANDO_TERCEIROS" ? "text-orange-600 font-medium" :
                 nextStatus === "RESOLVIDO" ? "text-emerald-600 font-medium" : ""
               }`}>
                 <SelectValue placeholder="Status">
@@ -379,6 +380,7 @@ export function TicketActionComposer({
                   {nextStatus === "ABERTO" && "Aberto"}
                   {nextStatus === "EM_ATENDIMENTO" && "Em Atendimento"}
                   {nextStatus === "AGUARDANDO_USUARIO" && "Aguardando Usuário"}
+                  {nextStatus === "AGUARDANDO_TERCEIROS" && "Aguardando Terceiros"}
                   {nextStatus === "RESOLVIDO" && "Resolvido"}
                 </SelectValue>
               </SelectTrigger>
@@ -387,6 +389,7 @@ export function TicketActionComposer({
                 <SelectItem value="ABERTO" className="text-amber-600 font-medium focus:text-amber-600 focus:bg-amber-50 dark:focus:bg-amber-500/10">Aberto</SelectItem>
                 <SelectItem value="EM_ATENDIMENTO" className="text-indigo-600 font-medium focus:text-indigo-600 focus:bg-indigo-50 dark:focus:bg-indigo-500/10">Em Atendimento</SelectItem>
                 <SelectItem value="AGUARDANDO_USUARIO" className="text-blue-600 font-medium focus:text-blue-600 focus:bg-blue-50 dark:focus:bg-blue-500/10">Aguardando Usuário</SelectItem>
+                <SelectItem value="AGUARDANDO_TERCEIROS" className="text-orange-600 font-medium focus:text-orange-600 focus:bg-orange-50 dark:focus:bg-orange-500/10">Aguardando Terceiros</SelectItem>
                 <SelectItem value="RESOLVIDO" className="text-emerald-600 font-medium focus:text-emerald-600 focus:bg-emerald-50 dark:focus:bg-emerald-500/10">Resolvido</SelectItem>
               </SelectContent>
             </Select>
