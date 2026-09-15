@@ -842,20 +842,31 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
     }
 
     if (t.dueDate) {
+      // Calculate adjusted due time by adding pauses
+      const dueTime = new Date(t.dueDate).getTime();
+      let totalPauseMs = 0;
+      if (t.pauses && t.pauses.length > 0) {
+        t.pauses.forEach((p: any) => {
+          const start = new Date(p.startTime).getTime();
+          const end = p.endTime ? new Date(p.endTime).getTime() : now.getTime();
+          totalPauseMs += (end - start);
+        });
+      }
+      const adjustedDueTime = dueTime + totalPauseMs;
+
       if (t.status === "RESOLVIDO") {
         if (resolvedInPeriod) {
           totalWithSla++;
-          if (resolvedDate <= new Date(t.dueDate)) totalSlaMet++;
+          if (resolvedDate.getTime() <= adjustedDueTime) totalSlaMet++;
         }
       } else if (isActive) {
         totalWithSla++;
-        const dueTime = new Date(t.dueDate).getTime();
         const nowTime = now.getTime();
-        if (nowTime <= dueTime) {
+        if (nowTime <= adjustedDueTime) {
           totalSlaMet++;
           
           // Se faltam 2 horas ou menos, é risco de SLA
-          const msLeft = dueTime - nowTime;
+          const msLeft = adjustedDueTime - nowTime;
           if (msLeft <= 2 * 60 * 60 * 1000) {
             slaRiskTickets.push({
               id: t.id,
@@ -873,7 +884,7 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
               number: t.ticketNumber,
               title: t.problem,
               dueDate: t.dueDate,
-              msLeft: dueTime - nowTime, // Negativo
+              msLeft: adjustedDueTime - nowTime, // Negativo
               technicianName: t.technician?.name || null,
               breached: true
             });
