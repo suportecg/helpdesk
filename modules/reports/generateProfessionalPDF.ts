@@ -3,9 +3,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { PDFTheme, ReportMode } from "./ExportPDFModal";
-import { DashboardWidgetConfig } from "@/modules/dashboard/WidgetConfigModal";
 
-// Função utilitária para converter imagem do servidor (/cg-logo.png) em Base64
 async function loadImageAsBase64(url: string): Promise<string | null> {
   try {
     const res = await fetch(url);
@@ -24,356 +22,115 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
 }
 
 export async function generateProfessionalPDF({
-  stats,
+  filters,
   config,
-  widgets,
 }: {
-  stats: any;
+  filters: any;
   config: {
     theme: PDFTheme;
     mode: ReportMode;
   };
-  widgets: DashboardWidgetConfig[];
 }) {
-  if (!stats) return;
+  // 1. Fetch Executive Report Data
+  const params = new URLSearchParams();
+  Object.keys(filters).forEach((key) => {
+    if (filters[key]) params.append(key, filters[key]);
+  });
+
+  let stats: any;
+  try {
+    const res = await fetch(`/api/reports/executive?${params.toString()}`);
+    if (!res.ok) throw new Error("Falha ao buscar dados do relatório executivo");
+    stats = await res.json();
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao gerar relatório. Verifique sua conexão e tente novamente.");
+    return;
+  }
 
   const isDark = config.theme === "DARK";
 
-  // Sempre em formato LANDSCAPE executivo (297mm x 210mm - A4 Landscape)
+  // Formato RETRATO (A4)
   const doc = new jsPDF({
-    orientation: "landscape",
+    orientation: "portrait",
     unit: "mm",
     format: "a4",
   });
 
-  const pageWidth = doc.internal.pageSize.getWidth(); // 297 mm
-  const pageHeight = doc.internal.pageSize.getHeight(); // 210 mm
+  const pageWidth = doc.internal.pageSize.getWidth(); // 210 mm
+  const pageHeight = doc.internal.pageSize.getHeight(); // 297 mm
 
-  // Cores vetoriais no formato [R, G, B]
+  // Paleta Corporativa (Azul Institucional, Cinza, Verde, Vermelho, Laranja)
   const bgRGB: [number, number, number] = isDark ? [15, 23, 42] : [255, 255, 255];
-  const textRGB: [number, number, number] = isDark ? [248, 250, 252] : [15, 23, 42];
-  const mutedRGB: [number, number, number] = isDark ? [148, 163, 184] : [100, 116, 139];
-  const cardBgRGB: [number, number, number] = isDark ? [30, 41, 59] : [248, 250, 252];
+  const textRGB: [number, number, number] = isDark ? [248, 250, 252] : [30, 41, 59];
+  const textMutedRGB: [number, number, number] = isDark ? [148, 163, 184] : [100, 116, 139];
   const borderRGB: [number, number, number] = isDark ? [51, 65, 85] : [226, 232, 240];
-  const primaryRGB: [number, number, number] = [37, 99, 235]; // #2563eb Blue institucional CG
+  const primaryRGB: [number, number, number] = [37, 99, 235]; // Azul Institucional
+  const cardBgRGB: [number, number, number] = isDark ? [30, 41, 59] : [248, 250, 252];
 
-  // Pinta o fundo da página caso seja tema escuro
+  const successRGB: [number, number, number] = [16, 185, 129]; // Verde
+  const dangerRGB: [number, number, number] = [239, 68, 68]; // Vermelho
+  const warningRGB: [number, number, number] = [245, 158, 11]; // Laranja
+
   function paintBackground() {
     if (isDark) {
       doc.setFillColor(...bgRGB);
       doc.rect(0, 0, pageWidth, pageHeight, "F");
     }
   }
-  paintBackground();
 
-  // 1. CARREGAR LOGO CG CONSTRUÇÕES
   const logoData = await loadImageAsBase64("/cg-logo.png");
 
-  // 2. DESENHAR CABEÇALHO EXECUTIVO
-  const startX = 14;
-  let currentY = 14;
+  let currentPage = 1;
 
-  if (logoData) {
-    // Maintain logo aspect ratio — calculate dimensions from image
-    const maxLogoH = 12;
-    const maxLogoW = 30;
-    try {
-      const img = new Image();
-      img.src = logoData;
-      const ratio = img.naturalWidth && img.naturalHeight
-        ? img.naturalWidth / img.naturalHeight
-        : 2.2; // fallback ratio
-      let logoW = maxLogoH * ratio;
-      let logoH = maxLogoH;
-      if (logoW > maxLogoW) {
-        logoW = maxLogoW;
-        logoH = maxLogoW / ratio;
+  function drawHeaderAndFooter() {
+    // Header
+    const startX = 14;
+    let currentY = 14;
+
+    if (logoData) {
+      try {
+        const img = new Image();
+        img.src = logoData;
+        const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 2.2;
+        const maxLogoH = 12;
+        const maxLogoW = 35;
+        let logoW = maxLogoH * ratio;
+        let logoH = maxLogoH;
+        if (logoW > maxLogoW) { logoW = maxLogoW; logoH = maxLogoW / ratio; }
+        doc.addImage(logoData, "PNG", startX, currentY, logoW, logoH, undefined, "FAST");
+      } catch {
+        doc.addImage(logoData, "PNG", startX, currentY, 26, 12, undefined, "FAST");
       }
-      doc.addImage(logoData, "PNG", startX, currentY, logoW, logoH, undefined, "FAST");
-    } catch {
-      doc.addImage(logoData, "PNG", startX, currentY, 26, 12, undefined, "FAST");
     }
-  }
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(15);
-  doc.setTextColor(...textRGB);
-  doc.text("Relatório Executivo de BI & Indicadores de TI", startX + 30, currentY + 5);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(...mutedRGB);
-  doc.text(
-    `CG Construções — Departamento de TI | Modo do Relatório: ${config.mode}`,
-    startX + 30,
-    currentY + 10
-  );
-
-  // Bloco direito do cabeçalho
-  const nowStr = new Date().toLocaleString("pt-BR");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(...textRGB);
-  doc.text(`Período: ${stats.periodRange?.label || "Últimos 30 dias"}`, pageWidth - 14, currentY + 4, {
-    align: "right",
-  });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(...mutedRGB);
-  doc.text(`Gerado em: ${nowStr}`, pageWidth - 14, currentY + 9, {
-    align: "right",
-  });
-
-  // Linha separadora do cabeçalho
-  currentY = 28;
-  doc.setDrawColor(...primaryRGB);
-  doc.setLineWidth(0.6);
-  doc.line(startX, currentY, pageWidth - 14, currentY);
-
-  currentY = 35;
-
-  // 3. DESENHAR 6 CARDS DE KPIS MACRO (EM LINHA HORIZONTAL LANDSCAPE)
-  const kpis = stats.kpis || {};
-  const kpiItems = [
-    {
-      label: "TOTAL CHAMADOS",
-      value: String(kpis.totalTickets?.value || 0),
-      sub: typeof kpis.totalTickets?.changePercent === "number"
-        ? `${kpis.totalTickets.changePercent >= 0 ? "+" : ""}${kpis.totalTickets.changePercent}% vs ant.`
-        : "No período",
-    },
-    {
-      label: "EM ATENDIMENTO",
-      value: String(kpis.inProgress?.value || 0),
-      sub: "Fila em tratativa",
-    },
-    {
-      label: "CONCLUÍDOS",
-      value: String(kpis.completed?.value || 0),
-      sub: `Taxa: ${
-        kpis.totalTickets?.value > 0
-          ? Math.round(((kpis.completed?.value || 0) / kpis.totalTickets.value) * 100)
-          : 0
-      }%`,
-    },
-    {
-      label: "PENDENTES",
-      value: String(kpis.waiting?.value || 0),
-      sub: `+ ${kpis.scheduled?.value || 0} agendados`,
-    },
-    {
-      label: "TEMPO MÉDIO GERAL",
-      value: String(kpis.avgTimeMinutes?.formatted || "0 min"),
-      sub: "Abertura à resolução",
-    },
-    {
-      label: "TÉCNICOS ATIVOS",
-      value: String(kpis.activeTechCount?.value || 0),
-      sub: "Equipe habilitada",
-    },
-  ];
-
-  const kpiWidth = 42;
-  const kpiHeight = 19;
-  const kpiGap = (pageWidth - 28 - kpiWidth * 6) / 5;
-
-  kpiItems.forEach((item, idx) => {
-    const cardX = startX + idx * (kpiWidth + kpiGap);
-
-    // Retângulo com cantos arredondados
-    doc.setFillColor(...cardBgRGB);
-    doc.setDrawColor(...borderRGB);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(cardX, currentY, kpiWidth, kpiHeight, 2, 2, "FD");
-
-    // Rótulo superior do KPI
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.setTextColor(...mutedRGB);
-    doc.text(item.label, cardX + 4, currentY + 5);
-
-    // Valor Principal do KPI
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
+    doc.setFontSize(14);
     doc.setTextColor(...textRGB);
-    doc.text(item.value, cardX + 4, currentY + 12);
+    doc.text("RELATÓRIO OPERACIONAL DE TI", startX + 40, currentY + 5);
 
-    // Subtítulo do KPI
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(...mutedRGB);
-    doc.text(item.sub, cardX + 4, currentY + 16.5);
-  });
+    doc.setFontSize(9);
+    doc.setTextColor(...textMutedRGB);
+    doc.text("Indicadores de Atendimento e Suporte Técnico", startX + 40, currentY + 10);
 
-  currentY += 26;
-
-  // 4. TABELAS DE RANKING (TOP TÉCNICOS & TOP SERVIÇOS EM DUAS COLUNAS LADO A LADO)
-  const rankings = stats.rankings || {};
-  const topTechRows = (rankings.topTechnicians || []).map((t: any, i: number) => [
-    `${i + 1}º`,
-    t.name,
-    String(t.count),
-    `${t.avgTimeMinutes} min`,
-  ]);
-  const topServiceRows = (rankings.topServices || []).map((s: any) => [
-    s.name,
-    String(s.count),
-    `${s.percentage}%`,
-  ]);
-
-  const colWidth1 = 130;
-  const colWidth2 = 130;
-  const colX2 = pageWidth - 14 - colWidth2;
-
-  // Tabela 1: Top Técnicos em Resolução (Esquerda)
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(...textRGB);
-  doc.text("Ranking — Top Técnicos em Resolução", startX, currentY);
-
-  autoTable(doc, {
-    startY: currentY + 3,
-    margin: { left: startX },
-    tableWidth: colWidth1,
-    head: [["#", "Analista TI", "Resolvidos", "Tempo Médio"]],
-    body: topTechRows.length > 0 ? topTechRows : [["-", "Sem registros no período", "0", "-"]],
-    theme: "grid",
-    styles: {
-      fontSize: 8,
-      cellPadding: 2,
-      textColor: textRGB,
-      fillColor: cardBgRGB,
-      lineColor: borderRGB,
-      lineWidth: 0.2,
-    },
-    headStyles: {
-      fillColor: isDark ? [51, 65, 85] : [241, 245, 249],
-      textColor: isDark ? [248, 250, 252] : [51, 65, 85],
-      fontStyle: "bold",
-    },
-  });
-
-  // Tabela 2: Top Serviços Acionados (Direita)
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(...textRGB);
-  doc.text("Ranking — Top Serviços mais Acionados", colX2, currentY);
-
-  autoTable(doc, {
-    startY: currentY + 3,
-    margin: { left: colX2 },
-    tableWidth: colWidth2,
-    head: [["Serviço", "Volume", "% Part."]],
-    body: topServiceRows.length > 0 ? topServiceRows : [["Sem registros no período", "0", "0%"]],
-    theme: "grid",
-    styles: {
-      fontSize: 8,
-      cellPadding: 2,
-      textColor: textRGB,
-      fillColor: cardBgRGB,
-      lineColor: borderRGB,
-      lineWidth: 0.2,
-    },
-    headStyles: {
-      fillColor: isDark ? [51, 65, 85] : [241, 245, 249],
-      textColor: isDark ? [248, 250, 252] : [51, 65, 85],
-      fontStyle: "bold",
-    },
-  });
-
-  // 5. SEGUNDA PÁGINA: WIDGETS POR MODO DE RELATÓRIO SELECIONADO
-  doc.addPage("a4", "landscape");
-  paintBackground();
-
-  let page2Y = 16;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.setTextColor(...textRGB);
-  doc.text(`Consolidado de Indicadores Analíticos (${config.mode})`, startX, page2Y);
-
-  page2Y += 8;
-
-  const charts = stats.charts || {};
-  const modeWidgets = widgets.filter((w) => {
-    if (!w.visible) return false;
-    if (config.mode === "EXECUTIVO") {
-      return ["bySector", "byOrigin", "byMonth", "byStatus"].includes(w.id);
-    }
-    if (config.mode === "OPERACIONAL") {
-      return ["byStatus", "byDay", "byWeek", "byService", "byOrigin"].includes(w.id);
-    }
-    if (config.mode === "PRODUTIVIDADE") {
-      return ["byTechnician", "avgTimeByTechnician", "byService"].includes(w.id);
-    }
-    if (config.mode === "PERFORMANCE") {
-      return ["avgTimeByTechnician", "avgTimeByService", "avgTimeBySector", "byDay"].includes(w.id);
-    }
-    return true; // PERSONALIZADO exibe todos os habilitados
-  });
-
-  // Agrupamento Inteligente: em grid de 2 colunas horizontais (130mm cada) por página Landscape
-  const cardW = 130;
-  const cardHGap = (pageWidth - 28 - cardW * 2);
-
-  for (let i = 0; i < modeWidgets.length; i++) {
-    const widget = modeWidgets[i];
-    const chartData = charts[widget.id] || [];
-    const unit = widget.id.startsWith("avgTime") ? "min" : "chamados";
-    const topData = chartData.slice(0, 7);
-
-    const isRightCol = i % 2 === 1;
-    const tableX = isRightCol ? startX + cardW + cardHGap : startX;
-
-    // Se precisamos de uma nova página após duas linhas (4 tabelas)
-    if (i > 0 && i % 4 === 0) {
-      doc.addPage("a4", "landscape");
-      paintBackground();
-      page2Y = 16;
-    }
-
+    const nowStr = new Date().toLocaleString("pt-BR");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(...textRGB);
-    doc.text(widget.title, tableX, page2Y);
+    doc.text(`Período analisado:`, pageWidth - 14, currentY + 2, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    doc.text(stats.period, pageWidth - 14, currentY + 6, { align: "right" });
 
-    const rows = topData.map((row: any) => [
-      row.name || row.label || row.displayLabel || "-",
-      `${row.value ?? row.total ?? 0} ${unit}`,
-      row.percentage ? `${row.percentage}%` : "-",
-    ]);
+    doc.setFontSize(7);
+    doc.setTextColor(...textMutedRGB);
+    doc.text(`Gerado em: ${nowStr}`, pageWidth - 14, currentY + 11, { align: "right" });
 
-    autoTable(doc, {
-      startY: page2Y + 2,
-      margin: { left: tableX },
-      tableWidth: cardW,
-      head: [["Indicador / Item", `Valor (${unit})`, "% Part."]],
-      body: rows.length > 0 ? rows : [["Sem dados no período", "0", "-"]],
-      theme: "grid",
-      styles: {
-        fontSize: 7.5,
-        cellPadding: 1.8,
-        textColor: textRGB,
-        fillColor: cardBgRGB,
-        lineColor: borderRGB,
-        lineWidth: 0.2,
-      },
-      headStyles: {
-        fillColor: isDark ? [51, 65, 85] : [241, 245, 249],
-        textColor: isDark ? [248, 250, 252] : [51, 65, 85],
-        fontStyle: "bold",
-      },
-    });
+    doc.setDrawColor(...primaryRGB);
+    doc.setLineWidth(0.6);
+    doc.line(startX, currentY + 16, pageWidth - 14, currentY + 16);
 
-    if (isRightCol) {
-      page2Y += 60; // Desce para a próxima linha na mesma página
-    }
-  }
-
-  // 6. DESENHAR RODAPÉ INSTITUCIONAL EM TODAS AS PÁGINAS DO PDF
-  const totalPages = doc.getNumberOfPages();
-  for (let p = 1; p <= totalPages; p++) {
-    doc.setPage(p);
-
+    // Footer
     const footerY = pageHeight - 12;
     doc.setDrawColor(...borderRGB);
     doc.setLineWidth(0.3);
@@ -381,24 +138,342 @@ export async function generateProfessionalPDF({
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.setTextColor(...mutedRGB);
-
-    // Esquerda do rodapé
-    doc.text(
-      "CG Construções — Departamento de TI | Gerado automaticamente pelo HelpDesk Pro",
-      startX,
-      footerY
-    );
-
-    // Direita do rodapé
-    doc.text(`Página ${p} de ${totalPages}`, pageWidth - 14, footerY, {
-      align: "right",
-    });
+    doc.setTextColor(...textMutedRGB);
+    doc.text("CG Construções — Departamento de TI | Relatório gerado automaticamente pelo HelpDesk", startX, footerY);
+    doc.text(`Página ${currentPage}`, pageWidth - 14, footerY, { align: "right" });
   }
 
-  // 7. DISPARAR DONWLOAD DIRETO IMEDIATO DO ARQUIVO PDF VETORIAL (SEM JANELAS OU PRINT DO NAVEGADOR)
-  const filename = `CG_Construcoes_HelpDesk_${config.mode}_${new Date()
-    .toISOString()
-    .slice(0, 10)}.pdf`;
+  // =========================================================
+  // PÁGINA 1: VISÃO EXECUTIVA
+  // =========================================================
+  paintBackground();
+  drawHeaderAndFooter();
+
+  let cy = 40;
+
+  // 1. Resumo Executivo (Cards)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...textRGB);
+  doc.text("1. RESUMO EXECUTIVO", 14, cy);
+  cy += 6;
+
+  const summaryCards = [
+    { label: "TOTAL DE CHAMADOS", value: stats.kpis.totalTickets, sub: "no período" },
+    { label: "RESOLVIDOS", value: stats.kpis.resolvedTickets, sub: `${stats.kpis.resolvedPercent}% do total` },
+    { label: "EM ATENDIMENTO", value: stats.kpis.inProgressTickets, sub: "fila atual" },
+    { label: "PENDENTES", value: stats.kpis.pendingTickets, sub: "em aguardo" },
+    { label: "AGUARDANDO TERCEIROS", value: stats.kpis.waitingThirdPartiesTickets, sub: "SLA pausado", valColor: warningRGB },
+    { label: "SLA CUMPRIDO", value: `${stats.sla.metPercent}%`, sub: `${stats.sla.met} no prazo`, valColor: successRGB },
+    { label: "SLA ESTOURADO", value: stats.sla.breached, sub: "acima do prazo", valColor: dangerRGB },
+    { label: "TEMPO MÉDIO", value: stats.kpis.avgTimeFormatted, sub: "de resolução" },
+  ];
+
+  const cardW = 42;
+  const cardH = 22;
+  const gapX = (pageWidth - 28 - (cardW * 4)) / 3;
+  const gapY = 5;
+
+  summaryCards.forEach((c, idx) => {
+    const col = idx % 4;
+    const row = Math.floor(idx / 4);
+    const cx = 14 + col * (cardW + gapX);
+    const cStartY = cy + row * (cardH + gapY);
+
+    doc.setFillColor(...cardBgRGB);
+    doc.setDrawColor(...borderRGB);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(cx, cStartY, cardW, cardH, 2, 2, "FD");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(...textMutedRGB);
+    doc.text(c.label, cx + 3, cStartY + 6);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    if (c.valColor) doc.setTextColor(...c.valColor);
+    else doc.setTextColor(...textRGB);
+    doc.text(String(c.value), cx + 3, cStartY + 14);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...textMutedRGB);
+    doc.text(c.sub, cx + 3, cStartY + 19);
+  });
+
+  cy += (cardH * 2) + gapY + 12;
+
+  // 2. Desempenho de SLA & Pausas
+  const midX = pageWidth / 2;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...textRGB);
+  doc.text("2. DESEMPENHO DE SLA", 14, cy);
+  doc.text("3. SLA E AGUARDANDO TERCEIROS", midX + 4, cy);
+  cy += 6;
+
+  // Tabela SLA
+  const slaRows = [
+    ["SLA Cumprido", String(stats.sla.met)],
+    ["SLA Estourado", String(stats.sla.breached)],
+    ["SLA em Andamento", String(stats.sla.inProgress)],
+  ];
+  autoTable(doc, {
+    startY: cy,
+    margin: { left: 14 },
+    tableWidth: (pageWidth - 36) / 2,
+    head: [["Indicador", "Quantidade"]],
+    body: slaRows,
+    theme: "grid",
+    styles: { fontSize: 8, cellPadding: 2, textColor: textRGB, fillColor: cardBgRGB, lineColor: borderRGB, lineWidth: 0.2 },
+    headStyles: { fillColor: isDark ? [51, 65, 85] : [241, 245, 249], textColor: textRGB, fontStyle: "bold" },
+  });
+
+  // Tabela Pausas
+  const pausaRows = [
+    ["Chamados com SLA Pausado", String(stats.sla.paused)],
+    ["Tempo Total Aguardando Terceiros", stats.sla.totalPauseTimeFormatted],
+  ];
+  autoTable(doc, {
+    startY: cy,
+    margin: { left: midX + 4 },
+    tableWidth: (pageWidth - 36) / 2,
+    head: [["Métrica Operacional", "Valor"]],
+    body: pausaRows,
+    theme: "grid",
+    styles: { fontSize: 8, cellPadding: 2, textColor: textRGB, fillColor: cardBgRGB, lineColor: borderRGB, lineWidth: 0.2 },
+    headStyles: { fillColor: isDark ? [51, 65, 85] : [241, 245, 249], textColor: textRGB, fontStyle: "bold" },
+  });
+
+  cy = (doc as any).lastAutoTable.finalY + 12;
+
+  // 4. Operação de E-mail
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...textRGB);
+  doc.text("4. OPERAÇÃO DE E-MAIL", 14, cy);
+  cy += 6;
+
+  const emailCards = [
+    { label: "E-MAILS PROCESSADOS", value: stats.email.processed },
+    { label: "GERARAM CHAMADOS", value: stats.email.generated },
+    { label: "ORIGINADOS POR E-MAIL", value: stats.email.origin },
+    { label: "RESPOSTAS AUTOMÁTICAS", value: stats.email.repliesSent },
+    { label: "RESPOSTAS MANUAIS", value: stats.email.manualReplies },
+    { label: "SEM CHAMADO GERADO", value: stats.email.noTicket },
+  ];
+
+  const emailCardW = (pageWidth - 28 - (gapX * 2)) / 3;
+  emailCards.forEach((c, idx) => {
+    const col = idx % 3;
+    const row = Math.floor(idx / 3);
+    const cx = 14 + col * (emailCardW + gapX);
+    const cStartY = cy + row * (18 + gapY);
+
+    doc.setFillColor(...cardBgRGB);
+    doc.setDrawColor(...borderRGB);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(cx, cStartY, emailCardW, 18, 2, 2, "FD");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(...textMutedRGB);
+    doc.text(c.label, cx + 3, cStartY + 6);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...textRGB);
+    doc.text(String(c.value), cx + 3, cStartY + 13);
+  });
+
+  cy += (18 * 2) + gapY + 12;
+
+  // Resumo Operacional Determinístico
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...textRGB);
+  doc.text("5. RESUMO OPERACIONAL", 14, cy);
+  cy += 6;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...textRGB);
+  stats.operationalSummary.forEach((line: string) => {
+    doc.circle(16, cy - 1, 1, "F");
+    doc.text(line, 20, cy, { maxWidth: pageWidth - 34 });
+    const textLines = doc.splitTextToSize(line, pageWidth - 34);
+    cy += (textLines.length * 4) + 2;
+  });
+
+  // =========================================================
+  // PÁGINA 2: DESEMPENHO OPERACIONAL
+  // =========================================================
+  doc.addPage("a4", "portrait");
+  currentPage++;
+  paintBackground();
+  drawHeaderAndFooter();
+
+  cy = 40;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(...textRGB);
+  doc.text("DESEMPENHO OPERACIONAL", 14, cy);
+  cy += 8;
+
+  // 6. Ranking de Técnicos
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Desempenho da Equipe Técnica", 14, cy);
+  cy += 4;
+
+  const techRows = stats.tables.topTechs.map((t: any, i: number) => [
+    `${i + 1}º`, t.name, t.resolved, t.avgTime, t.slaMet, t.slaBreached
+  ]);
+  autoTable(doc, {
+    startY: cy,
+    margin: { left: 14 },
+    tableWidth: pageWidth - 28,
+    head: [["Posição", "Técnico", "Resolvidos", "Tempo Médio", "SLA Cumprido", "SLA Estourado"]],
+    body: techRows.length > 0 ? techRows : [["-", "Sem registros no período", "-", "-", "-", "-"]],
+    theme: "grid",
+    styles: { fontSize: 8, cellPadding: 2, textColor: textRGB, fillColor: cardBgRGB, lineColor: borderRGB, lineWidth: 0.2 },
+    headStyles: { fillColor: isDark ? [51, 65, 85] : [241, 245, 249], textColor: textRGB, fontStyle: "bold" },
+  });
+
+  cy = (doc as any).lastAutoTable.finalY + 10;
+
+  // 7. Setores e Serviços (Lado a Lado)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Setores com Maior Demanda", 14, cy);
+  doc.text("Serviços Mais Solicitados", midX + 4, cy);
+  cy += 4;
+
+  const sectorRows = stats.tables.topSectors.slice(0, 8).map((s: any) => [s.name, s.count, `${s.percentage}%`, s.resolved, s.pending]);
+  autoTable(doc, {
+    startY: cy,
+    margin: { left: 14 },
+    tableWidth: (pageWidth - 36) / 2,
+    head: [["Setor", "Chamados", "%", "Res.", "Pend."]],
+    body: sectorRows.length > 0 ? sectorRows : [["-", "-", "-", "-", "-"]],
+    theme: "grid",
+    styles: { fontSize: 7, cellPadding: 1.5, textColor: textRGB, fillColor: cardBgRGB, lineColor: borderRGB, lineWidth: 0.2 },
+    headStyles: { fillColor: isDark ? [51, 65, 85] : [241, 245, 249], textColor: textRGB, fontStyle: "bold" },
+  });
+
+  const serviceRows = stats.tables.topServices.slice(0, 8).map((s: any) => [s.name, s.count, `${s.percentage}%`, s.avgTime]);
+  autoTable(doc, {
+    startY: cy,
+    margin: { left: midX + 4 },
+    tableWidth: (pageWidth - 36) / 2,
+    head: [["Serviço", "Qtd.", "%", "TMA"]],
+    body: serviceRows.length > 0 ? serviceRows : [["-", "-", "-", "-"]],
+    theme: "grid",
+    styles: { fontSize: 7, cellPadding: 1.5, textColor: textRGB, fillColor: cardBgRGB, lineColor: borderRGB, lineWidth: 0.2 },
+    headStyles: { fillColor: isDark ? [51, 65, 85] : [241, 245, 249], textColor: textRGB, fontStyle: "bold" },
+  });
+
+  cy = Math.max((doc as any).lastAutoTable.finalY, cy + 40) + 10;
+
+  // 8. Volume por Hora e Evolução (Lado a Lado - Tabelas Simplificadas em vez de Gráficos Complexos)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Volume de Atendimento por Hora", 14, cy);
+  doc.text("Distribuição por Status e Origem", midX + 4, cy);
+  cy += 4;
+
+  const hourRows = stats.charts.hourMap.slice(0, 10).map((h: any) => [h.hour, h.count]);
+  autoTable(doc, {
+    startY: cy,
+    margin: { left: 14 },
+    tableWidth: (pageWidth - 36) / 2,
+    head: [["Horário", "Volume (Abertos)"]],
+    body: hourRows.length > 0 ? hourRows : [["-", "-"]],
+    theme: "grid",
+    styles: { fontSize: 7, cellPadding: 1.5, textColor: textRGB, fillColor: cardBgRGB, lineColor: borderRGB, lineWidth: 0.2 },
+    headStyles: { fillColor: isDark ? [51, 65, 85] : [241, 245, 249], textColor: textRGB, fontStyle: "bold" },
+  });
+
+  const distRows = [
+    [{ content: "Status", colSpan: 2, styles: { fontStyle: "bold", fillColor: isDark ? [51, 65, 85] : [241, 245, 249] } }],
+    ...stats.charts.statuses.slice(0, 4).map((s: any) => [s.name, `${s.value} (${s.percentage}%)`]),
+    [{ content: "Origem", colSpan: 2, styles: { fontStyle: "bold", fillColor: isDark ? [51, 65, 85] : [241, 245, 249] } }],
+    ...stats.charts.origins.map((o: any) => [o.name, `${o.value} (${o.percentage}%)`]),
+  ];
+
+  autoTable(doc, {
+    startY: cy,
+    margin: { left: midX + 4 },
+    tableWidth: (pageWidth - 36) / 2,
+    body: distRows,
+    theme: "grid",
+    styles: { fontSize: 7, cellPadding: 1.5, textColor: textRGB, fillColor: cardBgRGB, lineColor: borderRGB, lineWidth: 0.2 },
+  });
+
+  // =========================================================
+  // PÁGINA 3: ATENÇÃO E CRÍTICOS
+  // =========================================================
+  doc.addPage("a4", "portrait");
+  currentPage++;
+  paintBackground();
+  drawHeaderAndFooter();
+
+  cy = 40;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(...dangerRGB);
+  doc.text("PONTOS DE ATENÇÃO & CHAMADOS CRÍTICOS", 14, cy);
+  cy += 8;
+
+  // Chamados Críticos Tabela
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...textRGB);
+  doc.text("Chamados Críticos (SLA Estourado, Alta Prioridade ou Aguardando Terceiros)", 14, cy);
+  cy += 4;
+
+  const criticalRows = stats.tables.criticalTickets.map((c: any) => [
+    `#${c.ticketNumber}`, c.sector, c.service, c.technician, c.status, c.priority, c.isBreached ? "Sim" : "Não"
+  ]);
+
+  autoTable(doc, {
+    startY: cy,
+    margin: { left: 14 },
+    tableWidth: pageWidth - 28,
+    head: [["Ticket", "Setor", "Serviço", "Técnico", "Status", "Prioridade", "SLA Estourado"]],
+    body: criticalRows.length > 0 ? criticalRows : [["Nenhum chamado crítico aberto no momento.", "-", "-", "-", "-", "-", "-"]],
+    theme: "grid",
+    styles: { fontSize: 7.5, cellPadding: 2, textColor: textRGB, fillColor: cardBgRGB, lineColor: borderRGB, lineWidth: 0.2 },
+    headStyles: { fillColor: isDark ? [127, 29, 29] : [254, 226, 226], textColor: isDark ? [254, 226, 226] : [153, 27, 27], fontStyle: "bold" },
+  });
+
+  cy = (doc as any).lastAutoTable.finalY + 10;
+
+  // Evolução Mensal
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...textRGB);
+  doc.text("Evolução Mensal (Histórico recente)", 14, cy);
+  cy += 4;
+
+  const monthRows = stats.charts.monthlyEvolution.map((m: any) => [
+    m.label, m.opened, m.resolved, `${m.slaPercent}%`
+  ]);
+
+  autoTable(doc, {
+    startY: cy,
+    margin: { left: 14 },
+    tableWidth: pageWidth - 28,
+    head: [["Mês", "Chamados Abertos", "Chamados Resolvidos", "SLA Cumprido (%)"]],
+    body: monthRows.length > 0 ? monthRows : [["-", "-", "-", "-"]],
+    theme: "grid",
+    styles: { fontSize: 8, cellPadding: 2, textColor: textRGB, fillColor: cardBgRGB, lineColor: borderRGB, lineWidth: 0.2 },
+    headStyles: { fillColor: isDark ? [51, 65, 85] : [241, 245, 249], textColor: textRGB, fontStyle: "bold" },
+  });
+
+  // DISPARAR DOWNLOAD
+  const filename = `Relatorio_Operacional_TI_${new Date().toISOString().slice(0, 10)}.pdf`;
   doc.save(filename);
 }

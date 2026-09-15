@@ -32,7 +32,6 @@ import {
 } from "@/modules/dashboard/WidgetConfigModal";
 import {
   ExportPDFModal,
-  PDFFormat,
   PDFTheme,
   ReportMode,
 } from "./ExportPDFModal";
@@ -157,19 +156,20 @@ export function ReportsClient() {
     loadStats();
   }, [loadStats]);
 
-  const handleGeneratePDF = ({
-    format,
+  const handleGeneratePDF = async ({
     theme,
     mode,
   }: {
-    format: PDFFormat;
     theme: PDFTheme;
     mode: ReportMode;
   }) => {
-    generateProfessionalPDF({
-      stats,
+    const filters = {
+      period: monthYear ? undefined : period,
+      monthYear: monthYear ? monthYear : undefined,
+    };
+    await generateProfessionalPDF({
+      filters,
       config: { theme, mode },
-      widgets,
     });
   };
 
@@ -375,7 +375,7 @@ export function ReportsClient() {
 
       {/* KPIs NÍVEL 1: GRANDES NÚMEROS */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-card rounded-[2rem] p-8 flex flex-col justify-between h-[200px] group hover-lift">
+        <div className="bg-background border border-border/40 hover:border-border rounded-[2rem] p-8 flex flex-col justify-between h-[200px] group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               Total Ingressado
@@ -395,7 +395,7 @@ export function ReportsClient() {
           </div>
         </div>
 
-        <div className="glass-card rounded-[2rem] p-8 flex flex-col justify-between h-[200px] group hover-lift">
+        <div className="bg-background border border-border/40 hover:border-border rounded-[2rem] p-8 flex flex-col justify-between h-[200px] group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               Resolvidos
@@ -415,7 +415,7 @@ export function ReportsClient() {
           </div>
         </div>
 
-        <div className="glass-card rounded-[2rem] p-8 flex flex-col justify-between h-[200px] group hover-lift">
+        <div className="bg-background border border-border/40 hover:border-border rounded-[2rem] p-8 flex flex-col justify-between h-[200px] group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               Taxa de Resolução
@@ -435,19 +435,16 @@ export function ReportsClient() {
           </div>
         </div>
 
-        <div className="glass-card rounded-[2rem] p-8 flex flex-col justify-between h-[200px] group hover-lift bg-foreground text-background">
+        <div className="bg-background border border-border/40 hover:border-border rounded-[2rem] p-8 flex flex-col justify-between h-[200px] group transition-all duration-300 hover:shadow-md hover:-translate-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-background/60 uppercase tracking-widest">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               Tempo Médio Total
             </span>
-            <Clock weight="duotone" className="h-6 w-6 text-background opacity-50 group-hover:opacity-100 transition-opacity" />
+            <Clock weight="duotone" className="h-6 w-6 text-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
           </div>
           <div>
-            <div className="text-4xl md:text-5xl font-display font-bold mb-2 tracking-tight">
+            <div className="text-4xl md:text-5xl font-display font-bold text-foreground mb-2 tracking-tight">
               {kpis.avgTimeMinutes?.formatted || "0 min"}
-            </div>
-            <div className="text-sm font-medium text-background/60">
-              ({kpis.avgTimeMinutes?.value || 0} minutos líquidos)
             </div>
           </div>
         </div>

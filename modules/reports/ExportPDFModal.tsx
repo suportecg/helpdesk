@@ -12,16 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  FileText,
   Sun,
   Moon,
-  Check,
   Building2,
   Layout,
   Download,
 } from "lucide-react";
 
-export type PDFFormat = "LANDSCAPE" | "A4_LANDSCAPE" | "A3_LANDSCAPE";
 export type PDFTheme = "LIGHT" | "DARK";
 export type ReportMode =
   | "EXECUTIVO"
@@ -36,7 +33,6 @@ export interface ExportPDFModalProps {
   currentMode: ReportMode;
   periodLabel?: string;
   onGeneratePDF: (config: {
-    format: PDFFormat;
     theme: PDFTheme;
     mode: ReportMode;
   }) => void;
@@ -51,10 +47,16 @@ export function ExportPDFModal({
 }: ExportPDFModalProps) {
   const [theme, setTheme] = useState<PDFTheme>("LIGHT");
   const [mode, setMode] = useState<ReportMode>(currentMode);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleConfirm = () => {
-    onGeneratePDF({ format: "LANDSCAPE", theme, mode });
-    onOpenChange(false);
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    try {
+      await onGeneratePDF({ theme, mode });
+    } finally {
+      setIsLoading(false);
+      onOpenChange(false);
+    }
   };
 
   return (
@@ -63,36 +65,36 @@ export function ExportPDFModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Download className="h-5 w-5 text-primary" />
-            Exportar Relatório Executivo Institucional — CG Construções
+            Exportar Relatório Executivo Institucional
           </DialogTitle>
           <DialogDescription>
-            Gere um documento PDF profissional com desenho vetorial, logomarca oficial e consolidados inteligentes, com download instantâneo e sem impressão no navegador.
+            O relatório será consolidado no backend com dados rigorosos de SLA e E-mail, gerando um documento corporativo A4 estruturado.
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-3 space-y-5">
-          {/* 1. LAYOUT EXECUTIVO LANDSCAPE INFORMATIVO */}
+          {/* LAYOUT EXECUTIVO RETRATO (A4) INFORMATIVO */}
           <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/5 flex items-start gap-3">
             <Layout className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm text-foreground">
-                  Formato Landscape Executivo
+                  Formato Retrato (Portrait) A4
                 </span>
                 <Badge variant="default" className="text-[10px] px-1.5 py-0.5">
                   Automático
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                O layout é orientado em paisagem (Landscape), desenhado para condensar tabelas e KPIs gerenciais em 2 a 3 páginas harmoniosas.
+                O documento possui 3 páginas dedicadas: Visão Executiva, Desempenho Operacional e Atenção a Críticos.
               </p>
             </div>
           </div>
 
-          {/* 2. SELEÇÃO DE TEMA (CLARO / ESCURO) */}
+          {/* SELEÇÃO DE TEMA (CLARO / ESCURO) */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
-              1. Tema do Documento PDF
+              Tema do Documento PDF
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -110,7 +112,7 @@ export function ExportPDFModal({
                 <div>
                   <p className="font-bold text-sm text-foreground">Tema Claro</p>
                   <p className="text-[11px] text-muted-foreground">
-                    Fundo branco, ideal para apresentações e papel
+                    Fundo branco corporativo
                   </p>
                 </div>
               </button>
@@ -130,39 +132,11 @@ export function ExportPDFModal({
                 <div>
                   <p className="font-bold text-sm text-foreground">Tema Escuro</p>
                   <p className="text-[11px] text-muted-foreground">
-                    Tons corporativos ardósia executivo
+                    Tons ardósia e tela
                   </p>
                 </div>
               </button>
             </div>
-          </div>
-
-          {/* 3. MODO DO RELATÓRIO */}
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
-              2. Modo do Relatório Consolidado
-            </label>
-            <select
-              value={mode}
-              onChange={(e) => setMode(e.target.value as ReportMode)}
-              className="w-full h-10 px-3 text-sm rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="EXECUTIVO">
-                Executivo — Visão C-Level (KPIs, Setores, Origem e Evolução Mensal)
-              </option>
-              <option value="OPERACIONAL">
-                Operacional — Fila e Fluxo (Status, Volume Diário/Semanal e Serviços)
-              </option>
-              <option value="PRODUTIVIDADE">
-                Produtividade — Equipe TI (Chamados e Tempo Médio por Técnico)
-              </option>
-              <option value="PERFORMANCE">
-                Performance — SLA e Resolutividade (Tempos Médios e Taxa de Fechamento)
-              </option>
-              <option value="PERSONALIZADO">
-                Personalizado — Indicadores Ativos Customizados
-              </option>
-            </select>
           </div>
 
           {/* RESUMO DO CABEÇALHO E RODAPÉ GERADO */}
@@ -176,18 +150,18 @@ export function ExportPDFModal({
             </div>
             <div className="flex items-center justify-between text-muted-foreground text-[11px]">
               <span>Período: {periodLabel}</span>
-              <span>Orientação: Landscape ({theme === "LIGHT" ? "Claro" : "Escuro"})</span>
+              <span>Orientação: A4 Retrato ({theme === "LIGHT" ? "Claro" : "Escuro"})</span>
             </div>
           </div>
         </div>
 
         <DialogFooter className="gap-2 mt-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} className="font-semibold">
+          <Button onClick={handleConfirm} className="font-semibold" disabled={isLoading}>
             <Download className="h-4 w-4 mr-1.5" />
-            Gerar e Baixar PDF
+            {isLoading ? "Gerando..." : "Gerar Relatório Completo"}
           </Button>
         </DialogFooter>
       </DialogContent>

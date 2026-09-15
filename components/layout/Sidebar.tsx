@@ -37,14 +37,14 @@ export function Sidebar() {
             className={cn(
               "group relative flex items-center gap-3.5 px-4 py-3 text-[13px] font-semibold rounded-xl transition-all duration-300",
               isActive
-                ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/20"
-                : "bg-transparent text-sidebar-foreground/70 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
+                ? "bg-white/15 border border-white/10 text-white shadow-lg backdrop-blur-md"
+                : "bg-transparent text-white/70 hover:bg-white/10 hover:text-white"
             )}
             title={effectivelyCollapsed ? item.title : undefined}
           >
             <div className={cn(
               "flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
-              isActive ? "text-primary-foreground" : "text-sidebar-foreground/50 group-hover:text-primary"
+              isActive ? "text-white" : "text-white/50 group-hover:text-white"
             )}>
               <Icon weight={isActive ? "fill" : "duotone"} className="h-[22px] w-[22px] shrink-0" />
             </div>
@@ -84,7 +84,7 @@ export function Sidebar() {
         onMouseEnter={() => isCollapsed && setIsHovered(true)}
         onMouseLeave={() => isCollapsed && setIsHovered(false)}
         className={cn(
-          "hidden lg:flex flex-col border-r border-sidebar-border/30 bg-sidebar-background transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] fixed left-0 top-0 h-screen z-40",
+          "hidden lg:flex flex-col border-r border-sidebar-border/30 bg-gradient-to-b from-[#02060E] to-[#0356C5] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] fixed left-0 top-0 h-screen z-40",
           effectivelyCollapsed ? "w-[88px]" : "w-[280px]",
           isHovered && isCollapsed ? "shadow-2xl shadow-black/50 border-r-primary/30" : ""
         )}
@@ -129,12 +129,12 @@ export function Sidebar() {
         </div>
 
         {/* Toggle Button no Rodapé do Sidebar */}
-        <div className="p-4 border-t border-sidebar-border/30 relative z-10 bg-sidebar-background">
+        <div className="p-4 border-t border-white/10 relative z-10">
           <Button
             variant="ghost"
             onClick={toggleSidebar}
             className={cn(
-              "w-full flex items-center gap-3 justify-center text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-foreground rounded-xl h-11 transition-all duration-300 group",
+              "w-full flex items-center gap-3 justify-center text-white/50 hover:bg-white/10 hover:text-white rounded-xl h-11 transition-all duration-300 group",
               !effectivelyCollapsed && "justify-start px-4"
             )}
             title={effectivelyCollapsed ? "Expandir menu" : "Recolher menu"}
@@ -154,7 +154,7 @@ export function Sidebar() {
       {/* Sidebar mobile */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-sidebar-border bg-sidebar-background transition-transform duration-300 ease-in-out lg:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-sidebar-border bg-gradient-to-b from-[#02060E] to-[#0356C5] transition-transform duration-300 ease-in-out lg:hidden",
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

@@ -282,48 +282,48 @@ export default function TicketsManagementClient({
     switch (status) {
       case "ABERTO":
         return (
-          <Badge className="bg-transparent text-amber-600 dark:text-amber-500 border border-border/50 hover:bg-amber-50 dark:hover:bg-amber-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+          <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-500 hover:bg-amber-500/20 text-[10px] px-2.5 py-0.5 font-bold shadow-none whitespace-nowrap border-none">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5" /> Aberto
           </Badge>
         );
       case "EM_ATENDIMENTO":
         return (
-          <Badge className="bg-transparent text-indigo-600 dark:text-indigo-500 border border-border/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+          <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-500 hover:bg-indigo-500/20 text-[10px] px-2.5 py-0.5 font-bold shadow-none whitespace-nowrap border-none">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5" /> Em Atendimento
           </Badge>
         );
       case "RESOLVIDO":
         return (
-          <Badge className="bg-transparent text-emerald-600 dark:text-emerald-500 border border-border/50 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+          <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 hover:bg-emerald-500/20 text-[10px] px-2.5 py-0.5 font-bold shadow-none whitespace-nowrap border-none">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5" /> Resolvido
           </Badge>
         );
       case "AGUARDANDO_USUARIO":
         return (
-          <Badge className="bg-transparent text-blue-600 dark:text-blue-500 border border-border/50 hover:bg-blue-50 dark:hover:bg-blue-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+          <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-500 hover:bg-blue-500/20 text-[10px] px-2.5 py-0.5 font-bold shadow-none whitespace-nowrap border-none">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5" /> Aguardando
           </Badge>
         );
       case "AGUARDANDO_TERCEIROS":
         return (
-          <Badge className="bg-transparent text-orange-600 dark:text-orange-500 border border-border/50 hover:bg-orange-50 dark:hover:bg-orange-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+          <Badge className="bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-500/20 text-[10px] px-2.5 py-0.5 font-bold shadow-none whitespace-nowrap border-none">
             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1.5" /> Aguard. Terceiros
           </Badge>
         );
       case "AGUARDANDO_PECA":
         return (
-          <Badge className="bg-transparent text-purple-600 dark:text-purple-500 border border-border/50 hover:bg-purple-50 dark:hover:bg-purple-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+          <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-500 hover:bg-purple-500/20 text-[10px] px-2.5 py-0.5 font-bold shadow-none whitespace-nowrap border-none">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1.5" /> Peça
           </Badge>
         );
       case "CANCELADO":
         return (
-          <Badge className="bg-transparent text-zinc-600 dark:text-zinc-500 border border-border/50 hover:bg-zinc-50 dark:hover:bg-zinc-500/10 text-[10px] px-2 py-0.5 font-medium shadow-none whitespace-nowrap">
+          <Badge className="bg-zinc-500/10 text-zinc-600 dark:text-zinc-500 hover:bg-zinc-500/20 text-[10px] px-2.5 py-0.5 font-bold shadow-none whitespace-nowrap border-none">
             <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 mr-1.5" /> Cancelado
           </Badge>
         );
       default:
-        return <Badge variant="outline" className="text-[10px] shadow-none whitespace-nowrap border-border/50">{status}</Badge>;
+        return <Badge variant="secondary" className="text-[10px] shadow-none whitespace-nowrap border-none bg-muted text-muted-foreground">{status}</Badge>;
     }
   }
 
@@ -562,7 +562,7 @@ export default function TicketsManagementClient({
       key: "id",
       className: "w-32 text-right pr-6",
       render: (item) => (
-        <div className="flex items-center justify-end gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           {!item.technician && user?.id && (
             <Button
               variant="ghost"
@@ -690,99 +690,99 @@ export default function TicketsManagementClient({
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <div 
           onClick={() => { setStatusFilter("ALL"); setPage(1); }}
-          className={`glass-card rounded-[2rem] p-6 h-full relative overflow-hidden group hover-lift cursor-pointer transition-all ${statusFilter === "ALL" ? "ring-2 ring-primary shadow-lg" : ""}`}
+          className={`bg-background border rounded-2xl p-5 h-full relative overflow-hidden group cursor-pointer transition-all duration-300 ${statusFilter === "ALL" ? "border-primary ring-1 ring-primary/20 shadow-md -translate-y-0.5" : "border-border/40 hover:border-border hover:shadow-md hover:-translate-y-0.5"}`}
         >
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
             <FileText weight="duotone" className="w-24 h-24 text-foreground" />
           </div>
           <div className="flex items-center gap-3 mb-2 relative z-10">
-            <div className="p-3 bg-secondary rounded-2xl">
+            <div className="p-2.5 bg-secondary rounded-xl">
               <FileText weight="bold" className="w-5 h-5 text-foreground" />
             </div>
-            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Total Listado</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Listado</span>
           </div>
-          <div className="text-4xl font-display font-bold text-foreground mt-4 relative z-10">
-            {loading ? <Skeleton className="h-10 w-16" /> : totalItems}
+          <div className="text-3xl font-display font-bold text-foreground mt-4 relative z-10">
+            {loading ? <Skeleton className="h-8 w-12" /> : totalItems}
           </div>
         </div>
 
         <div 
           onClick={() => { setStatusFilter("ABERTO"); setPage(1); }}
-          className={`glass-card rounded-[2rem] p-6 h-full relative overflow-hidden group hover-lift cursor-pointer transition-all ${statusFilter === "ABERTO" ? "ring-2 ring-warning shadow-lg" : ""}`}
+          className={`bg-background border rounded-2xl p-5 h-full relative overflow-hidden group cursor-pointer transition-all duration-300 ${statusFilter === "ABERTO" ? "border-amber-500 ring-1 ring-amber-500/20 shadow-md -translate-y-0.5" : "border-border/40 hover:border-border hover:shadow-md hover:-translate-y-0.5"}`}
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
-            <Clock weight="duotone" className="w-24 h-24 text-warning" />
+            <Clock weight="duotone" className="w-24 h-24 text-amber-500" />
           </div>
           <div className="flex items-center gap-3 mb-2 relative z-10">
-            <div className="p-3 bg-warning/10 rounded-2xl">
-              <Clock weight="bold" className="w-5 h-5 text-warning" />
+            <div className="p-2.5 bg-amber-500/10 rounded-xl">
+              <Clock weight="bold" className="w-5 h-5 text-amber-500" />
             </div>
-            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Em Aberto</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Em Aberto</span>
           </div>
-          <div className="text-4xl font-display font-bold text-foreground mt-4 relative z-10">
-            {loading ? <Skeleton className="h-10 w-16" /> : openCount}
+          <div className="text-3xl font-display font-bold text-foreground mt-4 relative z-10">
+            {loading ? <Skeleton className="h-8 w-12" /> : openCount}
           </div>
         </div>
 
         <div 
           onClick={() => { setStatusFilter("EM_ATENDIMENTO"); setPage(1); }}
-          className={`glass-card rounded-[2rem] p-6 h-full relative overflow-hidden group hover-lift cursor-pointer transition-all ${statusFilter === "EM_ATENDIMENTO" ? "ring-2 ring-indigo-500 shadow-lg" : ""}`}
+          className={`bg-background border rounded-2xl p-5 h-full relative overflow-hidden group cursor-pointer transition-all duration-300 ${statusFilter === "EM_ATENDIMENTO" ? "border-indigo-500 ring-1 ring-indigo-500/20 shadow-md -translate-y-0.5" : "border-border/40 hover:border-border hover:shadow-md hover:-translate-y-0.5"}`}
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
             <UserCircleCheck weight="duotone" className="w-24 h-24 text-indigo-500" />
           </div>
           <div className="flex items-center gap-3 mb-2 relative z-10">
-            <div className="p-3 bg-indigo-500/10 rounded-2xl">
+            <div className="p-2.5 bg-indigo-500/10 rounded-xl">
               <UserCircleCheck weight="bold" className="w-5 h-5 text-indigo-500" />
             </div>
-            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Em Atend.</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Em Atend.</span>
           </div>
-          <div className="text-4xl font-display font-bold text-foreground mt-4 relative z-10">
-            {loading ? <Skeleton className="h-10 w-16" /> : inProgressCount}
+          <div className="text-3xl font-display font-bold text-foreground mt-4 relative z-10">
+            {loading ? <Skeleton className="h-8 w-12" /> : inProgressCount}
           </div>
         </div>
 
         <div 
           onClick={() => { setStatusFilter("RESOLVIDO"); setPage(1); }}
-          className={`glass-card rounded-[2rem] p-6 h-full relative overflow-hidden group hover-lift cursor-pointer transition-all ${statusFilter === "RESOLVIDO" ? "ring-2 ring-success shadow-lg" : ""}`}
+          className={`bg-background border rounded-2xl p-5 h-full relative overflow-hidden group cursor-pointer transition-all duration-300 ${statusFilter === "RESOLVIDO" ? "border-emerald-500 ring-1 ring-emerald-500/20 shadow-md -translate-y-0.5" : "border-border/40 hover:border-border hover:shadow-md hover:-translate-y-0.5"}`}
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
-            <CheckCircle weight="duotone" className="w-24 h-24 text-success" />
+            <CheckCircle weight="duotone" className="w-24 h-24 text-emerald-500" />
           </div>
           <div className="flex items-center gap-3 mb-2 relative z-10">
-            <div className="p-3 bg-success/10 rounded-2xl">
-              <CheckCircle weight="bold" className="w-5 h-5 text-success" />
+            <div className="p-2.5 bg-emerald-500/10 rounded-xl">
+              <CheckCircle weight="bold" className="w-5 h-5 text-emerald-500" />
             </div>
-            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Resolvidos</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Resolvidos</span>
           </div>
-          <div className="text-4xl font-display font-bold text-foreground mt-4 relative z-10">
-            {loading ? <Skeleton className="h-10 w-16" /> : resolvedCount}
+          <div className="text-3xl font-display font-bold text-foreground mt-4 relative z-10">
+            {loading ? <Skeleton className="h-8 w-12" /> : resolvedCount}
           </div>
         </div>
 
         <div 
           onClick={() => { setStatusFilter("AGUARDANDO"); setPage(1); }}
-          className={`glass-card rounded-[2rem] p-6 h-full relative overflow-hidden group hover-lift cursor-pointer transition-all ${statusFilter === "AGUARDANDO" ? "ring-2 ring-blue-500 shadow-lg" : ""}`}
+          className={`bg-background border rounded-2xl p-5 h-full relative overflow-hidden group cursor-pointer transition-all duration-300 ${statusFilter === "AGUARDANDO" ? "border-blue-500 ring-1 ring-blue-500/20 shadow-md -translate-y-0.5" : "border-border/40 hover:border-border hover:shadow-md hover:-translate-y-0.5"}`}
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
             <WarningCircle weight="duotone" className="w-24 h-24 text-blue-500" />
           </div>
           <div className="flex items-center gap-3 mb-2 relative z-10">
-            <div className="p-3 bg-blue-500/10 rounded-2xl">
+            <div className="p-2.5 bg-blue-500/10 rounded-xl">
               <WarningCircle weight="bold" className="w-5 h-5 text-blue-500" />
             </div>
-            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Aguardando</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Aguardando</span>
           </div>
-          <div className="text-4xl font-display font-bold text-foreground mt-4 relative z-10">
-            {loading ? <Skeleton className="h-10 w-16" /> : waitingCount}
+          <div className="text-3xl font-display font-bold text-foreground mt-4 relative z-10">
+            {loading ? <Skeleton className="h-8 w-12" /> : waitingCount}
           </div>
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="relative z-50 glass-card rounded-[2rem] p-6 flex flex-col gap-4">
+      <motion.div variants={itemVariants} className="relative z-50 bg-background border border-border/40 rounded-2xl p-5 flex flex-col gap-4">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="relative w-full md:w-[350px]">
             <MagnifyingGlass className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
@@ -793,7 +793,7 @@ export default function TicketsManagementClient({
                 setQuery(e.target.value);
                 setPage(1);
               }}
-              className="pl-9 h-10 bg-background/50 border-border/80 focus-visible:ring-1 focus-visible:ring-primary/30 transition-all rounded-lg"
+              className="pl-9 h-10 bg-muted/20 border-border/40 focus-visible:ring-1 focus-visible:ring-primary/30 transition-all rounded-lg shadow-sm hover:border-border"
             />
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
@@ -811,14 +811,14 @@ export default function TicketsManagementClient({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 border-t border-border/50 pt-4">
+        <div className="flex flex-wrap items-center gap-3 border-t border-border/30 pt-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <Faders className="w-4 h-4" />
             Filtros:
           </div>
           
           <select
-            className="h-8 px-3 text-xs rounded-md border border-border bg-background focus:ring-1 focus:ring-primary/30 outline-none text-foreground transition-all cursor-pointer"
+            className="h-8 px-3 text-xs rounded-md border border-border/40 bg-muted/20 hover:bg-muted/40 hover:border-border focus:ring-1 focus:ring-primary/30 outline-none text-foreground transition-all cursor-pointer shadow-sm"
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           >
@@ -831,7 +831,7 @@ export default function TicketsManagementClient({
           </select>
 
           <select
-            className="h-8 px-3 text-xs rounded-md border border-border bg-background focus:ring-1 focus:ring-primary/30 outline-none text-foreground transition-all cursor-pointer"
+            className="h-8 px-3 text-xs rounded-md border border-border/40 bg-muted/20 hover:bg-muted/40 hover:border-border focus:ring-1 focus:ring-primary/30 outline-none text-foreground transition-all cursor-pointer shadow-sm"
             value={sectorFilter}
             onChange={(e) => { setSectorFilter(e.target.value); setPage(1); }}
           >
@@ -840,7 +840,7 @@ export default function TicketsManagementClient({
           </select>
 
           <select
-            className="h-8 px-3 text-xs rounded-md border border-border bg-background focus:ring-1 focus:ring-primary/30 outline-none text-foreground transition-all cursor-pointer"
+            className="h-8 px-3 text-xs rounded-md border border-border/40 bg-muted/20 hover:bg-muted/40 hover:border-border focus:ring-1 focus:ring-primary/30 outline-none text-foreground transition-all cursor-pointer shadow-sm"
             value={technicianFilter}
             onChange={(e) => { setTechnicianFilter(e.target.value); setPage(1); }}
           >
@@ -868,7 +868,7 @@ export default function TicketsManagementClient({
       </motion.div>
 
       {/* Tabela de Tickets */}
-      <motion.div variants={itemVariants} className="glass-card rounded-[2rem] p-2 overflow-hidden shadow-sm">
+      <motion.div variants={itemVariants} className="bg-background border border-border/40 rounded-2xl p-0 overflow-hidden shadow-sm">
         <DataTable
           className="table-fixed"
           columns={columns}

@@ -35,12 +35,12 @@
     --ring: var(--primary-brand);
     --radius: 0.5rem; /* Rounded corners for premium feel */
 
-    /* Sidebar Premium (Dark Slate) */
-    --sidebar-background: #0F172A;
+    /* Sidebar Premium (Custom Palette) */
+    --sidebar-background: #02060E;
     --sidebar-foreground: #F8FAFC;
-    --sidebar-accent: #1E293B;
+    --sidebar-accent: #0356C5;
     --sidebar-accent-foreground: #FFFFFF;
-    --sidebar-border: #1E293B;
+    --sidebar-border: #0A152E;
   }
 
   .dark {
@@ -75,18 +75,18 @@
     --input: #1E293B;
     --ring: var(--primary-brand);
 
-    /* Sidebar Darker for Dark Mode */
-    --sidebar-background: #020617;
+    /* Sidebar Darker for Dark Mode (Custom Palette) */
+    --sidebar-background: #02060E;
     --sidebar-foreground: #F8FAFC;
-    --sidebar-accent: #0F172A;
-    --sidebar-accent-foreground: var(--primary-brand);
-    --sidebar-border: #0F172A;
+    --sidebar-accent: #0356C5;
+    --sidebar-accent-foreground: #FFFFFF;
+    --sidebar-border: #0A152E;
   }
 }
 
 @theme inline {
-  --font-sans: var(--font-outfit), ui-sans-serif, system-ui;
-  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui;
+  --font-sans: var(--font-mulish), ui-sans-serif, system-ui;
+  --font-display: var(--font-mulish), ui-sans-serif, system-ui;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular;
 
   --color-bg: var(--bg);

@@ -41,14 +41,14 @@ export function DataTable<T>({
   className,
 }: DataTableProps<T>) {
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-border bg-card">
+    <div className="w-full overflow-hidden bg-transparent">
       <Table className={className}>
         <TableHeader>
           <TableRow className="border-b bg-transparent hover:bg-transparent">
             {columns.map((col) => (
               <TableHead 
                 key={col.key} 
-                className={`h-11 text-[11px] font-medium uppercase tracking-wider text-muted-foreground ${col.className || ""}`}
+                className={`h-12 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 ${col.className || ""}`}
               >
                 {col.label}
               </TableHead>
@@ -84,10 +84,10 @@ export function DataTable<T>({
                 <TableRow
                   key={key}
                   onClick={onRowClick ? () => onRowClick(item) : undefined}
-                  className={onRowClick ? "cursor-pointer hover:bg-muted/30 transition-colors group" : "hover:bg-muted/30 transition-colors group"}
+                  className={onRowClick ? "cursor-pointer hover:bg-muted/20 transition-colors group border-b border-border/30 last:border-0" : "hover:bg-muted/20 transition-colors group border-b border-border/30 last:border-0"}
                 >
                   {columns.map((col) => (
-                    <TableCell key={col.key} className={col.className}>
+                    <TableCell key={col.key} className={`py-4 ${col.className}`}>
                       {col.render
                         ? col.render(item, idx)
                         : (item as Record<string, unknown>)[col.key] !== undefined
