@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { PortalHero } from "@/components/layout/PortalHero";
 import TicketsManagementClient from "@/modules/tickets/TicketsManagementClient";
@@ -14,7 +14,9 @@ export default function MeusChamadosPage() {
       <PortalHero />
       <div className="bg-card border border-border shadow-sm rounded-xl p-6">
         <h2 className="text-xl font-bold mb-6">Meus Chamados</h2>
-        <TicketsManagementClient />
+        <Suspense fallback={<div className="p-8 text-center text-muted-foreground animate-pulse">Carregando interface...</div>}>
+          <TicketsManagementClient />
+        </Suspense>
       </div>
     </div>
   );

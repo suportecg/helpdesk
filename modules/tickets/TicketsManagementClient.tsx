@@ -284,8 +284,18 @@ export default function TicketsManagementClient({
     if ((item.status === "RESOLVIDO" || item.status === "CANCELADO") && typeof item.totalTimeMinutes === 'number') {
       return formatTimeBadge(Math.max(0, item.totalTimeMinutes - pauseMins));
     }
+    
     const sTime = item.startTime ? new Date(item.startTime) : new Date(item.ticketDate);
-    const eTime = item.endTime ? new Date(item.endTime) : new Date();
+    let eTime = item.endTime ? new Date(item.endTime) : new Date();
+
+    // Fallback: se o chamado está num status de pausa, mas não tem um registro ativo em TicketPause (chamados antigos)
+    const isPausedStatus = item.status === "AGUARDANDO_USUARIO" || item.status === "AGUARDANDO_TERCEIROS" || item.status === "AGUARDANDO_PECA" || item.status === "AGENDADO";
+    const hasActivePause = item.pauses && item.pauses.some((p: any) => !p.endTime);
+    
+    if (isPausedStatus && !hasActivePause && !item.endTime) {
+      eTime = item.updatedAt ? new Date(item.updatedAt) : eTime;
+    }
+
     const mins = calculateBusinessMinutes(sTime, eTime);
     return formatTimeBadge(Math.max(0, mins - pauseMins));
   }

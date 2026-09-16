@@ -125,6 +125,28 @@ export async function POST(request: NextRequest) {
           });
         }
 
+        // Salvar a ação pública (o e-mail enviado) como comentário, já que não temos um ProcessedEmail
+        const plainTextContent = content.replace(/<[^>]*>?/gm, '');
+        
+        await tx.ticketComment.create({
+          data: {
+            ticketId,
+            authorId: session.id || "admin",
+            content: plainTextContent.trim(),
+            isInternal: false,
+          }
+        });
+
+        await tx.ticketHistory.create({
+          data: {
+            ticketId,
+            actorId: session.id || "admin",
+            actorName: session.name || "Admin",
+            eventType: "COMMENT_ADDED",
+            description: `Enviou resposta por e-mail para ${to}.`,
+          },
+        });
+
         if (nextStatus) {
           await tx.ticketHistory.create({
             data: {

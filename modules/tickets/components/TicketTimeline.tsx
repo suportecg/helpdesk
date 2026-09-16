@@ -99,8 +99,8 @@ export function TicketTimeline({ ticket }: { ticket: any }) {
       });
     }
 
-    // Ordenar do mais antigo pro mais novo (ou vice-versa). O mockup parece mostrar em ordem cronológica de cima pra baixo (mais novos embaixo).
-    return events.sort((a, b) => a.timestamp - b.timestamp);
+    // Ordenar do mais novo para o mais antigo (ordem decrescente cronológica)
+    return events.sort((a, b) => b.timestamp - a.timestamp);
   }, [ticket]);
 
   const filteredEvents = timelineEvents.filter(ev => {

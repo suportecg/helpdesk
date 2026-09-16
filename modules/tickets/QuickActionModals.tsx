@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -119,6 +119,12 @@ export function ChangeStatusModal({
     currentStatus || "ABERTO"
   );
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedStatus(currentStatus || "ABERTO");
+    }
+  }, [open, currentStatus]);
 
   const handleConfirm = async () => {
     setLoading(true);
