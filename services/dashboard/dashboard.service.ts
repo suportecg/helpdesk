@@ -862,6 +862,7 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
       } else if (isActive) {
         totalWithSla++;
         const nowTime = now.getTime();
+        const isPaused = t.status === "AGUARDANDO_USUARIO" || t.status === "AGUARDANDO_PECA" || t.status === "AGUARDANDO" || t.status === "AGENDADO" || t.status === "AGUARDANDO_TERCEIROS" || (t.pauses && t.pauses.some((p: any) => !p.endTime));
         if (nowTime <= adjustedDueTime) {
           totalSlaMet++;
           
@@ -874,7 +875,8 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
               title: t.problem,
               dueDate: t.dueDate,
               msLeft,
-              technicianName: t.technician?.name || null
+              technicianName: t.technician?.name || null,
+              isPaused
             });
           }
         } else {
@@ -886,7 +888,8 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
               dueDate: t.dueDate,
               msLeft: adjustedDueTime - nowTime, // Negativo
               technicianName: t.technician?.name || null,
-              breached: true
+              breached: true,
+              isPaused
             });
         }
       }

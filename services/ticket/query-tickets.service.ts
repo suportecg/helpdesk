@@ -19,6 +19,7 @@ export interface TicketFilterOptions {
   limit?: number;
   userId?: string;
   role?: string;
+  slaRisk?: boolean;
 }
 
 /**
@@ -183,30 +184,58 @@ export async function getTicketsPaginated(options: TicketFilterOptions) {
     prisma.ticket.findMany({
       where,
       orderBy,
-      skip,
-      take: limit,
+      ...(options.slaRisk ? {} : { skip, take: limit }),
       include: {
         requester: { select: { id: true, name: true, email: true, department: true } },
         sector: { select: { id: true, name: true } },
         technician: { select: { id: true, name: true, email: true, avatar: true } },
-        service: { select: { id: true, name: true, category: true } },
+        service: { select: { id: true, name: true, category: true, slaHours: true } },
         pauses: true,
         _count: { select: { comments: true, history: true } },
       },
     }),
   ]);
 
+  let finalData = data;
+  let finalTotal = total;
+
+  if (options.slaRisk) {
+    const nowTime = new Date().getTime();
+    const riskTickets = data.filter((t: any) => {
+      // Ignorar resolvidos e cancelados
+      if (t.status === "RESOLVIDO" || t.status === "CANCELADO") return false;
+
+      const dueTime = new Date(t.ticketDate || t.createdAt).getTime() + ((t.service?.slaHours || 24) * 60 * 60 * 1000);
+      let totalPauseMs = 0;
+      if (t.pauses && t.pauses.length > 0) {
+        t.pauses.forEach((p: any) => {
+          const start = new Date(p.startTime).getTime();
+          const end = p.endTime ? new Date(p.endTime).getTime() : nowTime;
+          totalPauseMs += (end - start);
+        });
+      }
+      const adjustedDueTime = dueTime + totalPauseMs;
+      const msLeft = adjustedDueTime - nowTime;
+      
+      // Se faltam 2 horas ou menos, ou se já estourou (msLeft <= 0)
+      return msLeft <= 2 * 60 * 60 * 1000;
+    });
+
+    finalTotal = riskTickets.length;
+    finalData = riskTickets.slice(skip, skip + limit);
+  }
+
   return {
-    data,
+    data: finalData,
     meta: {
-      total,
+      total: finalTotal,
       openCount,
       resolvedCount,
       waitingCount,
       inProgressCount,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(finalTotal / limit),
     },
   };
 }

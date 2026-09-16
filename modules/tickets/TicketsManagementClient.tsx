@@ -116,11 +116,12 @@ export default function TicketsManagementClient({
 
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "ALL");
   const [sectorFilter, setSectorFilter] = useState<string>("ALL");
   const [serviceFilter, setServiceFilter] = useState<string>("ALL");
-  const [technicianFilter, setTechnicianFilter] = useState<string>("ALL");
+  const [technicianFilter, setTechnicianFilter] = useState<string>(searchParams.get("technicianId") || "ALL");
   const [originFilter, setOriginFilter] = useState<string>("ALL");
+  const [slaRiskFilter, setSlaRiskFilter] = useState<boolean>(searchParams.get("slaRisk") === "true");
   const [isArchived, setIsArchived] = useState(defaultIsArchived);
   const [monthYear, setMonthYear] = useState<string>(getCurrentMonthYear());
   const [sortBy, setSortBy] = useState<"ticketDate" | "totalTimeMinutes" | "requester" | "service" | "ticketNumber">("ticketDate");
@@ -197,6 +198,7 @@ export default function TicketsManagementClient({
       if (serviceFilter !== "ALL") params.set("serviceId", serviceFilter);
       if (technicianFilter !== "ALL") params.set("technicianId", technicianFilter);
       if (originFilter !== "ALL") params.set("origin", originFilter);
+      if (slaRiskFilter) params.set("slaRisk", "true");
       params.set("isArchived", String(isArchived));
       if (monthYear) params.set("monthYear", monthYear);
 
@@ -227,6 +229,7 @@ export default function TicketsManagementClient({
     serviceFilter,
     technicianFilter,
     originFilter,
+    slaRiskFilter,
     isArchived,
     monthYear,
   ]);
@@ -241,6 +244,15 @@ export default function TicketsManagementClient({
     }, 400);
     return () => clearTimeout(timer);
   }, [query]);
+
+  // Sincroniza a query do searchParams caso ela mude via busca global (Navbar)
+  useEffect(() => {
+    const urlQuery = searchParams.get("query");
+    if (urlQuery !== null && urlQuery !== query) {
+      setQuery(urlQuery);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchTickets();

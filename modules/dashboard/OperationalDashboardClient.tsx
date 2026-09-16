@@ -344,15 +344,14 @@ export function OperationalDashboardClient() {
                   <Link href={`/chamados/${t.id}`} key={t.id} className="flex flex-col gap-1 p-3 rounded-xl hover:bg-secondary/50 transition-colors group">
                     <div className="flex justify-between items-start">
                       <span className="font-semibold text-sm group-hover:text-primary transition-colors line-clamp-1">#{t.number} {t.title}</span>
-                      <Badge variant={t.breached ? "destructive" : "warning"} className="ml-2 shrink-0">
-                        {t.breached ? "Estourado" : "Em Risco"}
+                      <Badge variant={t.isPaused ? "secondary" : (t.breached ? "destructive" : "warning")} className="ml-2 shrink-0">
+                        {t.isPaused ? "Pausado" : (t.breached ? "Estourado" : "Em Risco")}
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
                       <span>{t.technicianName || 'Sem Atribuição'}</span>
-                      <span className={t.breached ? 'text-danger font-medium' : 'text-warning font-medium'}>
-                        {t.breached ? 'Venceu ' : 'Vence em '}
-                        {Math.abs(Math.round(t.msLeft / 60000))} min
+                      <span className={t.isPaused ? 'text-muted-foreground font-medium' : (t.breached ? 'text-danger font-medium' : 'text-warning font-medium')}>
+                        {t.isPaused ? 'SLA Congelado' : (t.breached ? `Venceu ${Math.abs(Math.round(t.msLeft / 60000))} min` : `Vence em ${Math.abs(Math.round(t.msLeft / 60000))} min`)}
                       </span>
                     </div>
                   </Link>

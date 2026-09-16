@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     const monthYear = searchParams.get("monthYear") || undefined;
     const sortBy = (searchParams.get("sortBy") as any) || "ticketDate";
     const sortOrder = (searchParams.get("sortOrder") as "asc" | "desc") || "desc";
+    const slaRisk = searchParams.get("slaRisk") === "true";
 
     const result = await getTicketsPaginated({
       page,
@@ -51,6 +52,7 @@ export async function GET(request: NextRequest) {
       monthYear,
       sortBy,
       sortOrder,
+      slaRisk,
       userId: session.id,
       role: session.role,
     });
