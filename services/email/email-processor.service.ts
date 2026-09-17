@@ -70,6 +70,7 @@ export async function checkAndProcessEmails() {
               const ticketNum = parseInt(match[1], 10);
               linkedTicket = await prisma.ticket.findFirst({
                 where: { ticketNumber: ticketNum },
+                orderBy: { createdAt: 'desc' },
                 include: { requester: true }
               });
             }
