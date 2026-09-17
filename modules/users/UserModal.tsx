@@ -40,6 +40,7 @@ export function UserModal({
   const [sectorId, setSectorId] = useState("");
   const [requirePasswordChange, setRequirePasswordChange] = useState(false);
   const [sectors, setSectors] = useState<Sector[]>([]);
+  const [roles, setRoles] = useState<{name: string, label: string}[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +49,7 @@ export function UserModal({
   useEffect(() => {
     if (isOpen) {
       fetchSectors();
+      fetchRoles();
       if (userToEdit) {
         setName(userToEdit.name || "");
         setEmail(userToEdit.email || "");
@@ -78,6 +80,18 @@ export function UserModal({
       }
     } catch (e) {
       console.error("Erro ao buscar setores:", e);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const res = await fetch("/api/roles");
+      if (res.ok) {
+        const data = await res.json();
+        setRoles(data);
+      }
+    } catch (e) {
+      console.error("Erro ao buscar funções:", e);
     }
   };
 
@@ -142,7 +156,7 @@ export function UserModal({
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Atualize as informações corporativas e o papel do usuário no sistema."
+              ? "Atualize as informações corporativas e a função do usuário no sistema."
               : "Preencha os dados abaixo para cadastrar um novo técnico ou solicitante da CG Construções."}
           </DialogDescription>
         </DialogHeader>
@@ -192,15 +206,23 @@ export function UserModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">Papel (Role)</label>
+              <label className="text-sm font-medium text-foreground">Função</label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
               >
-                <option value="SOLICITANTE">Solicitante</option>
-                <option value="TI">Equipe TI / Suporte</option>
-                <option value="ADMIN">Administrador</option>
+                {roles.length > 0 ? (
+                  roles.map((r) => (
+                    <option key={r.name} value={r.name}>{r.label || r.name}</option>
+                  ))
+                ) : (
+                  <>
+                    <option value="SOLICITANTE">Solicitante</option>
+                    <option value="TI">Equipe TI / Suporte</option>
+                    <option value="ADMIN">Administrador</option>
+                  </>
+                )}
               </select>
             </div>
 

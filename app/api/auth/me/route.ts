@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { getUserPermissionsMap } from "@/services/rbac/rbac.service";
 
 export async function GET() {
   try {
@@ -10,7 +11,13 @@ export async function GET() {
       return NextResponse.json({ user: null }, { status: 401 });
     }
 
-    return NextResponse.json({ user: session });
+    const { permissionCodes } = await getUserPermissionsMap(session.id);
+    const userWithPermissions = {
+      ...session,
+      permissions: permissionCodes,
+    };
+
+    return NextResponse.json({ user: userWithPermissions });
   } catch (error) {
     console.error("[HelpDesk API] Erro ao recuperar sessão:", error);
     return NextResponse.json({ user: null }, { status: 500 });

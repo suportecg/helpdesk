@@ -1,4 +1,4 @@
-export type Role = "ADMIN" | "TI" | "SOLICITANTE";
+export type Role = "ADMIN" | "TI" | "SOLICITANTE" | "GESTAO" | (string & {});
 
 export interface UserSession {
   id: string;
@@ -7,6 +7,7 @@ export interface UserSession {
   role: Role;
   avatar?: string | null;
   department?: string | null;
+  permissions?: string[];
 }
 
 export interface RbacRule {

@@ -203,7 +203,7 @@ export function UsersManagementClient() {
     },
     {
       key: "role",
-      label: "Papel (Role)",
+      label: "Função",
       render: (u) => getRoleBadge(u.role),
     },
     {
@@ -335,10 +335,10 @@ export function UsersManagementClient() {
                 setPage(1);
               }}
             >
-              <option value="ALL">Todos os Papéis</option>
-              <option value="ADMIN">ADMIN (Administradores)</option>
-              <option value="TI">TI (Equipe Suporte)</option>
-              <option value="SOLICITANTE">Solicitantes</option>
+              <option value="ALL">Todas as Funções</option>
+              <option value="ADMIN">Administrador (ADMIN)</option>
+              <option value="TI">Suporte (TI)</option>
+              <option value="SOLICITANTE">Solicitante</option>
             </select>
 
             <select

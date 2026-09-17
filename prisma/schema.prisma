@@ -11,7 +11,7 @@ model User {
   name                  String
   email                 String               @unique
   password              String
-  role                  RoleType             @default(SOLICITANTE)
+  role                  String               @default("SOLICITANTE")
   roleId                String?
   avatar                String?
   department            String?
@@ -41,7 +41,7 @@ model User {
 
 model Role {
   id          String           @id @default(uuid())
-  name        RoleType         @unique
+  name        String           @unique
   label       String
   description String?
   createdAt   DateTime         @default(now())
@@ -464,11 +464,7 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
-enum RoleType {
-  ADMIN
-  TI
-  SOLICITANTE
-}
+
 
 enum StatusType {
   EM_ATENDIMENTO

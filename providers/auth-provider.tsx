@@ -10,6 +10,7 @@ interface AuthContextType {
   setUser: (user: UserSession | null) => void;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  hasPermission: (code: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,8 +58,14 @@ export function AuthProvider({
     }
   };
 
+  const hasPermission = (code: string) => {
+    if (!user) return false;
+    if (user.role === "ADMIN") return true;
+    return user.permissions?.includes(code) || false;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, setUser, logout, refresh }}>
+    <AuthContext.Provider value={{ user, loading, setUser, logout, refresh, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );

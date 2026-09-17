@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { RoleType, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { logAuditEvent } from "../audit/audit.service";
 import { generateDefaultSignature } from "@/lib/default-signature";
 
@@ -37,7 +37,7 @@ export async function getUsersPaginated(params: UserListParams) {
     if (params.role === "ADMIN_OR_TI" || params.role === "TECH_TEAM") {
       where.role = { in: ["ADMIN", "TI"] };
     } else {
-      where.role = params.role as RoleType;
+      where.role = params.role;
     }
   }
 
@@ -103,7 +103,7 @@ export async function createUser(
     name: string;
     email: string;
     password?: string;
-    role: RoleType;
+    role: string;
     department?: string;
     sectorId?: string;
     isActive?: boolean;
@@ -169,7 +169,7 @@ export async function updateUser(
   data: {
     name?: string;
     email?: string;
-    role?: RoleType;
+    role?: string;
     department?: string;
     sectorId?: string | null;
     isActive?: boolean;

@@ -4,12 +4,14 @@ export const ROLE_LABELS: Record<Role, string> = {
   ADMIN: "Administrador",
   TI: "Suporte TI",
   SOLICITANTE: "Solicitante",
+  GESTAO: "Gestão",
 };
 
 export const ROLE_COLORS: Record<Role, string> = {
   ADMIN: "bg-primary text-primary-foreground",
   TI: "bg-blue-600 text-white dark:bg-blue-500",
   SOLICITANTE: "bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100",
+  GESTAO: "bg-purple-600 text-white dark:bg-purple-500",
 };
 
 export function hasRole(userRole: Role, allowedRoles: Role[]): boolean {

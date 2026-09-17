@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { RoleType, StatusType, OrigemType, PrioridadeType } from "@prisma/client";
+import { StatusType, OrigemType, PrioridadeType } from "@prisma/client";
 
 export async function runFullDatabaseSeed(): Promise<{
   success: boolean;
@@ -49,9 +49,9 @@ export async function runFullDatabaseSeed(): Promise<{
 
     console.log("[Seed] 2. Semeando Papéis (Roles)...");
     const rolesData = [
-      { name: RoleType.ADMIN, label: "Administrador Geral", description: "Acesso irrestrito a todo o sistema" },
-      { name: RoleType.TI, label: "Equipe de Suporte e TI", description: "Gestão e atendimento técnico de chamados" },
-      { name: RoleType.SOLICITANTE, label: "Solicitante", description: "Abertura e acompanhamento de chamados próprios" },
+      { name: "ADMIN", label: "Administrador Geral", description: "Acesso irrestrito a todo o sistema" },
+      { name: "TI", label: "Equipe de Suporte e TI", description: "Gestão e atendimento técnico de chamados" },
+      { name: "SOLICITANTE", label: "Solicitante", description: "Abertura e acompanhamento de chamados próprios" },
     ];
 
     let rolesCreated = 0;
@@ -269,8 +269,8 @@ export async function runFullDatabaseSeed(): Promise<{
     const hudsonEmail = process.env.HUDSON_EMAIL || "hudson@cgconstrucoes.com.br";
     const defaultTiPass = process.env.TI_PASSWORD || "ti123456";
 
-    const adminRole = await prisma.role.findUnique({ where: { name: RoleType.ADMIN } });
-    const tiRole = await prisma.role.findUnique({ where: { name: RoleType.TI } });
+    const adminRole = await prisma.role.findUnique({ where: { name: "ADMIN" } });
+    const tiRole = await prisma.role.findUnique({ where: { name: "TI" } });
     const tiSector = await prisma.sector.findUnique({ where: { name: "TI" } });
 
     const usersToSeed = [
@@ -278,7 +278,7 @@ export async function runFullDatabaseSeed(): Promise<{
         name: process.env.ADMIN_NAME || "Administrador Geral",
         email: adminEmail,
         password: await bcrypt.hash(adminPass, 10),
-        role: RoleType.ADMIN,
+        role: "ADMIN",
         roleId: adminRole?.id || null,
         department: "Gestão / TI",
         sectorId: tiSector?.id || null,
@@ -287,7 +287,7 @@ export async function runFullDatabaseSeed(): Promise<{
         name: "Lucas",
         email: lucasEmail,
         password: await bcrypt.hash(defaultTiPass, 10),
-        role: RoleType.TI,
+        role: "TI",
         roleId: tiRole?.id || null,
         department: "TI",
         sectorId: tiSector?.id || null,
@@ -296,7 +296,7 @@ export async function runFullDatabaseSeed(): Promise<{
         name: "Hudson",
         email: hudsonEmail,
         password: await bcrypt.hash(defaultTiPass, 10),
-        role: RoleType.TI,
+        role: "TI",
         roleId: tiRole?.id || null,
         department: "TI",
         sectorId: tiSector?.id || null,

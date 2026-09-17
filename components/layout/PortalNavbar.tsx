@@ -41,7 +41,7 @@ export function PortalNavbar() {
             <Link href="/meus-chamados">Meus Chamados</Link>
           </Button>
           <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
-            <Link href="/novo-chamado">Novo Chamado</Link>
+            <Link href="/meus-chamados?new=true">Novo Chamado</Link>
           </Button>
         </nav>
       </div>

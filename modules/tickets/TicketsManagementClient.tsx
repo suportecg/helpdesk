@@ -102,7 +102,7 @@ export default function TicketsManagementClient({
   initialLimit,
   isArchived: defaultIsArchived = false,
 }: TicketsManagementClientProps) {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("query") || "";
@@ -257,6 +257,16 @@ export default function TicketsManagementClient({
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  useEffect(() => {
+    if (searchParams.get("new") === "true" && !modalOpen) {
+      setModalOpen(true);
+      // Remove a query param da URL sem reload total para não ficar reabrindo caso o usuário atualize a página
+      const url = new URL(window.location.href);
+      url.searchParams.delete("new");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams, modalOpen]);
 
   function formatTimeBadge(minutes: number | null): string {
     if (minutes === null || minutes === undefined || minutes < 0) return "Em and.";
@@ -625,31 +635,35 @@ export default function TicketsManagementClient({
           >
             <MagnifyingGlass className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-warning hover:bg-warning/10 rounded-md transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveTicket(item);
-              setStatusModalOpen(true);
-            }}
-            title="Alterar Status"
-          >
-            <PencilSimple className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-danger hover:bg-danger/10 rounded-md transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              setConfirmDelete(item);
-            }}
-            title="Excluir"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          {hasPermission("chamados.update") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-warning hover:bg-warning/10 rounded-md transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTicket(item);
+                setStatusModalOpen(true);
+              }}
+              title="Alterar Status"
+            >
+              <PencilSimple className="h-4 w-4" />
+            </Button>
+          )}
+          {hasPermission("chamados.delete") && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-danger hover:bg-danger/10 rounded-md transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirmDelete(item);
+              }}
+              title="Excluir"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ),
     },
@@ -707,7 +721,7 @@ export default function TicketsManagementClient({
             className="text-xs shadow-sm"
           >
             <Plus className="w-4 h-4 mr-1.5" />
-            Novo Ticket
+            Novo Chamado
           </Button>
         </div>
       </motion.div>

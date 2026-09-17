@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { RoleType } from "@prisma/client";
 
 export interface PermissionItem {
   id: string;
@@ -59,7 +58,7 @@ export async function getAllPermissionsGrouped(): Promise<CategoryPermissions[]>
 }
 
 export async function getUserPermissionsMap(userId: string): Promise<{
-  roleName: RoleType;
+  roleName: string;
   permissionCodes: string[];
   overrides: { permissionId: string; code: string; granted: boolean }[];
 }> {
@@ -81,17 +80,17 @@ export async function getUserPermissionsMap(userId: string): Promise<{
 
   if (!user) {
     return {
-      roleName: RoleType.SOLICITANTE,
+      roleName: "SOLICITANTE",
       permissionCodes: [],
       overrides: [],
     };
   }
 
   // ADMIN sempre possui todos os códigos por padrão
-  if (user.role === RoleType.ADMIN) {
+  if (user.role === "ADMIN") {
     const allPerms = await prisma.permission.findMany({ select: { code: true } });
     return {
-      roleName: RoleType.ADMIN,
+      roleName: "ADMIN",
       permissionCodes: allPerms.map((p) => p.code),
       overrides: user.userPermissions.map((up) => ({
         permissionId: up.permissionId,
@@ -111,7 +110,7 @@ export async function getUserPermissionsMap(userId: string): Promise<{
   }
 
   // TI tem permissões padrão de chamados, usuários consulta, e configurações consulta
-  if (user.role === RoleType.TI && grantedSet.size === 0) {
+  if (user.role === "TI" && grantedSet.size === 0) {
     grantedSet.add("chamados.create");
     grantedSet.add("chamados.read");
     grantedSet.add("chamados.update");
@@ -143,6 +142,6 @@ export async function getUserPermissionsMap(userId: string): Promise<{
 
 export async function hasPermission(userId: string, code: string): Promise<boolean> {
   const perms = await getUserPermissionsMap(userId);
-  if (perms.roleName === RoleType.ADMIN) return true;
+  if (perms.roleName === "ADMIN") return true;
   return perms.permissionCodes.includes(code);
 }

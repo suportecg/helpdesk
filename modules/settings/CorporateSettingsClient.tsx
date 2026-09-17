@@ -28,6 +28,7 @@ import { SectionCard } from "@/components/common/SectionCard";
 import { useWhiteLabel } from "@/hooks/useWhiteLabel";
 import { CorporateSettingsDTO } from "@/services/settings/settings.service";
 import { CsvImportWizard } from "@/modules/import/CsvImportWizard";
+import { RolesSettings } from "./RolesSettings";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -50,7 +51,7 @@ const itemVariants: Variants = {
 export function CorporateSettingsClient() {
   const { config, updateConfig } = useWhiteLabel();
   const [activeTab, setActiveTab] = useState<
-    "EMPRESA" | "APARENCIA" | "USUARIOS" | "CHAMADOS" | "RELATORIOS" | "AUDITORIA" | "INTEGRACOES" | "FERRAMENTAS"
+    "EMPRESA" | "APARENCIA" | "USUARIOS" | "FUNCOES" | "CHAMADOS" | "RELATORIOS" | "AUDITORIA" | "INTEGRACOES" | "FERRAMENTAS"
   >("EMPRESA");
 
   const [loading, setLoading] = useState(true);
@@ -221,6 +222,7 @@ export function CorporateSettingsClient() {
     { id: "EMPRESA", label: "Empresa", icon: BuildingOffice },
     { id: "APARENCIA", label: "Aparência", icon: PaintBrush },
     { id: "USUARIOS", label: "Usuários & RBAC", icon: UsersThree },
+    { id: "FUNCOES", label: "Funções", icon: ShieldCheck },
     { id: "CHAMADOS", label: "Chamados & SLA", icon: FileText },
     { id: "RELATORIOS", label: "Relatórios & PDF", icon: Printer },
     { id: "AUDITORIA", label: "Auditoria & Logs", icon: ShieldCheck },
@@ -743,6 +745,16 @@ export function CorporateSettingsClient() {
                 />
               </div>
             </div>
+          </SectionCard>
+        )}
+
+        {/* ======================= ABA 3.5: FUNCOES ======================= */}
+        {activeTab === "FUNCOES" && (
+          <SectionCard
+            title="Gestão de Funções (Roles)"
+            description="Crie e edite as funções que os usuários podem ter no sistema."
+          >
+            <RolesSettings />
           </SectionCard>
         )}
 
