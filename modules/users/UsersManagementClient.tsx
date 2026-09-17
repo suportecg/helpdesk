@@ -185,8 +185,11 @@ export function UsersManagementClient() {
         return <Badge className="bg-primary text-primary-foreground font-semibold">ADMIN</Badge>;
       case "TI":
         return <Badge className="bg-blue-600 text-white font-semibold">TI (Suporte)</Badge>;
-      default:
+      case "SOLICITANTE":
         return <Badge variant="secondary">SOLICITANTE</Badge>;
+      default:
+        // Exibe o nome do papel customizado formatado
+        return <Badge className="bg-purple-600 text-white font-semibold uppercase">{role}</Badge>;
     }
   };
 

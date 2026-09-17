@@ -868,7 +868,7 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
           
           // Se faltam 2 horas ou menos, é risco de SLA
           const msLeft = adjustedDueTime - nowTime;
-          if (msLeft <= 2 * 60 * 60 * 1000) {
+          if (msLeft <= 2 * 60 * 60 * 1000 && !isPaused) {
             slaRiskTickets.push({
               id: t.id,
               number: t.ticketNumber,
@@ -881,16 +881,18 @@ export async function getOperationalDashboardData(params: DashboardFilterParams 
           }
         } else {
             // Estourado
-            slaRiskTickets.push({
-              id: t.id,
-              number: t.ticketNumber,
-              title: t.problem,
-              dueDate: t.dueDate,
-              msLeft: adjustedDueTime - nowTime, // Negativo
-              technicianName: t.technician?.name || null,
-              breached: true,
-              isPaused
-            });
+            if (!isPaused) {
+              slaRiskTickets.push({
+                id: t.id,
+                number: t.ticketNumber,
+                title: t.problem,
+                dueDate: t.dueDate,
+                msLeft: adjustedDueTime - nowTime, // Negativo
+                technicianName: t.technician?.name || null,
+                breached: true,
+                isPaused
+              });
+            }
         }
       }
     }

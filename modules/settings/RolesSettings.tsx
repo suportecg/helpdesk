@@ -14,6 +14,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { RolePermissionsModal } from "./RolePermissionsModal";
 
 interface RoleRow {
   id: string;
@@ -31,6 +32,9 @@ export function RolesSettings() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [roleToEdit, setRoleToEdit] = useState<RoleRow | null>(null);
   
+  const [isPermModalOpen, setIsPermModalOpen] = useState(false);
+  const [permRole, setPermRole] = useState<RoleRow | null>(null);
+  
   const [name, setName] = useState("");
   const [label, setLabel] = useState("");
   const [description, setDescription] = useState("");
@@ -38,6 +42,7 @@ export function RolesSettings() {
   const [confirmDelete, setConfirmDelete] = useState<RoleRow | null>(null);
 
   const fetchRoles = async () => {
+
     setLoading(true);
     try {
       const res = await fetch("/api/roles");
@@ -68,6 +73,11 @@ export function RolesSettings() {
       setDescription("");
     }
     setIsModalOpen(true);
+  };
+
+  const handleOpenPermModal = (role: RoleRow) => {
+    setPermRole(role);
+    setIsPermModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -140,6 +150,9 @@ export function RolesSettings() {
                 <td className="px-6 py-4 text-muted-foreground">{r.description || "-"}</td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenPermModal(r)}>
+                      <ShieldCheck className="h-4 w-4 text-amber-500" />
+                    </Button>
                     <Button variant="ghost" size="icon" onClick={() => handleOpenModal(r)}>
                       <PencilSimple className="h-4 w-4 text-muted-foreground" />
                     </Button>
@@ -191,6 +204,13 @@ export function RolesSettings() {
         cancelLabel="Cancelar"
         onConfirm={handleDelete}
         variant="destructive"
+      />
+
+      <RolePermissionsModal
+        isOpen={isPermModalOpen}
+        onClose={() => setIsPermModalOpen(false)}
+        roleId={permRole?.id || null}
+        roleName={permRole?.label || permRole?.name || ""}
       />
     </div>
   );
