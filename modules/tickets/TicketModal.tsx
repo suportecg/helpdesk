@@ -662,7 +662,7 @@ export function TicketModal({
 
                     
                     {/* PAUSE REASON AND SLA PANEL */}
-                    {status === "AGUARDANDO_TERCEIROS" && (
+                    {["AGUARDANDO_USUARIO", "AGUARDANDO_TERCEIROS", "AGUARDANDO_PECA", "AGENDADO"].includes(status) && (
                       <div className="mt-4 p-4 rounded-xl border border-amber-200/60 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-950/10 space-y-4 shrink-0">
                         <div className="flex items-center justify-between">
                            <span className="text-xs font-semibold uppercase tracking-wider text-amber-900 dark:text-amber-500 flex items-center gap-1.5">
@@ -679,7 +679,7 @@ export function TicketModal({
                               value={pauseReason}
                               onChange={(e) => setPauseReason(e.target.value)}
                               className="flex h-9 w-full rounded-md border border-amber-200 dark:border-amber-900/30 bg-white dark:bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-500"
-                              required={status === "AGUARDANDO_TERCEIROS"}
+                              required={["AGUARDANDO_USUARIO", "AGUARDANDO_TERCEIROS", "AGUARDANDO_PECA", "AGENDADO"].includes(status)}
                             >
                               <option value="">Selecione um motivo...</option>
                               <option value="Aguardando fornecedor">Aguardando fornecedor</option>
@@ -711,7 +711,7 @@ export function TicketModal({
                              <Clock className="w-3.5 h-3.5" />
                              SLA & Tempo
                            </span>
-                           {status === "AGUARDANDO_TERCEIROS" ? (
+                           {["AGUARDANDO_USUARIO", "AGUARDANDO_TERCEIROS", "AGUARDANDO_PECA", "AGENDADO"].includes(status) ? (
                              <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-500 font-semibold text-[10px]">
                                <PauseCircle className="w-3 h-3 mr-1" /> SLA PAUSADO
                              </Badge>
@@ -732,7 +732,7 @@ export function TicketModal({
                                 {(() => {
                                   if (!pauses || pauses.length === 0) return "0 min";
                                   const mins = pauses.reduce((acc, p) => {
-                                    if (p.duration) return acc + p.duration;
+                                    if (p.endTime) return acc + (p.duration || 0);
                                     return acc + Math.floor((Date.now() - new Date(p.startTime).getTime()) / 60000);
                                   }, 0);
                                   const h = Math.floor(mins / 60);
@@ -748,7 +748,7 @@ export function TicketModal({
                                   const s = startTime ? new Date(startTime).getTime() : Date.now();
                                   const e = endTime ? new Date(endTime).getTime() : Date.now();
                                   const elapsedMins = Math.floor((e - s) / 60000);
-                                  const pauseMins = pauses?.reduce((acc, p) => acc + (p.duration || Math.floor((Date.now() - new Date(p.startTime).getTime()) / 60000)), 0) || 0;
+                                  const pauseMins = pauses?.reduce((acc, p) => acc + (p.endTime ? (p.duration || 0) : Math.floor((Date.now() - new Date(p.startTime).getTime()) / 60000)), 0) || 0;
                                   const effective = Math.max(0, elapsedMins - pauseMins);
                                   const h = Math.floor(effective / 60);
                                   const m = effective % 60;
@@ -763,7 +763,7 @@ export function TicketModal({
                              </p>
                            </div>
                         </div>
-                        {status === "AGUARDANDO_TERCEIROS" && (
+                        {["AGUARDANDO_USUARIO", "AGUARDANDO_TERCEIROS", "AGUARDANDO_PECA", "AGENDADO"].includes(status) && (
                            <div className="pt-3 mt-3 border-t border-border/50 flex justify-between items-center">
                               <span className="text-[11px] text-muted-foreground">O chamado precisa ser retomado para continuar contando o SLA.</span>
                               <Button 
